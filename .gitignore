@@ -1,0 +1,6 @@
+node_modules/
+.env
+processed_pdfs/
+save/
+token.json
+*.log
