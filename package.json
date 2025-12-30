@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Agente que lee PDFs recibidos por Gmail, los analiza con IA y envía resultados por WhatsApp y Gmail",
   "type": "module",
-  "main": "index.js",
+  "main": "agent.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node agent.js"
   },
   "author": "Otoniel Berroa",
   "license": "MIT",
