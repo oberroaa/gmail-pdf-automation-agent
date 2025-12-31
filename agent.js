@@ -24,7 +24,7 @@ dotenv.config();
 // CONFIG
 // ================================
 const TARGET_FROM = "oberroa@tuuci.com";
-const LABEL_PROCESSED = "PROCESSED9";
+const LABEL_PROCESSED = "PROCESSEDX";
 const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || "./processed_pdfs";
 //const INTERVAL = 60 * 60 * 1000; // ⏱️ 1 hora
 
