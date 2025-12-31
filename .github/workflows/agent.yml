@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug env (safe)
+        run: |
+          echo "CLIENT_ID set? ${{ secrets.CLIENT_ID != '' }}"
+          echo "CLIENT_SECRET set? ${{ secrets.CLIENT_SECRET != '' }}"
+          echo "REFRESH_TOKEN set? ${{ secrets.REFRESH_TOKEN != '' }}"
       - name: Checkout code
         uses: actions/checkout@v4
 
