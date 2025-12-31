@@ -1,133 +1,102 @@
-Gmail Automation Agent – PDF Processing & Notifications
+📄 Gmail PDF Automation Agent
 
-Agente automatizado en Node.js que monitorea Gmail, procesa correos con PDF adjuntos, extrae información estructurada y envía resultados automáticamente por WhatsApp y Email, asegurando que cada correo se procese una sola vez.
+Automatización que lee correos de Gmail, extrae información estructurada desde PDFs y envía resultados automáticamente por WhatsApp y Email.
 
-🚀 Funcionalidades
+Diseñado para procesos empresariales donde los datos llegan en documentos PDF y deben procesarse sin intervención humana.
 
-📬 Monitorea Gmail automáticamente
+🚀 ¿Qué hace este agente?
 
-📎 Detecta correos con PDFs de un remitente específico
+✔️ Monitorea Gmail automáticamente (cada hora)
+✔️ Detecta correos con PDFs de un remitente específico
+✔️ Extrae datos clave desde el PDF (Part Number, Qty, UOM = FT)
+✔️ Agrupa y calcula totales de forma determinista
+✔️ Envía el resultado:
 
-📥 Descarga y guarda archivos PDF
+📧 por Email
 
-🧠 Analiza el contenido del PDF (parser determinista)
+📱 por WhatsApp
+✔️ Marca el correo como PROCESSED para evitar reprocesos
 
-📊 Genera resultados estructurados
+Todo el flujo es 100% automático.
 
-📱 Envía resultados por WhatsApp (Twilio)
+🧠 ¿Por qué este enfoque es potente?
 
-📧 Envía resultados por Email
+❌ Sin IA “inestable”
 
-🏷️ Marca correos como PROCESSED para evitar reprocesos
+❌ Sin costos por tokens
 
-🔁 Ejecución automática cada hora
+❌ Sin resultados variables
 
-🟢 Listo para producción con PM2
+✅ Parsing determinista
+✅ Resultados reproducibles
+✅ Ideal para producción
+✅ Escalable a miles de documentos
 
-🧠 Casos de uso
+Este sistema es perfecto para:
 
-Procesamiento automático de órdenes de compra
+Manufactura
 
-Extracción de datos desde PDFs operativos
+Logística
 
-Automatización de flujos por correo
+Compras
 
-Reducción de trabajo manual repetitivo
+Inventarios
 
-Integración entre Email → Documentos → Notificaciones
+Finanzas
 
-🏗️ Flujo del sistema
-Gmail → PDF → Análisis → Resultado
-                     ↳ WhatsApp
-                     ↳ Email
-                     ↳ Etiqueta PROCESSED
+Operaciones
 
-🧩 Tecnologías
+🛠️ Tecnologías usadas
 
-Node.js (ES Modules)
+Node.js
 
-Google Gmail API (OAuth2)
+Gmail API (OAuth2)
 
-PDF.js
+pdfjs-dist
 
 Twilio WhatsApp API
 
-PM2
+GitHub Actions (cloud gratis)
 
-dotenv
+Regex-based data extraction
 
-📁 Estructura del proyecto
-.
-├── agent.js
-├── analyze-pdf.js
-├── whatsapp.js
-├── ecosystem.config.cjs
-├── processed_pdfs/
-├── package.json
-└── .gitignore
+📦 Flujo del sistema
 
-⚙️ Configuración
+Llega un correo con PDF
 
-Crear un archivo .env:
+El agente lo detecta
 
-# Gmail OAuth2
-CLIENT_ID=xxxx.apps.googleusercontent.com
-CLIENT_SECRET=xxxx
-REDIRECT_URI=http://localhost
-REFRESH_TOKEN=1//xxxx
+Descarga el PDF
 
-# WhatsApp (Twilio)
-ACCOUNT_SID=ACxxxxxxxx
-AUTH_TOKEN=xxxxxxxx
-WHATSAPP_FROM=whatsapp:+14155238886
-WHATSAPP_TO=whatsapp:+1XXXXXXXXXX
+Extrae datos relevantes
 
-# Output
-PDF_OUTPUT_DIR=./processed_pdfs
+Agrupa y calcula totales
 
+Envía el resultado
 
-⚠️ El archivo .env no debe subirse a GitHub.
+Marca el correo como procesado
 
-▶️ Ejecución
-npm install
-node agent.js
+🔐 Seguridad
 
-🔁 Ejecución automática (producción)
-npm install -g pm2
-pm2 start ecosystem.config.cjs
-pm2 save
+Secrets gestionados con GitHub Secrets
 
-🔒 Seguridad
+No se suben credenciales al repositorio
 
-Autenticación OAuth2 (sin contraseñas)
+OAuth seguro con Google
 
-Control de reprocesamiento mediante etiquetas Gmail
+📈 Casos de uso reales
 
-PDFs almacenados con ID único
+Procesar órdenes de compra
 
-Proceso persistente con PM2
+Extraer materiales y cantidades
 
-📈 Escalabilidad
+Automatizar reportes
 
-El agente puede extenderse para:
+Reducir trabajo manual
 
-Dashboard web
-
-Bases de datos
-
-APIs REST
-
-Webhooks
-
-Múltiples clientes
-
-Integración con IA
+Eliminar errores humanos
 
 👨‍💻 Autor
 
 Otoniel Berroa
-Automation & Backend Developer
-
-📜 Licencia
-
-MIT
+Automatización · Backend · Integraciones · Procesos empresariales
