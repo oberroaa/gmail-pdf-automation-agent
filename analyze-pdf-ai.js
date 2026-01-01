@@ -1,51 +1,50 @@
-import fs from "fs";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export default async function analyzePdfWithAI(pdfPath, prompt) {
-    if (!process.env.GEMINI_API_KEY) {
-        throw new Error("❌ GEMINI_API_KEY no está definida en el entorno");
-    }
-
-    // ================================
-    // 1️⃣ Leer PDF
-    // ================================
-    const data = new Uint8Array(fs.readFileSync(pdfPath));
-    const loadingTask = pdfjsLib.getDocument({ data });
-    const pdf = await loadingTask.promise;
-
-    let pdfText = "";
-
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const content = await page.getTextContent();
-        const strings = content.items.map(i => i.str);
-        pdfText += strings.join(" ") + "\n";
-    }
-
-    // ================================
-    // 2️⃣ Inicializar Gemini
-    // ================================
+export default async function generateRulesFromPrompt(userPrompt) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
     const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash-lite"
     });
 
-    // ================================
-    // 3️⃣ Prompt FINAL
-    // ================================
-    const finalPrompt = `
-${prompt}
+    const systemPrompt = `
+You generate ONLY JSON rules for a PDF extraction engine.
 
---- PDF CONTENT ---
-${pdfText}
+Rules:
+- Return ONLY valid JSON
+- NO markdown
+- NO explanations
+- NO comments
+- NO PDF analysis
 
-Devuelve SOLO un JSON válido.
+Schema:
+{
+  "name": string,
+  "description": string,
+  "extract": { "part_number": boolean, "quantity": boolean, "uom": boolean },
+  "filters": { "uom_include": string[], "uom_exclude": string[] },
+  "group_by": string[],
+  "sum": string[],
+  "format": { "decimals": number, "output": "HUMAN_TEXT" }
+}
+
+Default behavior:
+- Extract part_number, quantity, uom
+- Include FT only
+- Group by part_number
+- Sum quantity
 `;
 
-    const result = await model.generateContent(finalPrompt);
-    const response = result.response.text();
+    const prompt = userPrompt
+        ? `${systemPrompt}\n\nUser instructions:\n${userPrompt}`
+        : systemPrompt;
 
-    return response;
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+
+    try {
+        return JSON.parse(text);
+    } catch (err) {
+        throw new Error("IA returned invalid JSON rules");
+    }
 }

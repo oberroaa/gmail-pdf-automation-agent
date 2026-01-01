@@ -6,9 +6,14 @@ import path from "path";
 import { google } from "googleapis";
 import dotenv from "dotenv";
 
+
 import analyzePdfWithAI from "./analyze-pdf-ai.js";
 import sendWhatsApp from "./whatsapp.js";
 import { DEFAULT_AI_PROMPT } from "./config/default-prompt.js";
+
+import generateRulesFromPrompt from "./analyze-pdf-ai.js";
+import getDefaultRules from "./default-rules.js";
+import analyzePdfWithRules from "./analyze-pdf.js";
 
 dotenv.config({ quiet: true });
 
@@ -16,7 +21,7 @@ dotenv.config({ quiet: true });
 // CONFIG
 // ================================
 const TARGET_FROM = "oberroa@tuuci.com";
-const LABEL_PROCESSED = "PROCESSED02";
+const LABEL_PROCESSED = "PROCESSED4";
 const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || "./processed_pdfs";
 
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -137,8 +142,19 @@ async function processEmails() {
             fs.writeFileSync(filePath, buffer);
             console.log(`📎 PDF guardado: ${filePath}`);
 
-            console.log("🧠 Analizando PDF con IA...");
-            const result = await analyzePdfWithAI(filePath, finalPrompt);
+            console.log("🧠 Generando reglas con IA...");
+            let rules;
+
+            if (process.env.GEMINI_API_KEY && emailPrompt) {
+                rules = await generateRulesFromPrompt(emailPrompt);
+            } else {
+                console.log("⚙️ Usando reglas por defecto");
+                rules = getDefaultRules();
+            }
+
+            console.log("🧠 Analizando PDF con reglas...");
+            const result = await analyzePdfWithRules(filePath, rules);
+
 
             console.log("📊 Resultado final:\n", result);
 
