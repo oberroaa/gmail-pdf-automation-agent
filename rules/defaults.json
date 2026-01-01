@@ -1,0 +1,23 @@
+{
+    "name": "default",
+    "description": "Regla por defecto FT",
+    "ruleset": {
+        "filters": {
+            "uom_include": [
+                "FT"
+            ],
+            "material_prefix": [
+                "BDA",
+                "WTK",
+                "SAT",
+                "FBR",
+                "MIL",
+                "SSP",
+                "FBW"
+            ]
+        },
+        "format": {
+            "decimals": 3
+        }
+    }
+}

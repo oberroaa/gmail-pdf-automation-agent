@@ -6,14 +6,9 @@ import path from "path";
 import { google } from "googleapis";
 import dotenv from "dotenv";
 
-
-import analyzePdfWithAI from "./analyze-pdf-ai.js";
 import sendWhatsApp from "./whatsapp.js";
-import { DEFAULT_AI_PROMPT } from "./config/default-prompt.js";
-
-import generateRulesFromPrompt from "./analyze-pdf-ai.js";
-import getDefaultRules from "./default-rules.js";
 import analyzePdfWithRules from "./analyze-pdf.js";
+import { resolveRule, getAllRules } from "./rules-manager.js";
 
 dotenv.config({ quiet: true });
 
@@ -21,7 +16,7 @@ dotenv.config({ quiet: true });
 // CONFIG
 // ================================
 const TARGET_FROM = "oberroa@tuuci.com";
-const LABEL_PROCESSED = "PROCESSED4";
+const LABEL_PROCESSED = "PROCESSED8";
 const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || "./processed_pdfs";
 
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -63,10 +58,7 @@ async function getOrCreateLabel(labelName) {
     return created.data.id;
 }
 
-// ================================
-// EXTRACT IA PROMPT FROM EMAIL
-// ================================
-function extractIAPromptFromEmail(payload) {
+function extractPlainText(payload) {
     let bodyText = "";
 
     if (payload.body?.data) {
@@ -81,8 +73,21 @@ function extractIAPromptFromEmail(payload) {
         }
     }
 
-    const match = bodyText.match(/ia\s*\(([\s\S]*?)\)/i);
-    return match ? match[1].trim() : null;
+    return bodyText.trim();
+}
+
+function detectRuleFromBody(bodyText, ruleNames) {
+    if (!bodyText) return null;
+
+    const body = bodyText.toLowerCase();
+
+    for (const ruleName of ruleNames) {
+        if (body.includes(ruleName.toLowerCase())) {
+            return ruleName;
+        }
+    }
+
+    return null;
 }
 
 // ================================
@@ -106,6 +111,9 @@ async function processEmails() {
         return;
     }
 
+    const allRules = getAllRules();
+    const ruleNames = Object.keys(allRules);
+
     for (const msg of messages) {
         console.log(`📨 Procesando mensaje ${msg.id}`);
 
@@ -115,10 +123,12 @@ async function processEmails() {
         });
 
         const payload = msgData.data.payload;
+        const bodyText = extractPlainText(payload);
 
-        // 🔹 EXTRAER PROMPT IA DEL CUERPO
-        const emailPrompt = extractIAPromptFromEmail(payload);
-        const finalPrompt = emailPrompt || DEFAULT_AI_PROMPT;
+        const requestedRule = detectRuleFromBody(bodyText, ruleNames);
+        const { name: ruleUsed, ruleset } = resolveRule(requestedRule);
+
+        console.log(`⚙️ Usando regla: ${ruleUsed}`);
 
         const parts = payload.parts || [];
 
@@ -142,29 +152,18 @@ async function processEmails() {
             fs.writeFileSync(filePath, buffer);
             console.log(`📎 PDF guardado: ${filePath}`);
 
-            console.log("🧠 Generando reglas con IA...");
-            let rules;
-
-            if (process.env.GEMINI_API_KEY && emailPrompt) {
-                rules = await generateRulesFromPrompt(emailPrompt);
-            } else {
-                console.log("⚙️ Usando reglas por defecto");
-                rules = getDefaultRules();
-            }
-
             console.log("🧠 Analizando PDF con reglas...");
-            const result = await analyzePdfWithRules(filePath, rules);
+            const resultText = await analyzePdfWithRules(filePath, ruleset);
 
-
-            console.log("📊 Resultado final:\n", result);
+            console.log("📊 Resultado final:\n", resultText);
 
             // ================================
             // WHATSAPP
             // ================================
-            await sendWhatsApp(result);
+            await sendWhatsApp(resultText);
 
             // ================================
-            // EMAIL RESULT
+            // EMAIL RESULT (TEXTO, NO JSON)
             // ================================
             await gmail.users.messages.send({
                 userId: "me",
@@ -172,7 +171,7 @@ async function processEmails() {
                     raw: Buffer.from(
                         `To: ${TARGET_FROM}\r\n` +
                         `Subject: Resultado análisis PDF\r\n\r\n` +
-                        JSON.stringify(result, null, 2)
+                        resultText
                     ).toString("base64")
                 }
             });
