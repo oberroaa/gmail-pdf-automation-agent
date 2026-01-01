@@ -1,39 +1,30 @@
-
-
 // ================================
-// TUUCI Gmail PDF Agent
+// TUUCI Gmail PDF Automation Agent
 // ================================
 import fs from "fs";
 import path from "path";
 import { google } from "googleapis";
 import dotenv from "dotenv";
-import analyzePdf from "./analyze-pdf.js";
+
+import analyzePdfWithAI from "./analyze-pdf-ai.js";
 import sendWhatsApp from "./whatsapp.js";
+import { DEFAULT_AI_PROMPT } from "./config/default-prompt.js";
 
-console.log("ENV CHECK:", {
-  CLIENT_ID: !!process.env.CLIENT_ID,
-  CLIENT_SECRET: !!process.env.CLIENT_SECRET,
-  REDIRECT_URI: !!process.env.REDIRECT_URI,
-  REFRESH_TOKEN: !!process.env.REFRESH_TOKEN,
-});
-
-
-dotenv.config();
+dotenv.config({ quiet: true });
 
 // ================================
 // CONFIG
 // ================================
 const TARGET_FROM = "oberroa@tuuci.com";
-const LABEL_PROCESSED = "PROCESSEDX";
+const LABEL_PROCESSED = "PROCESSED02";
 const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || "./processed_pdfs";
-//const INTERVAL = 60 * 60 * 1000; // ⏱️ 1 hora
 
 if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
 // ================================
-// AUTH
+// AUTH GMAIL
 // ================================
 const auth = new google.auth.OAuth2(
     process.env.CLIENT_ID,
@@ -68,7 +59,29 @@ async function getOrCreateLabel(labelName) {
 }
 
 // ================================
-// MAIN LOGIC
+// EXTRACT IA PROMPT FROM EMAIL
+// ================================
+function extractIAPromptFromEmail(payload) {
+    let bodyText = "";
+
+    if (payload.body?.data) {
+        bodyText += Buffer.from(payload.body.data, "base64").toString("utf8");
+    }
+
+    if (payload.parts) {
+        for (const part of payload.parts) {
+            if (part.mimeType === "text/plain" && part.body?.data) {
+                bodyText += Buffer.from(part.body.data, "base64").toString("utf8");
+            }
+        }
+    }
+
+    const match = bodyText.match(/ia\s*\(([\s\S]*?)\)/i);
+    return match ? match[1].trim() : null;
+}
+
+// ================================
+// MAIN PROCESS
 // ================================
 async function processEmails() {
     console.log("🔁 Verificando correos nuevos...");
@@ -96,11 +109,16 @@ async function processEmails() {
             id: msg.id
         });
 
-        const parts = msgData.data.payload.parts || [];
-        let finalResult = "";
+        const payload = msgData.data.payload;
+
+        // 🔹 EXTRAER PROMPT IA DEL CUERPO
+        const emailPrompt = extractIAPromptFromEmail(payload);
+        const finalPrompt = emailPrompt || DEFAULT_AI_PROMPT;
+
+        const parts = payload.parts || [];
 
         for (const part of parts) {
-            if (!part.filename || !part.filename.toLowerCase().endsWith(".pdf")) continue;
+            if (!part.filename?.endsWith(".pdf")) continue;
 
             const attachment = await gmail.users.messages.attachments.get({
                 userId: "me",
@@ -119,63 +137,50 @@ async function processEmails() {
             fs.writeFileSync(filePath, buffer);
             console.log(`📎 PDF guardado: ${filePath}`);
 
-            console.log("🧠 Analizando PDF...");
-            const result = await analyzePdf(filePath);
+            console.log("🧠 Analizando PDF con IA...");
+            const result = await analyzePdfWithAI(filePath, finalPrompt);
 
-            finalResult += `\n📄 ${safeName}\n${result}\n`;
+            console.log("📊 Resultado final:\n", result);
+
+            // ================================
+            // WHATSAPP
+            // ================================
+            await sendWhatsApp(result);
+
+            // ================================
+            // EMAIL RESULT
+            // ================================
+            await gmail.users.messages.send({
+                userId: "me",
+                requestBody: {
+                    raw: Buffer.from(
+                        `To: ${TARGET_FROM}\r\n` +
+                        `Subject: Resultado análisis PDF\r\n\r\n` +
+                        JSON.stringify(result, null, 2)
+                    ).toString("base64")
+                }
+            });
+
+            console.log("📧 Resultado enviado por email");
+
+            // ================================
+            // MARK AS PROCESSED
+            // ================================
+            await gmail.users.messages.modify({
+                userId: "me",
+                id: msg.id,
+                requestBody: { addLabelIds: [labelId] }
+            });
+
+            console.log("🏷️ Correo marcado como PROCESSED");
         }
-
-        if (!finalResult.trim()) {
-            console.log("⚠️ No se encontró contenido válido en el PDF");
-            continue;
-        }
-
-        console.log("📊 Resultado final:", finalResult);
-
-        // ================================
-        // SEND WHATSAPP
-        // ================================
-        await sendWhatsApp(`📄 Resultado análisis PDF\n${finalResult}`);
-        console.log("📱 WhatsApp enviado correctamente");
-
-        // ================================
-        // SEND EMAIL
-        // ================================
-        await gmail.users.messages.send({
-            userId: "me",
-            requestBody: {
-                raw: Buffer.from(
-                    `To: ${TARGET_FROM}\r\n` +
-                    `Subject: Resultado análisis PDF\r\n\r\n` +
-                    finalResult
-                ).toString("base64")
-            }
-        });
-
-        console.log("📧 Resultado enviado por email");
-
-        // ================================
-        // MARK AS PROCESSED
-        // ================================
-        await gmail.users.messages.modify({
-            userId: "me",
-            id: msg.id,
-            requestBody: { addLabelIds: [labelId] }
-        });
-
-        console.log("🏷️ Correo marcado como PROCESSED");
     }
 
     console.log("✅ Ciclo terminado\n");
 }
 
 // ================================
-// START AGENT
+// START
 // ================================
 console.log("🤖 TUUCI AGENT INICIADO");
-
-// Ejecutar al arrancar
 await processEmails();
-
-// Ejecutar cada 1 hora, lo comentarie pk uso PM2
-//setInterval(processEmails, INTERVAL);

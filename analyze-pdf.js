@@ -1,59 +1,75 @@
 import fs from "fs";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { validateRule } from "./validators/rule-validator.js";
 
 // ==================================================
-// ANALIZADOR PDF → DEVUELVE RESULTADO AGRUPADO
+// ANALIZADOR PDF → BASADO EN REGLAS
 // ==================================================
-export default async function analyzePdf(pdfPath) {
+export default async function analyzePdf(pdfPath, rulePath = "./rules/default-ft.json") {
 
     // ================================
-    // 1️⃣ Leer PDF
+    // 1️⃣ Cargar regla
+    // ================================
+    const rule = JSON.parse(fs.readFileSync(rulePath, "utf-8"));
+    validateRule(rule);
+
+
+    const partRegex = new RegExp(rule.fields.find(f => f.key === "part_number").regex, "g");
+    const qtyRegex = new RegExp(rule.fields.find(f => f.key === "qty").regex, "g");
+
+    // ================================
+    // 2️⃣ Leer PDF
     // ================================
     const data = new Uint8Array(fs.readFileSync(pdfPath));
-    const loadingTask = pdfjsLib.getDocument({ data });
-    const pdf = await loadingTask.promise;
+    const pdf = await pdfjsLib.getDocument({ data }).promise;
 
-    let pdfText = "";
+    let text = "";
 
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
         const content = await page.getTextContent();
-        const strings = content.items.map(i => i.str);
-        pdfText += strings.join(" ") + "\n";
+        text += content.items.map(i => i.str).join(" ") + "\n";
     }
 
     // ================================
-    // 2️⃣ Parser determinista FT
+    // 3️⃣ Extraer datos
     // ================================
     const rows = [];
-    const regex = /\b([A-Z]{2,4}\d{5,})\b[\s\S]{0,80}?(\d+(?:\.\d+)?)\s*FT\b/g;
 
-    let match;
-    while ((match = regex.exec(pdfText)) !== null) {
-        rows.push({
-            part_number: match[1],
-            qty_req: Number(match[2]),
-            uom: "FT"
-        });
+    let partMatch;
+    while ((partMatch = partRegex.exec(text)) !== null) {
+        const part = partMatch[0];
+
+        // buscar qty cerca del part
+        const slice = text.substring(partMatch.index, partMatch.index + 120);
+        const qtyMatch = qtyRegex.exec(slice);
+
+        if (qtyMatch) {
+            rows.push({
+                part_number: part,
+                qty: parseFloat(qtyMatch[1]),
+                unit: rule.unit
+            });
+        }
     }
 
     // ================================
-    // 3️⃣ Agrupar y sumar
+    // 4️⃣ Agrupar
     // ================================
     const grouped = {};
 
     for (const r of rows) {
         if (!grouped[r.part_number]) grouped[r.part_number] = 0;
-        grouped[r.part_number] += r.qty_req;
+        grouped[r.part_number] += r.qty;
     }
 
     // ================================
-    // 4️⃣ Construir salida FINAL
+    // 5️⃣ Resultado final
     // ================================
-    let result = "RESULTADO FINAL AGRUPADO:\n\n";
+    let result = `RESULTADO FINAL AGRUPADO (${rule.unit})\n\n`;
 
     for (const part in grouped) {
-        result += `* ${part} → ${grouped[part].toFixed(3)} FT\n`;
+        result += `* ${part} → ${grouped[part].toFixed(3)} ${rule.unit}\n`;
     }
 
     return result;

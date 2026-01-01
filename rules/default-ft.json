@@ -1,0 +1,16 @@
+{
+    "name": "Default FT Parser",
+    "description": "Extrae part_number y cantidades en FT",
+    "fields": [
+        {
+            "key": "part_number",
+            "regex": "\\b[A-Z]{2,4}\\d{5,}\\b"
+        },
+        {
+            "key": "qty",
+            "regex": "(\\d+(?:\\.\\d+)?)\\s*FT"
+        }
+    ],
+    "group_by": "part_number",
+    "unit": "FT"
+}

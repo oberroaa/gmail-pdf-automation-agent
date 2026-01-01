@@ -1,0 +1,6 @@
+{
+    "default": "ft-parts",
+    "rules": {
+        "ft-parts": "./ft-parts.json"
+    }
+}
