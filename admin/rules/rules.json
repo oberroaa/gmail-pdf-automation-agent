@@ -1,0 +1,81 @@
+{
+  "default": "Regla para materiales BDA, WTK y SAT con unidades FT",
+  "rules": [
+    {
+      "name": "Regla para materiales BDA, WTK y SAT con unidades FT",
+      "description": "Esta regla analiza PDFs para extraer cantidades de materiales BDA, WTK y SAT, filtrando por unidades FT y mostrando los resultados con 3 decimales.",
+      "ruleset": {
+        "filters": {
+          "uom_include": [
+            "FT"
+          ],
+          "material_prefix": [
+            "BDA",
+            "WTK",
+            "SAT"
+          ]
+        },
+        "format": {
+          "decimals": 3
+        }
+      }
+    },
+    {
+      "name": "Analisis_Materiales_BDA_WTK_SAT",
+      "description": "Regla para analizar materiales BDA, WTK y SAT, contando solo cantidades en FT con 3 decimales.",
+      "ruleset": {
+        "filters": {
+          "uom_include": [
+            "FT"
+          ],
+          "material_prefix": [
+            "BDA",
+            "WTK",
+            "SAT"
+          ]
+        },
+        "format": {
+          "decimals": 3
+        }
+      }
+    },
+    {
+      "name": "Analizador de Materiales Específicos",
+      "description": "Regla para analizar cantidades de materiales BDA, WTK y SAT en unidades FT, con 3 decimales de precisión.",
+      "ruleset": {
+        "filters": {
+          "uom_include": [
+            "FT"
+          ],
+          "material_prefix": [
+            "BDA",
+            "WTK",
+            "SAT"
+          ]
+        },
+        "format": {
+          "decimals": 3
+        }
+      }
+    },
+    {
+      "name": "BDA_WTK_SAT_FT_3_DECIMALS",
+      "description": "Regla para materiales BDA, WTK y SAT, contando solo en FT con 3 decimales.",
+      "ruleset": {
+        "filters": {
+          "uom_include": [
+            "FT"
+          ],
+          "material_prefix": [
+            "BDA",
+            "WTK",
+            "SAT"
+          ]
+        },
+        "format": {
+          "decimals": 3
+        }
+      }
+    }
+  ]
+}

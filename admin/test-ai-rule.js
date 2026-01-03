@@ -1,12 +1,11 @@
 // ================================
-// TEST IA RULE GENERATOR
+// TEST IA RULE GENERATOR + SAVE
 // ================================
 import dotenv from "dotenv";
 dotenv.config();
 
 import { generateRuleFromPrompt } from "./services/ai-rule-service.js";
-
-
+import { saveRule } from "./save-rule.js";
 
 // ================================
 // CONFIG TEST PROMPT
@@ -29,8 +28,13 @@ async function runTest() {
 
         console.log("✅ REGLA GENERADA POR LA IA:\n");
         console.log(JSON.stringify(rule, null, 2));
+
+        console.log("\n💾 Guardando regla...");
+        const ruleName = saveRule(rule);
+
+        console.log(`✅ Regla guardada correctamente como: "${ruleName}"`);
     } catch (err) {
-        console.error("❌ ERROR:", err.message);
+        console.error("\n❌ ERROR:", err.message);
     }
 }
 
