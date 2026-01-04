@@ -15,6 +15,12 @@ export default async function analyzePdfWithRules(pdfPath, rules) {
         const page = await pdf.getPage(pageNum);
         const content = await page.getTextContent();
         pdfText += content.items.map(i => i.str).join(" ") + "\n";
+        // === VALIDAR PREFIJOS DE MATERIAL (BDA / WTK / SAT) ===
+        const prefixes = rules.ruleset?.filters?.material_prefix || [];
+
+
+
+
     }
 
     // === USAMOS TU REGEX ORIGINAL ===
@@ -23,17 +29,31 @@ export default async function analyzePdfWithRules(pdfPath, rules) {
 
     let match;
     const allowedUoms = rules.filters?.uom_include || [];
+    const allowedPrefixes = rules.filters?.material_prefix || [];
+
     while ((match = regex.exec(pdfText)) !== null) {
+        const partNumber = match[1];
+        const qty = Number(match[2]);
         const uom = match[3];
 
+        // 1️⃣ Filtrar por UOM
         if (allowedUoms.length > 0 && !allowedUoms.includes(uom)) continue;
 
+        // 2️⃣ Filtrar por prefijo de material
+        if (
+            allowedPrefixes.length > 0 &&
+            !allowedPrefixes.some(prefix => partNumber.startsWith(prefix))
+        ) {
+            continue;
+        }
+
         rows.push({
-            part_number: match[1],
-            qty: Number(match[2]),
+            part_number: partNumber,
+            qty,
             uom
         });
     }
+
 
     // === AGRUPAR POR PART_NUMBER ===
     const grouped = {};

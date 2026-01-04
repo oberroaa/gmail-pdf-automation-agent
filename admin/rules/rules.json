@@ -1,5 +1,5 @@
 {
-  "default": "Regla para materiales BDA, WTK y SAT con unidades FT",
+  "default": "Regla Materiales XYZ FT 2 Decimales",
   "rules": [
     {
       "name": "Regla para materiales BDA, WTK y SAT con unidades FT",
@@ -74,6 +74,42 @@
         },
         "format": {
           "decimals": 3
+        }
+      }
+    },
+    {
+      "name": "Regla Materiales XYZ FT 2 Decimales",
+      "description": "Analiza PDFs de materiales XYZ en pies (FT) con 2 decimales.",
+      "ruleset": {
+        "filters": {
+          "uom_include": [
+            "FT"
+          ],
+          "material_prefix": [
+            "XYZ"
+          ]
+        },
+        "format": {
+          "decimals": 2
+        }
+      }
+    },
+    {
+      "name": "AnalisisMaterialesBDAWTKSAT",
+      "description": "Regla para analizar materiales BDA, WTK y SAT con unidades FT, agrupando cantidades y mostrando resultados con 2 decimales.",
+      "ruleset": {
+        "filters": {
+          "uom_include": [
+            "FT"
+          ],
+          "material_prefix": [
+            "BDA",
+            "WTK",
+            "SAT"
+          ]
+        },
+        "format": {
+          "decimals": 2
         }
       }
     }
