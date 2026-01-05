@@ -3,10 +3,10 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
- * @param {string} pdfPath - Ruta del PDF
- * @param {object} rules - Objeto de reglas, debe contener ruleset compatible
+ * @param {string} pdfPath
+ * @param {object} ruleset
  */
-export default async function analyzePdfWithRules(pdfPath, rules) {
+export default async function analyzePdfWithRules(pdfPath, ruleset) {
     const data = new Uint8Array(fs.readFileSync(pdfPath));
     const pdf = await pdfjsLib.getDocument({ data }).promise;
 
@@ -15,67 +15,63 @@ export default async function analyzePdfWithRules(pdfPath, rules) {
         const page = await pdf.getPage(pageNum);
         const content = await page.getTextContent();
         pdfText += content.items.map(i => i.str).join(" ") + "\n";
-        // === VALIDAR PREFIJOS DE MATERIAL (BDA / WTK / SAT) ===
-        const prefixes = rules.ruleset?.filters?.material_prefix || [];
-
-
-
-
     }
 
-    // === USAMOS TU REGEX ORIGINAL ===
-    const rows = [];
+    // ================================
+    // CONFIG DE REGLAS
+    // ================================
+    const allowedUoms = ruleset.filters?.uom_include || [];
+    const allowedPrefixes = ruleset.filters?.material_prefix || [];
+
+    // REGEX BASE (no la tocamos)
     const regex = /\b([A-Z]{2,4}\d{5,})\b[\s\S]{0,80}?(\d+(?:\.\d+)?)\s*(FT|EA|MT)\b/g;
 
+    const rows = [];
     let match;
-    const allowedUoms = rules.filters?.uom_include || [];
-    const allowedPrefixes = rules.filters?.material_prefix || [];
 
     while ((match = regex.exec(pdfText)) !== null) {
         const partNumber = match[1];
         const qty = Number(match[2]);
         const uom = match[3];
 
-        // 1️⃣ Filtrar por UOM
-        if (allowedUoms.length > 0 && !allowedUoms.includes(uom)) continue;
+        // 🔹 FILTRO UOM
+        if (allowedUoms.length && !allowedUoms.includes(uom)) continue;
 
-        // 2️⃣ Filtrar por prefijo de material
-        if (
-            allowedPrefixes.length > 0 &&
-            !allowedPrefixes.some(prefix => partNumber.startsWith(prefix))
-        ) {
-            continue;
+        // 🔹 FILTRO MATERIAL PREFIX (AQUÍ ESTABA EL FALLO)
+        if (allowedPrefixes.length) {
+            const ok = allowedPrefixes.some(prefix =>
+                partNumber.startsWith(prefix)
+            );
+            if (!ok) continue;
         }
 
-        rows.push({
-            part_number: partNumber,
-            qty,
-            uom
-        });
+        rows.push({ partNumber, qty, uom });
     }
 
-
-    // === AGRUPAR POR PART_NUMBER ===
+    // ================================
+    // AGRUPAR
+    // ================================
     const grouped = {};
     for (const r of rows) {
-        grouped[r.part_number] ||= 0;
-        grouped[r.part_number] += r.qty;
+        grouped[r.partNumber] ??= 0;
+        grouped[r.partNumber] += r.qty;
     }
 
-    // === SALIDA HUMANA ===
+    // ================================
+    // OUTPUT HUMANO
+    // ================================
     let result = "RESULTADO FINAL AGRUPADO:\n\n";
 
-    if (Object.keys(grouped).length === 0) {
+    if (!Object.keys(grouped).length) {
         result += "⚠️ No se encontraron datos con las reglas actuales.\n";
         return result;
     }
 
-    // === Formatear la salida ===
-    const decimals = rules.format?.decimals ?? 3;
-    const uomList = allowedUoms.length > 0 ? allowedUoms.join(", ") : "";
+    const decimals = ruleset.format?.decimals ?? 3;
+    const uomText = allowedUoms.join(", ");
 
     for (const part in grouped) {
-        result += `* ${part} → ${grouped[part].toFixed(decimals)} ${uomList}\n`;
+        result += `* ${part} → ${grouped[part].toFixed(decimals)} ${uomText}\n`;
     }
 
     return result;
