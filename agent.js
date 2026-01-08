@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 
 import sendWhatsApp from "./whatsapp.js";
 import analyzePdfWithRules from "./analyze-pdf.js";
-import { resolveRule, getAllRules } from "./rules-manager.js";
+import { getAllRules } from "./rules-manager.js";
 
 dotenv.config({ quiet: true });
 
@@ -16,7 +16,7 @@ dotenv.config({ quiet: true });
 // CONFIG
 // ================================
 const TARGET_FROM = "oberroa@tuuci.com";
-const LABEL_PROCESSED = "PROCESSED8";
+const LABEL_PROCESSED = "PROCESSED";
 const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || "./processed_pdfs";
 
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -61,18 +61,31 @@ async function getOrCreateLabel(labelName) {
 function extractPlainText(payload) {
     let bodyText = "";
 
-    if (payload.body?.data) {
-        bodyText += Buffer.from(payload.body.data, "base64").toString("utf8");
+    function decode(data) {
+        return Buffer.from(data, "base64").toString("utf8");
     }
 
-    if (payload.parts) {
-        for (const part of payload.parts) {
-            if (part.mimeType === "text/plain" && part.body?.data) {
-                bodyText += Buffer.from(part.body.data, "base64").toString("utf8");
-            }
+    function walk(part) {
+        if (part.mimeType === "text/plain" && part.body?.data) {
+            bodyText += "\n" + decode(part.body.data);
+        }
+
+        if (part.mimeType === "text/html" && part.body?.data) {
+            const html = decode(part.body.data);
+            const text = html
+                .replace(/<style[\s\S]*?<\/style>/gi, "")
+                .replace(/<script[\s\S]*?<\/script>/gi, "")
+                .replace(/<\/?[^>]+>/g, " ")
+                .replace(/\s+/g, " ");
+            bodyText += "\n" + text;
+        }
+
+        if (Array.isArray(part.parts)) {
+            part.parts.forEach(walk);
         }
     }
 
+    walk(payload);
     return bodyText.trim();
 }
 
@@ -82,7 +95,18 @@ function detectRuleFromBody(bodyText, ruleNames) {
     const body = bodyText.toLowerCase();
 
     for (const ruleName of ruleNames) {
-        if (body.includes(ruleName.toLowerCase())) {
+        const name = ruleName.toLowerCase();
+
+        const patterns = [
+            name,
+            `regla ${name}`,
+            `regla: ${name}`,
+            `usar ${name}`,
+            `use ${name}`,
+            `rule ${name}`
+        ];
+
+        if (patterns.some(p => body.includes(p))) {
             return ruleName;
         }
     }
@@ -114,6 +138,7 @@ async function processEmails() {
     const allRules = getAllRules();
     const ruleNames = Object.keys(allRules);
 
+
     for (const msg of messages) {
         console.log(`📨 Procesando mensaje ${msg.id}`);
 
@@ -125,10 +150,19 @@ async function processEmails() {
         const payload = msgData.data.payload;
         const bodyText = extractPlainText(payload);
 
-        const requestedRule = detectRuleFromBody(bodyText, ruleNames);
-        const { name: ruleUsed, ruleset } = resolveRule(requestedRule);
 
-        console.log(`⚙️ Usando regla: ${ruleUsed}`);
+        const requestedRule = detectRuleFromBody(bodyText, ruleNames);
+
+        const ruleObj =
+            (requestedRule && allRules[requestedRule]) ||
+            allRules.default;
+
+        if (!ruleObj || !ruleObj.ruleset) {
+            console.error("❌ No se pudo resolver una regla válida");
+            continue;
+        }
+
+        console.log(`⚙️ Usando regla: ${ruleObj.name}`);
 
         const parts = payload.parts || [];
 
@@ -152,19 +186,16 @@ async function processEmails() {
             fs.writeFileSync(filePath, buffer);
             console.log(`📎 PDF guardado: ${filePath}`);
 
-            console.log("🧠 Analizando PDF con reglas...");
-            const resultText = await analyzePdfWithRules(filePath, ruleset);
+            console.log("🧠 Analizando PDF...");
+            const resultText = await analyzePdfWithRules(
+                filePath,
+                ruleObj.ruleset
+            );
 
             console.log("📊 Resultado final:\n", resultText);
 
-            // ================================
-            // WHATSAPP
-            // ================================
             await sendWhatsApp(resultText);
 
-            // ================================
-            // EMAIL RESULT (TEXTO, NO JSON)
-            // ================================
             await gmail.users.messages.send({
                 userId: "me",
                 requestBody: {
@@ -178,9 +209,6 @@ async function processEmails() {
 
             console.log("📧 Resultado enviado por email");
 
-            // ================================
-            // MARK AS PROCESSED
-            // ================================
             await gmail.users.messages.modify({
                 userId: "me",
                 id: msg.id,

@@ -1,0 +1,19 @@
+{
+    "name": "Prueba",
+    "description": "Regla BDA WTK SAT 2 decimales",
+    "ruleset": {
+        "filters": {
+            "uom_include": [
+                "FT"
+            ],
+            "material_prefix": [
+                "BDA",
+                "WTK",
+                "SAT"
+            ]
+        },
+        "format": {
+            "decimals": 2
+        }
+    }
+}

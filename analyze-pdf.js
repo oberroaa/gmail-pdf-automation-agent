@@ -1,3 +1,6 @@
+// ================================
+// PDF ANALYZER WITH RULES
+// ================================
 import fs from "fs";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
@@ -14,7 +17,11 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const content = await page.getTextContent();
-        pdfText += content.items.map(i => i.str).join(" ") + "\n";
+
+        pdfText += content.items
+            .map(i => i.str)
+            .join(" ")
+            .replace(/\s+/g, " ") + "\n";
     }
 
     // ================================
@@ -23,8 +30,13 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
     const allowedUoms = ruleset.filters?.uom_include || [];
     const allowedPrefixes = ruleset.filters?.material_prefix || [];
 
-    // REGEX BASE (no la tocamos)
-    const regex = /\b([A-Z]{2,4}\d{5,})\b[\s\S]{0,80}?(\d+(?:\.\d+)?)\s*(FT|EA|MT)\b/g;
+    /**
+     * Regex más flexible:
+     * - materiales alfanuméricos largos (OMAS8X12RECT, BMFF8.5HEX, BDA80083)
+     * - cantidad decimal
+     * - UOM separada o pegada
+     */
+    const regex = /\b([A-Z0-9.\-]{5,})\b[\s\S]{0,100}?(\d+(?:\.\d+)?)\s*(FT|EA|MT)\b/gi;
 
     const rows = [];
     let match;
@@ -34,10 +46,10 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
         const qty = Number(match[2]);
         const uom = match[3];
 
-        // 🔹 FILTRO UOM
+        // 🔹 Filtro UOM
         if (allowedUoms.length && !allowedUoms.includes(uom)) continue;
 
-        // 🔹 FILTRO MATERIAL PREFIX (AQUÍ ESTABA EL FALLO)
+        // 🔹 Filtro prefijo material
         if (allowedPrefixes.length) {
             const ok = allowedPrefixes.some(prefix =>
                 partNumber.startsWith(prefix)
@@ -49,12 +61,20 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
     }
 
     // ================================
-    // AGRUPAR
+    // AGRUPAR POR MATERIAL + UOM
     // ================================
     const grouped = {};
+
     for (const r of rows) {
-        grouped[r.partNumber] ??= 0;
-        grouped[r.partNumber] += r.qty;
+        const key = `${r.partNumber}__${r.uom}`;
+
+        grouped[key] ??= {
+            partNumber: r.partNumber,
+            uom: r.uom,
+            total: 0
+        };
+
+        grouped[key].total += r.qty;
     }
 
     // ================================
@@ -68,10 +88,10 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
     }
 
     const decimals = ruleset.format?.decimals ?? 3;
-    const uomText = allowedUoms.join(", ");
 
-    for (const part in grouped) {
-        result += `* ${part} → ${grouped[part].toFixed(decimals)} ${uomText}\n`;
+    for (const key of Object.keys(grouped)) {
+        const r = grouped[key];
+        result += `* ${r.partNumber} → ${r.total.toFixed(decimals)} ${r.uom}\n`;
     }
 
     return result;

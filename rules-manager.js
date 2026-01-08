@@ -1,13 +1,24 @@
+// ================================
+// RULES MANAGER
+// ================================
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
-const RULES_DIR = "./rules";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 👉 carpeta /rules al mismo nivel que agent.js
+const RULES_DIR = path.join(__dirname, "rules");
 
 // ================================
 // CARGAR TODAS LAS REGLAS
 // ================================
 export function getAllRules() {
-    if (!fs.existsSync(RULES_DIR)) return {};
+    if (!fs.existsSync(RULES_DIR)) {
+        console.warn("⚠️ RULES_DIR no existe");
+        return {};
+    }
 
     const files = fs.readdirSync(RULES_DIR)
         .filter(f => f.endsWith(".json"));
@@ -18,10 +29,15 @@ export function getAllRules() {
         const fullPath = path.join(RULES_DIR, file);
         const content = JSON.parse(fs.readFileSync(fullPath, "utf8"));
 
-        if (!content.name || !content.ruleset) continue;
+        if (!content.name || !content.ruleset) {
+            console.warn(`⚠️ Regla inválida ignorada: ${file}`);
+            continue;
+        }
 
         rules[content.name] = content;
     }
+
+
 
     return rules;
 }
@@ -29,7 +45,7 @@ export function getAllRules() {
 // ================================
 // RESOLVER REGLA
 // ================================
-export function resolveRule(requestedRuleName) {
+export function resolveRule(requestedRuleName = null) {
     const rules = getAllRules();
 
     // 1️⃣ Regla solicitada
@@ -37,7 +53,7 @@ export function resolveRule(requestedRuleName) {
         return rules[requestedRuleName];
     }
 
-    // 2️⃣ Fallback a default
+    // 2️⃣ Default
     if (rules.default) {
         return rules.default;
     }
