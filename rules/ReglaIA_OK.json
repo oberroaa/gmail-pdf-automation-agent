@@ -1,0 +1,21 @@
+{
+  "name": "ReglaIA_OK",
+  "description": "Regla para materiales BDA, WTK y SAT, solo KG y LB con dos decimales.",
+  "ruleset": {
+    "filters": {
+      "uom_include": [
+        "KG",
+        "LB"
+      ],
+      "material_prefix": [
+        "BDA",
+        "WTK",
+        "SAT"
+      ]
+    },
+    "format": {
+      "decimals": 2
+    }
+  },
+  "isDefault": false
+}

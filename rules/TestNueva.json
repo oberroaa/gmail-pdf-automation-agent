@@ -1,0 +1,15 @@
+{
+  "name": "TestNueva",
+  "description": "Regla generada por IA",
+  "ruleset": {
+    "filters": {
+      "material_prefix": [
+        "BDA",
+        "WTK"
+      ]
+    },
+    "format": {
+      "decimals": 2
+    }
+  }
+}
