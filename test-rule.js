@@ -4,7 +4,8 @@ import analyzePdfWithRules from "./analyze-pdf.js";
 import { resolveRule } from "./rules-manager.js";
 
 // ================================
-// PARSE ARGS
+// PARSE ARGS 
+//node test - rule.js--rule nombreRegla--pdf ruta / al / pdf
 // ================================
 const args = process.argv.slice(2);
 
