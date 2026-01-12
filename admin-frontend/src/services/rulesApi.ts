@@ -23,3 +23,16 @@ export async function getRules(): Promise<Rule[]> {
     // 👇 EL BACKEND YA DEVUELVE UN ARRAY
     return data;
 }
+
+
+export async function deleteRule(name: string) {
+    const res = await fetch(`${API_URL}/rules/${name}`, {
+        method: "DELETE",
+    });
+
+    if (!res.ok) {
+        throw new Error("Error eliminando regla");
+    }
+
+    return res.json();
+}

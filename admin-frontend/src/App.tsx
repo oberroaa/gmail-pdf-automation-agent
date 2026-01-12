@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import { getRules, type Rule } from "./services/rulesApi";
+import { deleteRule } from "./services/rulesApi";
 
 export default function App() {
   const [rules, setRules] = useState<Rule[]>([]);
@@ -28,10 +29,18 @@ export default function App() {
     console.log("✏️ Editar:", rule);
   };
 
-  const handleDelete = (rule: Rule) => {
-    console.log("🗑️ Eliminar:", rule);
-  };
+  const handleDelete = async (rule: Rule) => {
+    const ok = confirm(`¿Eliminar la regla "${rule.name}"?`);
+    if (!ok) return;
 
+    try {
+      await deleteRule(rule.name);
+      setRules((prev) => prev.filter((r) => r.name !== rule.name));
+      console.log("🗑️ Regla eliminada:", rule.name);
+    } catch (err) {
+      alert("Error eliminando regla");
+    }
+  };
   const handleSetDefault = (rule: Rule) => {
     console.log("⭐ Set default:", rule);
   };

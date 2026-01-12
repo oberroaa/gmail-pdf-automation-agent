@@ -113,14 +113,19 @@ app.put("/rules/:name", async (req, res) => {
     }
 });
 
-app.delete("/rules/:name", async (req, res) => {
-    try {
-        await fs.unlink(path.join(rulesDir, `${req.params.name}.json`));
-        res.json({ message: "Rule deleted" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+app.delete("/rules/:name", (req, res) => {
+    const { name } = req.params;
+
+    const filePath = path.join(RULES_DIR, `${name}.json`);
+
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: "Regla no encontrada" });
     }
+
+    fs.unlinkSync(filePath);
+    res.json({ success: true });
 });
+
 
 app.post("/rules/:name/default", async (req, res) => {
     try {
