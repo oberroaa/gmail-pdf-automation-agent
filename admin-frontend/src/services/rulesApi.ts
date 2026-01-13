@@ -48,3 +48,19 @@ export async function setDefaultRule(name: string) {
 
     return res.json();
 }
+
+export async function updateRule(name: string, data: any) {
+    const res = await fetch(`${API_URL}/rules/${name}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+        throw new Error("Error actualizando regla");
+    }
+
+    return res.json();
+}
