@@ -36,3 +36,15 @@ export async function deleteRule(name: string) {
 
     return res.json();
 }
+
+export async function setDefaultRule(name: string) {
+    const res = await fetch(`${API_URL}/rules/${name}/default`, {
+        method: "POST",
+    });
+
+    if (!res.ok) {
+        throw new Error("Error estableciendo regla por defecto");
+    }
+
+    return res.json();
+}
