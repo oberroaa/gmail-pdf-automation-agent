@@ -64,3 +64,18 @@ export async function updateRule(name: string, data: any) {
 
     return res.json();
 }
+
+
+export async function createRule(name: string, prompt: string) {
+    const res = await fetch("http://localhost:3001/rules/new", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, prompt }),
+    });
+
+    if (!res.ok) {
+        throw new Error("Error creando regla");
+    }
+
+    return res.json();
+}

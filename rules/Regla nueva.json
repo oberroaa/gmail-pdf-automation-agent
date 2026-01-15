@@ -1,0 +1,21 @@
+{
+  "name": "Regla para materiales dec jav wtk y sat para ft",
+  "description": "Regla para aplicar formato específico a materiales dec, jav, wtk y sat cuando la unidad de medida es ft.",
+  "ruleset": {
+    "filters": {
+      "uom_include": [
+        "ft"
+      ],
+      "material_prefix": [
+        "dec",
+        "jav",
+        "wtk",
+        "sat"
+      ]
+    },
+    "format": {
+      "decimals": 2
+    }
+  },
+  "isDefault": false
+}

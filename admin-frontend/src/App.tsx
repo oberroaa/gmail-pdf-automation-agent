@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
+import EditRuleModal from "./components/EditRuleModal";
+import NewRuleModal from "./components/NewRuleModal";
+
 import {
   getRules,
   deleteRule,
   setDefaultRule,
   updateRule,
+  createRule,
   type Rule,
 } from "./services/rulesApi";
-import EditRuleModal from "./components/EditRuleModal";
 
 export default function App() {
   const [rules, setRules] = useState<Rule[]>([]);
@@ -16,6 +19,7 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
+  const [showNewRule, setShowNewRule] = useState(false);
 
   // =========================
   // FETCH
@@ -37,9 +41,6 @@ export default function App() {
     fetchRules();
   }, []);
 
-  // =========================
-  // TOAST
-  // =========================
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
@@ -48,19 +49,26 @@ export default function App() {
   // =========================
   // HANDLERS
   // =========================
+  const handleCreateRule = async (name: string, prompt: string) => {
+    try {
+      await createRule(name, prompt);
+      setShowNewRule(false);
+      await fetchRules();
+      showToast(`🤖 Regla "${name}" creada por IA`);
+    } catch {
+      showToast("❌ Error creando regla");
+    }
+  };
+
   const handleEdit = (rule: Rule) => {
     setEditingRule(rule);
   };
 
   const handleSaveRule = async (updatedRule: Rule) => {
-    try {
-      await updateRule(updatedRule.name, updatedRule);
-      setEditingRule(null);
-      await fetchRules();
-      showToast(`✏️ Regla "${updatedRule.name}" actualizada`);
-    } catch {
-      showToast("❌ Error guardando regla");
-    }
+    await updateRule(updatedRule.name, updatedRule);
+    setEditingRule(null);
+    await fetchRules();
+    showToast(`✏️ Regla "${updatedRule.name}" actualizada`);
   };
 
   const handleDelete = async (rule: Rule) => {
@@ -91,9 +99,19 @@ export default function App() {
   // =========================
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <h1 className="text-2xl font-bold text-white mb-6">
-        Reglas disponibles
-      </h1>
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">
+          Reglas disponibles
+        </h1>
+
+        <button
+          onClick={() => setShowNewRule(true)}
+          className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg shadow"
+        >
+          ➕ Nueva regla
+        </button>
+      </div>
 
       {loading && <p className="text-gray-300">Cargando…</p>}
       {error && <p className="text-red-400">{error}</p>}
@@ -111,7 +129,7 @@ export default function App() {
         />
       )}
 
-      {/* ===== MODAL EDITAR ===== */}
+      {/* MODALES */}
       {editingRule && (
         <EditRuleModal
           rule={editingRule}
@@ -120,7 +138,14 @@ export default function App() {
         />
       )}
 
-      {/* ===== TOAST ===== */}
+      {showNewRule && (
+        <NewRuleModal
+          onClose={() => setShowNewRule(false)}
+          onCreate={handleCreateRule}
+        />
+      )}
+
+      {/* TOAST */}
       {toast && (
         <div className="fixed bottom-6 right-6 bg-black/80 text-white px-4 py-2 rounded shadow-lg animate-fade-in">
           {toast}
