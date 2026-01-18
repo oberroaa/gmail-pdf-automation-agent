@@ -25,17 +25,17 @@ export async function getRules(): Promise<Rule[]> {
 }
 
 
-export async function deleteRule(name: string) {
-    const res = await fetch(`${API_URL}/rules/${name}`, {
-        method: "DELETE",
-    });
+export async function deleteRule(file: string) {
+    const res = await fetch(
+        `http://localhost:3001/rules/${encodeURIComponent(file)}`,
+        { method: "DELETE" }
+    );
 
     if (!res.ok) {
         throw new Error("Error eliminando regla");
     }
-
-    return res.json();
 }
+
 
 export async function setDefaultRule(name: string) {
     const res = await fetch(`${API_URL}/rules/${name}/default`, {

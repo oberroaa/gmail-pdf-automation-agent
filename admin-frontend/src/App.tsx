@@ -8,7 +8,6 @@ import {
   deleteRule,
   setDefaultRule,
   updateRule,
-  createRule,
   type Rule,
 } from "./services/rulesApi";
 
@@ -49,16 +48,7 @@ export default function App() {
   // =========================
   // HANDLERS
   // =========================
-  const handleCreateRule = async (name: string, prompt: string) => {
-    try {
-      await createRule(name, prompt);
-      setShowNewRule(false);
-      await fetchRules();
-      showToast(`🤖 Regla "${name}" creada por IA`);
-    } catch {
-      showToast("❌ Error creando regla");
-    }
-  };
+
 
   const handleEdit = (rule: Rule) => {
     setEditingRule(rule);
@@ -75,14 +65,25 @@ export default function App() {
     const ok = confirm(`¿Eliminar la regla "${rule.name}"?`);
     if (!ok) return;
 
+    // 🔥 Optimistic UI
+    setRules(prev => prev.filter(r => r.file !== rule.file));
+
     try {
-      await deleteRule(rule.name);
-      await fetchRules();
+      await deleteRule(rule.file);
       showToast(`🗑️ Regla "${rule.name}" eliminada`);
     } catch {
       showToast("❌ Error eliminando regla");
+      await fetchRules(); // rollback
     }
   };
+
+  const handleCreateRule = (rule: Rule) => {
+    setRules(prev => [...prev, rule]);
+    setShowNewRule(false);
+    showToast(`✅ Regla "${rule.name}" creada`);
+  };
+
+
 
   const handleSetDefault = async (rule: Rule) => {
     try {
@@ -140,10 +141,14 @@ export default function App() {
 
       {showNewRule && (
         <NewRuleModal
-          onClose={() => setShowNewRule(false)}
+          onClose={() => {
+            setShowNewRule(false);
+            fetchRules(); // 👈 ESTO ES LO QUE FALTABA
+          }}
           onCreate={handleCreateRule}
         />
       )}
+
 
       {/* TOAST */}
       {toast && (

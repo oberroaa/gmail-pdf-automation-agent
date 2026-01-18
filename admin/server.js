@@ -86,34 +86,7 @@ app.get("/rules", async (req, res) => {
     }
 });
 
-// ================================
-// CREAR REGLA (IA)
-// ================================
-app.post("/rules/new", async (req, res) => {
-    try {
-        const { name, prompt } = req.body;
 
-        if (!name || !prompt) {
-            return res.status(400).json({
-                error: "name y prompt son requeridos",
-            });
-        }
-
-        const ruleJSON = await generateRuleJSON(name, prompt);
-        const filePath = path.join(RULES_DIR, `${name}.json`);
-
-        await fs.writeFile(filePath, JSON.stringify(ruleJSON, null, 2), "utf-8");
-
-        res.json({
-            success: true,
-            file: `${name}.json`,
-            rule: ruleJSON,
-        });
-    } catch (err) {
-        console.error("[ADMIN][NEW RULE]", err);
-        res.status(500).json({ error: err.message });
-    }
-});
 
 // ================================
 // EDITAR REGLA
@@ -130,18 +103,33 @@ app.put("/rules/:name", async (req, res) => {
 });
 
 // ================================
-// ELIMINAR REGLA
+// ELIMINAR REGLA (IDEMPOTENTE + POR FILE ✅)
 // ================================
-app.delete("/rules/:name", async (req, res) => {
+app.delete("/rules/:file", async (req, res) => {
+    const fileName = decodeURIComponent(req.params.file);
+    const filePath = path.join(RULES_DIR, fileName);
+
     try {
-        const filePath = path.join(RULES_DIR, `${req.params.name}.json`);
         await fs.unlink(filePath);
-        res.json({ success: true });
+        console.log("🗑️ Regla eliminada:", fileName);
     } catch (err) {
-        console.error("[ADMIN][DELETE RULE]", err);
-        res.status(500).json({ error: "Regla no encontrada" });
+        // 🔥 Si no existe → NO ERROR
+        if (err.code !== "ENOENT") {
+            console.error("[ADMIN][DELETE RULE]", err);
+            return res.status(500).json({
+                error: "Error eliminando la regla"
+            });
+        }
+
+        console.log("ℹ️ Regla no existía, se considera eliminada:", fileName);
     }
+
+    res.json({
+        success: true
+    });
 });
+
+
 
 // ================================
 // MARCAR DEFAULT (🔥 YA CORREGIDO)
@@ -180,6 +168,126 @@ app.post("/rules/:name/default", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+app.post("/rules/save", async (req, res) => {
+    try {
+        const { name, prompt } = req.body;
+
+        if (!name || !prompt) {
+            return res.status(400).json({
+                error: "name y prompt son obligatorios"
+            });
+        }
+
+        const filePath = path.join(RULES_DIR, `${name}.json`);
+
+        if (await fs.stat(filePath).catch(() => false)) {
+            return res.status(409).json({
+                error: "Ya existe una regla con ese nombre"
+            });
+        }
+
+        const ruleJSON = await generateRuleJSON(name, prompt);
+
+        await fs.writeFile(
+            filePath,
+            JSON.stringify(ruleJSON, null, 2),
+            "utf-8"
+        );
+
+        console.log("✅ Regla guardada:", name);
+
+        res.json({
+            success: true,
+            rule: ruleJSON
+        });
+
+    } catch (err) {
+        console.error("[ADMIN][SAVE RULE]", err);
+        res.status(500).json({
+            error: "Error guardando la regla"
+        });
+    }
+});
+
+
+
+// ================================
+// PREVIEW DE REGLA (NO GUARDA)
+// ================================
+app.post('/rules/preview', async (req, res) => {
+    try {
+        const { prompt } = req.body;
+
+        if (!prompt || prompt.trim() === '') {
+            return res.status(400).json({
+                error: 'Prompt requerido'
+            });
+        }
+
+        // 🔹 USAR LA MISMA IA QUE YA USAS EN POST /rules
+        const generatedRule = await generateRuleJSON(
+            "PREVIEW_RULE",
+            prompt
+        );
+
+
+        // 🔹 Validación mínima
+        const validation = validateRuleStructure(generatedRule);
+
+        res.json({
+            generatedRule,
+            valid: validation.valid,
+            warnings: validation.warnings
+        });
+
+    } catch (err) {
+        console.error('Error en preview:', err);
+        res.status(500).json({ error: 'Error generando preview' });
+    }
+});
+
+
+function validateRuleStructure(rule) {
+    const warnings = [];
+
+    if (!rule || typeof rule !== 'object') {
+        return { valid: false, warnings: ['La regla no es un objeto válido'] };
+    }
+
+    if (!rule.name || typeof rule.name !== 'string') {
+        warnings.push('Falta o es inválido el campo "name"');
+    }
+
+    if (!rule.description || typeof rule.description !== 'string') {
+        warnings.push('Falta o es inválido el campo "description"');
+    }
+
+    if (!rule.ruleset || typeof rule.ruleset !== 'object') {
+        warnings.push('Falta el objeto "ruleset"');
+        return { valid: false, warnings };
+    }
+
+    if (!rule.ruleset.filters || typeof rule.ruleset.filters !== 'object') {
+        warnings.push('Falta "ruleset.filters"');
+    }
+
+    if (!rule.ruleset.format || typeof rule.ruleset.format !== 'object') {
+        warnings.push('Falta "ruleset.format"');
+    }
+
+    if (typeof rule.isDefault !== 'boolean') {
+        warnings.push('Falta o es inválido el campo "isDefault"');
+    }
+
+    return {
+        valid: warnings.length === 0,
+        warnings
+    };
+}
+
+
+
 
 // ================================
 // BOOT

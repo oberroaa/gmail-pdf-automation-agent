@@ -1,0 +1,20 @@
+{
+  "name": "Regla para materiales DEC, JAV, WTK en FT",
+  "description": "Configuración específica para los materiales DEC, JAV y WTK cuando la unidad de medida es FT. Aplica 2 decimales para el formato.",
+  "ruleset": {
+    "filters": {
+      "uom_include": [
+        "FT"
+      ],
+      "material_prefix": [
+        "DEC",
+        "JAV",
+        "WTK"
+      ]
+    },
+    "format": {
+      "decimals": 2
+    }
+  },
+  "isDefault": false
+}
