@@ -9,6 +9,17 @@ import fs from "fs/promises";
 import cors from "cors";
 import { generateRuleJSON } from "./ai/gemini.js";
 
+function normalizeFileName(name) {
+    return name
+        .toLowerCase()
+        .normalize("NFD")                 // quita acentos
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")      // todo lo raro → -
+        .replace(/^-+|-+$/g, "")          // bordes
+        .trim();
+}
+
+
 // ================================
 // PATHS & ENV
 // ================================
@@ -169,25 +180,32 @@ app.post("/rules/:name/default", async (req, res) => {
     }
 });
 
+// ================================
+// GUARDAR REGLA (CREATE)
+// ================================
 app.post("/rules/save", async (req, res) => {
     try {
-        const { name, prompt } = req.body;
+        const ruleJSON = req.body;
+        const name = ruleJSON.name;
 
-        if (!name || !prompt) {
+        if (!name || typeof name !== "string") {
             return res.status(400).json({
-                error: "name y prompt son obligatorios"
+                error: "Nombre de regla inválido"
             });
         }
 
-        const filePath = path.join(RULES_DIR, `${name}.json`);
+        const safeName = normalizeFileName(name);
+        const filePath = path.join(RULES_DIR, `${safeName}.json`);
 
-        if (await fs.stat(filePath).catch(() => false)) {
+        // 🔥 BLOQUEO TOTAL DE DUPLICADOS
+        try {
+            await fs.access(filePath);
             return res.status(409).json({
-                error: "Ya existe una regla con ese nombre"
+                error: `Ya existe una regla con el nombre "${name}"`
             });
+        } catch {
+            // OK: no existe
         }
-
-        const ruleJSON = await generateRuleJSON(name, prompt);
 
         await fs.writeFile(
             filePath,
@@ -195,21 +213,21 @@ app.post("/rules/save", async (req, res) => {
             "utf-8"
         );
 
-        console.log("✅ Regla guardada:", name);
-
-        res.json({
+        return res.status(201).json({
             success: true,
-            rule: ruleJSON
+            rule: {
+                ...ruleJSON,
+                file: `${safeName}.json`
+            }
         });
 
     } catch (err) {
         console.error("[ADMIN][SAVE RULE]", err);
-        res.status(500).json({
-            error: "Error guardando la regla"
+        return res.status(500).json({
+            error: "Error guardando regla"
         });
     }
 });
-
 
 
 // ================================

@@ -53,10 +53,16 @@ export default function RulesList({
 
                             <button
                                 onClick={() => onDelete?.(rule)}
-                                className="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
+                                disabled={rule.isDefault}
+                                className={`px-3 py-1 rounded 
+    ${rule.isDefault
+                                        ? "bg-gray-600 cursor-not-allowed opacity-50"
+                                        : "bg-red-600 hover:bg-red-500"
+                                    }`}
                             >
-                                Eliminar
+                                🗑️ Eliminar
                             </button>
+
 
                             <button
                                 disabled={isDefault}

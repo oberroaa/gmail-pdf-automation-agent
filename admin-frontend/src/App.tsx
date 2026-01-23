@@ -62,26 +62,23 @@ export default function App() {
   };
 
   const handleDelete = async (rule: Rule) => {
-    const ok = confirm(`¿Eliminar la regla "${rule.name}"?`);
-    if (!ok) return;
-
-    // 🔥 Optimistic UI
     setRules(prev => prev.filter(r => r.file !== rule.file));
 
     try {
       await deleteRule(rule.file);
-      showToast(`🗑️ Regla "${rule.name}" eliminada`);
+      showToast(`🗑️ Regla "${rule.name}" eliminada correctamente`);
     } catch {
-      showToast("❌ Error eliminando regla");
-      await fetchRules(); // rollback
+      showToast("❌ Error eliminando la regla");
+      await fetchRules();
     }
   };
 
+
   const handleCreateRule = (rule: Rule) => {
     setRules(prev => [...prev, rule]);
-    setShowNewRule(false);
-    showToast(`✅ Regla "${rule.name}" creada`);
+    showToast(`✅ Regla "${rule.name}" creada correctamente`);
   };
+
 
 
 
@@ -141,13 +138,12 @@ export default function App() {
 
       {showNewRule && (
         <NewRuleModal
-          onClose={() => {
-            setShowNewRule(false);
-            fetchRules(); // 👈 ESTO ES LO QUE FALTABA
-          }}
+          onClose={() => setShowNewRule(false)}
           onCreate={handleCreateRule}
+          onError={(msg) => showToast(`❌ ${msg}`)}
         />
       )}
+
 
 
       {/* TOAST */}
