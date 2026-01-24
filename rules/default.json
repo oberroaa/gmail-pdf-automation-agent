@@ -1,4 +1,5 @@
 {
+  "file": "defaults.json",
   "name": "default",
   "description": "Regla por defecto FT",
   "ruleset": {
@@ -8,6 +9,8 @@
       ],
       "material_prefix": [
         "BDA",
+        "JAV",
+        "DEC",
         "WTK",
         "SAT",
         "FBR",

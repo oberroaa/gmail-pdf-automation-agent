@@ -104,8 +104,26 @@ app.get("/rules", async (req, res) => {
 // ================================
 app.put("/rules/:name", async (req, res) => {
     try {
-        const filePath = path.join(RULES_DIR, `${req.params.name}.json`);
-        await fs.writeFile(filePath, JSON.stringify(req.body, null, 2), "utf-8");
+        const originalName = req.params.name;
+        const incoming = req.body;
+
+        // ⛔ NO cambiar nombre
+        if (incoming.name !== originalName) {
+            return res.status(400).json({
+                error: "No se permite cambiar el nombre de la regla"
+            });
+        }
+
+        // ⛔ default siempre debe seguir siendo default
+        if (originalName === "default" && incoming.isDefault !== true) {
+            return res.status(400).json({
+                error: "La regla default no puede dejar de ser default"
+            });
+        }
+
+        const filePath = path.join(RULES_DIR, `${originalName}.json`);
+        await fs.writeFile(filePath, JSON.stringify(incoming, null, 2), "utf-8");
+
         res.json({ success: true });
     } catch (err) {
         console.error("[ADMIN][EDIT RULE]", err);
@@ -118,26 +136,29 @@ app.put("/rules/:name", async (req, res) => {
 // ================================
 app.delete("/rules/:file", async (req, res) => {
     const fileName = decodeURIComponent(req.params.file);
+
+    // ⛔ PROTEGER DEFAULT
+    if (fileName === "default.json") {
+        return res.status(400).json({
+            error: "La regla default no puede eliminarse"
+        });
+    }
+
     const filePath = path.join(RULES_DIR, fileName);
 
     try {
         await fs.unlink(filePath);
         console.log("🗑️ Regla eliminada:", fileName);
     } catch (err) {
-        // 🔥 Si no existe → NO ERROR
         if (err.code !== "ENOENT") {
             console.error("[ADMIN][DELETE RULE]", err);
             return res.status(500).json({
                 error: "Error eliminando la regla"
             });
         }
-
-        console.log("ℹ️ Regla no existía, se considera eliminada:", fileName);
     }
 
-    res.json({
-        success: true
-    });
+    res.json({ success: true });
 });
 
 

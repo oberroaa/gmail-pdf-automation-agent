@@ -19,13 +19,13 @@ export default function EditRuleModal({ rule, onClose, onSave }: Props) {
             const parsedRuleset = JSON.parse(rulesetText);
 
             await onSave({
-                ...rule,
+                ...rule,              // 🔥 name e isDefault NO cambian
                 description,
                 ruleset: parsedRuleset,
             });
 
             onClose();
-        } catch (err) {
+        } catch {
             setError("❌ JSON inválido en ruleset");
         }
     };
@@ -34,13 +34,27 @@ export default function EditRuleModal({ rule, onClose, onSave }: Props) {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
             <div className="bg-slate-900 rounded-lg p-6 w-full max-w-3xl shadow-xl">
                 <h2 className="text-xl font-bold text-white mb-4">
-                    Editar regla: {rule.name}
+                    Editar regla
                 </h2>
 
                 {error && <p className="text-red-400 mb-3">{error}</p>}
 
+                {/* 🔒 NOMBRE BLOQUEADO */}
                 <div className="mb-4">
-                    <label className="block text-gray-300 mb-1">Descripción</label>
+                    <label className="block text-gray-300 mb-1">
+                        Nombre (no editable)
+                    </label>
+                    <input
+                        value={rule.name}
+                        disabled
+                        className="w-full p-2 rounded bg-slate-800 text-gray-400 border border-slate-700 cursor-not-allowed"
+                    />
+                </div>
+
+                <div className="mb-4">
+                    <label className="block text-gray-300 mb-1">
+                        Descripción
+                    </label>
                     <input
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
