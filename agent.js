@@ -235,25 +235,11 @@ function isWorkingHours() {
 // START
 // ================================
 console.log("🤖 TUUCI AGENT INICIADO");
-
-async function start() {
-    while (true) {
-        try {
-            if (isWorkingHours()) {
-                console.log("🟢 Dentro del horario laboral");
-                await processEmails();
-            } else {
-                console.log("🕒 Fuera de horario laboral, en espera...");
-            }
-        } catch (err) {
-            console.error("❌ Error en ciclo:", err);
-        }
-
-        // espera 10 minutos
-        await new Promise(res => setTimeout(res, 10 * 60 * 1000));
-    }
+if (isWorkingHours()) {
+    await processEmails();
+} else {
+    console.log("🕒 Fuera de horario laboral, no se procesa");
 }
 
-start();
 
 
