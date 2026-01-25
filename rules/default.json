@@ -1,5 +1,5 @@
 {
-  "file": "defaults.json",
+  "file": "default.json",
   "name": "default",
   "description": "Regla por defecto FT",
   "ruleset": {
@@ -16,7 +16,8 @@
         "FBR",
         "MIL",
         "SSP",
-        "FBW"
+        "FBW",
+        "40277"
       ]
     },
     "format": {

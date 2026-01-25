@@ -165,10 +165,11 @@ async function processEmails() {
         console.log(`⚙️ Usando regla: ${ruleObj.name}`);
 
         const parts = payload.parts || [];
-
+        let processed = false;
         for (const part of parts) {
+            if (processed) break;
             if (!part.filename?.endsWith(".pdf")) continue;
-
+            processed = true;
             const attachment = await gmail.users.messages.attachments.get({
                 userId: "me",
                 messageId: msg.id,
