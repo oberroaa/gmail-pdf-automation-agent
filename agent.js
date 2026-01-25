@@ -223,8 +223,37 @@ async function processEmails() {
     console.log("✅ Ciclo terminado\n");
 }
 
+function isWorkingHours() {
+    const now = new Date();
+    const hour = now.getHours(); // 0–23
+
+    return hour >= 7 && hour < 15;
+}
+
+
 // ================================
 // START
 // ================================
 console.log("🤖 TUUCI AGENT INICIADO");
-await processEmails();
+
+async function start() {
+    while (true) {
+        try {
+            if (isWorkingHours()) {
+                console.log("🟢 Dentro del horario laboral");
+                await processEmails();
+            } else {
+                console.log("🕒 Fuera de horario laboral, en espera...");
+            }
+        } catch (err) {
+            console.error("❌ Error en ciclo:", err);
+        }
+
+        // espera 10 minutos
+        await new Promise(res => setTimeout(res, 10 * 60 * 1000));
+    }
+}
+
+start();
+
+
