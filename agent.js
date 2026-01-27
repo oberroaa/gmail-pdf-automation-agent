@@ -15,9 +15,10 @@ dotenv.config({ quiet: true });
 // ================================
 // CONFIG
 // ================================
-const TARGET_FROM = "oberroa@tuuci.com";
+const TARGET_FROM = "omendoza@tuuci.com";
 const LABEL_PROCESSED = "PROCESSED";
 const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || "./processed_pdfs";
+const TEST_MODE = process.env.TEST_MODE === "true";
 
 if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -138,7 +139,6 @@ async function processEmails() {
     const allRules = getAllRules();
     const ruleNames = Object.keys(allRules);
 
-
     for (const msg of messages) {
         console.log(`📨 Procesando mensaje ${msg.id}`);
 
@@ -149,7 +149,6 @@ async function processEmails() {
 
         const payload = msgData.data.payload;
         const bodyText = extractPlainText(payload);
-
 
         const requestedRule = detectRuleFromBody(bodyText, ruleNames);
 
@@ -195,51 +194,54 @@ async function processEmails() {
 
             console.log("📊 Resultado final:\n", resultText);
 
-            await sendWhatsApp(resultText);
+            if (!TEST_MODE) {
+                await sendWhatsApp(resultText);
 
-            await gmail.users.messages.send({
-                userId: "me",
-                requestBody: {
-                    raw: Buffer.from(
-                        `To: ${TARGET_FROM}\r\n` +
-                        `Subject: Resultado análisis PDF\r\n\r\n` +
-                        resultText
-                    ).toString("base64")
-                }
-            });
+                await gmail.users.messages.send({
+                    userId: "me",
+                    requestBody: {
+                        raw: Buffer.from(
+                            `To: ${TARGET_FROM}\r\n` +
+                            `Subject: Resultado análisis PDF\r\n\r\n` +
+                            resultText
+                        ).toString("base64")
+                    }
+                });
 
-            console.log("📧 Resultado enviado por email");
+                await gmail.users.messages.modify({
+                    userId: "me",
+                    id: msg.id,
+                    requestBody: { addLabelIds: [labelId] }
+                });
 
-            await gmail.users.messages.modify({
-                userId: "me",
-                id: msg.id,
-                requestBody: { addLabelIds: [labelId] }
-            });
-
-            console.log("🏷️ Correo marcado como PROCESSED");
+                console.log("📧 Resultado enviado y correo marcado como PROCESSED");
+            } else {
+                console.log("🧪 TEST_MODE activo: resultados mostrados solo en consola, no se envía nada");
+            }
         }
     }
 
     console.log("✅ Ciclo terminado\n");
 }
 
+// ================================
+// WORK HOURS CHECK
+// ================================
 function isWorkingHours() {
+    return true; // temporal para prueba
+
     const now = new Date();
     const hour = now.getHours(); // 0–23
-
     return hour >= 7 && hour < 15;
 }
-
 
 // ================================
 // START
 // ================================
 console.log("🤖 TUUCI AGENT INICIADO");
+
 if (isWorkingHours()) {
     await processEmails();
 } else {
     console.log("🕒 Fuera de horario laboral, no se procesa");
 }
-
-
-
