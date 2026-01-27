@@ -2,7 +2,7 @@ name: Run Gmail PDF Agent
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -31,6 +31,7 @@ jobs:
       - name: Run Agent
         run: npm start
         env:
+          TZ: America/New_York
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           REDIRECT_URI: ${{ secrets.REDIRECT_URI }}
