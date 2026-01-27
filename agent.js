@@ -16,7 +16,7 @@ dotenv.config({ quiet: true });
 // CONFIG
 // ================================
 const TARGET_FROM = "omendoza@tuuci.com";
-const LABEL_PROCESSED = "PROCESSED";
+const LABEL_PROCESSED = "PROCESSEDX";
 const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || "./processed_pdfs";
 const TEST_MODE = process.env.TEST_MODE === "true";
 
