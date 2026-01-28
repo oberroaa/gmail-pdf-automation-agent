@@ -1,102 +1,236 @@
-📄 Gmail PDF Automation Agent
+📧 Gmail PDF Automation Agent
 
-Automatización que lee correos de Gmail, extrae información estructurada desde PDFs y envía resultados automáticamente por WhatsApp y Email.
+Automatización profesional para procesar correos con PDFs, extraer información estructurada mediante reglas y distribuir resultados automáticamente por WhatsApp y Email.
 
-Diseñado para procesos empresariales donde los datos llegan en documentos PDF y deben procesarse sin intervención humana.
+Diseñado para empresas que reciben documentos PDF por correo y necesitan procesarlos de forma confiable, repetible y sin intervención humana.
 
-🚀 ¿Qué hace este agente?
+🚀 Qué problema resuelve
 
-✔️ Monitorea Gmail automáticamente (cada hora)
-✔️ Detecta correos con PDFs de un remitente específico
-✔️ Extrae datos clave desde el PDF (Part Number, Qty, UOM = FT)
-✔️ Agrupa y calcula totales de forma determinista
-✔️ Envía el resultado:
+Muchas empresas reciben diariamente PDFs con información crítica:
 
-📧 por Email
+Releases
 
-📱 por WhatsApp
-✔️ Marca el correo como PROCESSED para evitar reprocesos
+Órdenes
 
-Todo el flujo es 100% automático.
+Listas de materiales
 
-🧠 ¿Por qué este enfoque es potente?
+Reportes técnicos
 
-❌ Sin IA “inestable”
+Este sistema elimina:
 
-❌ Sin costos por tokens
+Procesamiento manual
 
-❌ Sin resultados variables
+Errores humanos
 
-✅ Parsing determinista
-✅ Resultados reproducibles
-✅ Ideal para producción
-✅ Escalable a miles de documentos
+Retrasos operativos
 
-Este sistema es perfecto para:
+Y lo reemplaza por:
 
-Manufactura
+Automatización
 
-Logística
+Reglas claras
 
-Compras
+Resultados inmediatos
 
-Inventarios
+🧠 Qué hace el sistema
 
-Finanzas
+Lee correos entrantes desde Gmail
 
-Operaciones
+Detecta PDFs adjuntos
 
-🛠️ Tecnologías usadas
+Analiza el contenido según reglas configurables
 
-Node.js
+Genera un resumen estructurado
 
-Gmail API (OAuth2)
+Envía el resultado automáticamente por:
 
-pdfjs-dist
+📱 WhatsApp
 
-Twilio WhatsApp API
+📧 Email
 
-GitHub Actions (cloud gratis)
+Marca el correo como procesado para evitar duplicados
 
-Regex-based data extraction
+🧱 Arquitectura general
 
-📦 Flujo del sistema
+El sistema está dividido en dos procesos independientes que comparten una sola fuente de verdad:
 
-Llega un correo con PDF
+/rules   ← Reglas JSON (fuente única de verdad)
 
-El agente lo detecta
+🔁 Flujo completo (Diagrama visual)
+┌──────────────┐
+│   Gmail      │
+│  (PDF Email) │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────────────┐
+│  Automation Agent    │
+│  (Node.js)           │
+│                      │
+│ • Lee correos        │
+│ • Detecta PDFs       │
+│ • Extrae texto       │
+│ • Detecta regla      │
+│ • Aplica reglas JSON │
+└──────┬───────────────┘
+       │
+       ▼
+┌──────────────────────┐
+│  PDF Analysis Engine │
+│  (Rule-based)        │
+└──────┬───────────────┘
+       │
+       ▼
+┌────────────────────────────┐
+│ Resultado estructurado     │
+│ (texto / resumen)          │
+└──────┬───────────┬─────────┘
+       │           │
+       ▼           ▼
+┌────────────┐   ┌────────────┐
+│ WhatsApp   │   │ Email      │
+│ (Twilio)   │   │ (Gmail)    │
+└────────────┘   └────────────┘
+       │
+       ▼
+┌──────────────────────┐
+│ Correo marcado       │
+│ como PROCESSED       │
+└──────────────────────┘
 
-Descarga el PDF
+📂 Reglas (/rules)
 
-Extrae datos relevantes
+Archivos JSON versionables
 
-Agrupa y calcula totales
+Una regla = una forma de interpretar un PDF
 
-Envía el resultado
+default.json:
 
-Marca el correo como procesado
+Siempre existe
+
+Nunca se elimina
+
+Se usa cuando el correo no especifica regla
+
+📌 El correo puede indicar qué regla usar:
+
+usar regla bda
+
+🔒 Separación de responsabilidades
+Agent (Producción)
+
+Lee correos
+
+Aplica reglas
+
+Envía resultados
+
+🚫 No:
+
+Modifica reglas
+
+Usa IA
+
+Cambia configuraciones
+
+Admin (Backoffice – local)
+
+CRUD de reglas
+
+Preview de resultados
+
+Definir regla default
+
+Validaciones y protección
+
+👉 El Admin no corre en producción, solo lo usa el operador.
+
+⏰ Horario de operación
+
+El agent solo procesa correos en horario laboral:
+
+🕖 7:00 AM
+
+🕒 3:00 PM
+(hora local del servidor)
+
+Fuera de ese horario:
+
+No se envían mensajes
+
+No se procesan correos
+
+🧪 Test Mode
+
+Soporta modo de pruebas mediante .env:
+
+TEST_MODE=true
+
+
+Cuando está activo:
+
+✔️ Analiza PDFs
+
+✔️ Muestra resultados en consola
+
+❌ No envía WhatsApp
+
+❌ No envía Email
+
+❌ No marca correos
+
+Ideal para pruebas y validaciones sin impacto real.
+
+☁️ Ejecución en producción
+
+Corre en GitHub Actions
+
+Sin servidores pagos
+
+Ejecución programada o manual
+
+Alta disponibilidad
+
+📱 WhatsApp
+
+Integración con WhatsApp API (Twilio):
+
+Sandbox para pruebas
+
+Número oficial recomendado para producción
+
+Envío automático de resultados
 
 🔐 Seguridad
 
-Secrets gestionados con GitHub Secrets
+OAuth2 con refresh token
 
-No se suben credenciales al repositorio
+Variables sensibles por .env / GitHub Secrets
 
-OAuth seguro con Google
+Acceso mínimo necesario
 
-📈 Casos de uso reales
+Reglas versionadas y protegidas
 
-Procesar órdenes de compra
+🎯 Casos de uso ideales
 
-Extraer materiales y cantidades
+Automatización de documentos PDF
 
-Automatizar reportes
+Operaciones repetitivas por correo
 
-Reducir trabajo manual
+Empresas con alto volumen de PDFs
 
-Eliminar errores humanos
+Equipos que necesitan resultados inmediatos
 
-👨‍💻 Autor
+Integración sin cambiar procesos existentes
 
-Otoniel Berroa
-Automatización · Backend · Integraciones · Procesos empresariales
+🧠 Filosofía del sistema
+
+Simple antes que complejo
+
+Reglas como contrato de negocio
+
+Producción estable
+
+Administración controlada
+
+Cambios pequeños y trazables
