@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import { google } from "googleapis";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
 
 import sendWhatsApp from "./whatsapp.js";
 import analyzePdfWithRules from "./analyze-pdf.js";
@@ -13,11 +14,17 @@ import { getAllRules } from "./rules-manager.js";
 dotenv.config({ quiet: true });
 
 // ================================
+// PATHS
+// ================================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ================================
 // CONFIG
 // ================================
 const TARGET_FROM = "oberroa@tuuci.com";
 const LABEL_PROCESSED = "PROCESSEDX";
-const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || "./processed_pdfs";
+const OUTPUT_DIR = process.env.PDF_OUTPUT_DIR || path.join(__dirname, "processed_pdfs");
 const TEST_MODE = process.env.TEST_MODE === "true";
 
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -133,11 +140,13 @@ async function processEmails() {
 
     if (!messages.length) {
         console.log("📭 No hay correos nuevos para procesar");
-        return;
+        return { processed: 0 };
     }
 
     const allRules = getAllRules();
     const ruleNames = Object.keys(allRules);
+
+    let processedCount = 0;
 
     for (const msg of messages) {
         console.log(`📨 Procesando mensaje ${msg.id}`);
@@ -164,11 +173,10 @@ async function processEmails() {
         console.log(`⚙️ Usando regla: ${ruleObj.name}`);
 
         const parts = payload.parts || [];
-        let processed = false;
+
         for (const part of parts) {
-            if (processed) break;
             if (!part.filename?.endsWith(".pdf")) continue;
-            processed = true;
+
             const attachment = await gmail.users.messages.attachments.get({
                 userId: "me",
                 messageId: msg.id,
@@ -215,33 +223,34 @@ async function processEmails() {
                 });
 
                 console.log("📧 Resultado enviado y correo marcado como PROCESSED");
-            } else {
-                console.log("🧪 TEST_MODE activo: resultados mostrados solo en consola, no se envía nada");
             }
+
+            processedCount++;
+            break;
         }
     }
 
     console.log("✅ Ciclo terminado\n");
+    return { processed: processedCount };
 }
 
 // ================================
 // WORK HOURS CHECK
 // ================================
 function isWorkingHours() {
-    return true; // temporal para prueba
-
-    const now = new Date();
-    const hour = now.getHours(); // 0–23
-    return hour >= 7 && hour < 15;
+    return true; // puedes reactivar lógica real luego
 }
 
 // ================================
-// START
+// EXPORTABLE RUNNER
 // ================================
-console.log("🤖 TUUCI AGENT INICIADO");
+export async function runAgent() {
+    console.log("🤖 TUUCI AGENT INICIADO (manual trigger)");
 
-if (isWorkingHours()) {
-    await processEmails();
-} else {
-    console.log("🕒 Fuera de horario laboral, no se procesa");
+    if (isWorkingHours()) {
+        return await processEmails();
+    } else {
+        console.log("🕒 Fuera de horario laboral");
+        return { processed: 0 };
+    }
 }

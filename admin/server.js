@@ -8,6 +8,7 @@ import express from "express";
 import fs from "fs/promises";
 import cors from "cors";
 import { generateRuleJSON } from "./ai/gemini.js";
+import { runAgent } from "../agent.js";
 
 function normalizeFileName(name) {
     return name
@@ -325,6 +326,36 @@ function validateRuleStructure(rule) {
     };
 }
 
+// ================================
+// RUN AGENT MANUAL TRIGGER
+// ================================
+app.post("/run-agent", async (req, res) => {
+    try {
+        const apiKey = req.headers["x-api-key"];
+
+        if (!apiKey || apiKey !== process.env.ADMIN_API_KEY) {
+            return res.status(401).json({
+                error: "Unauthorized"
+            });
+        }
+
+        console.log("🚀 Manual agent trigger recibido");
+
+        const result = await runAgent();
+
+        res.json({
+            success: true,
+            message: "Agent ejecutado correctamente",
+            result
+        });
+
+    } catch (err) {
+        console.error("[ADMIN][RUN AGENT]", err);
+        res.status(500).json({
+            error: "Error ejecutando el agente"
+        });
+    }
+});
 
 
 
