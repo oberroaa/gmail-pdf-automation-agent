@@ -357,6 +357,59 @@ app.post("/run-agent", async (req, res) => {
     }
 });
 
+// ================================
+// WHATSAPP WEBHOOK
+// ================================
+
+app.post("/webhook-whatsapp", async (req, res) => {
+    try {
+        const body = req.body;
+
+        const message =
+            body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+
+        if (!message) {
+            return res.sendStatus(200);
+        }
+
+        const from = message.from; // número
+        const text = message.text?.body?.toLowerCase().trim();
+
+        console.log("📩 Mensaje recibido:", text);
+
+        if (text === "actualizar") {
+            const result = await runAgent();
+
+            await sendWhatsAppMessage(
+                from,
+                "✅ Agente ejecutado correctamente.\n\n" +
+                JSON.stringify(result).slice(0, 1000)
+            );
+        }
+
+        res.sendStatus(200);
+
+    } catch (err) {
+        console.error("❌ Error WhatsApp:", err);
+        res.sendStatus(500);
+    }
+});
+
+async function sendWhatsAppMessage(to, message) {
+    await fetch(`https://graph.facebook.com/v22.0/${process.env.WA_PHONE_ID}/messages`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${process.env.WA_TOKEN}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: to,
+            type: "text",
+            text: { body: message }
+        })
+    });
+}
 
 
 // ================================
