@@ -2,7 +2,7 @@ name: Run Gmail PDF Agent
 
 on:
   schedule:
-    - cron: "30 12 * * 1-5"  # 8:30 AM hora de Miami (durante horario de verano)
+    - cron: "30 12 * * 1-5"  # 8:30 AM hora de Miami
   workflow_dispatch:
 
 jobs:
@@ -12,13 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Debug env (safe)
-        run: |
-          echo "CLIENT_ID set? ${{ secrets.CLIENT_ID != '' }}"
-          echo "CLIENT_SECRET set? ${{ secrets.CLIENT_SECRET != '' }}"
-          echo "REDIRECT_URI set? ${{ secrets.REDIRECT_URI != '' }}"
-          echo "REFRESH_TOKEN set? ${{ secrets.REFRESH_TOKEN != '' }}"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -35,10 +28,11 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           REDIRECT_URI: ${{ secrets.REDIRECT_URI }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-          WHATSAPP_FROM: ${{ secrets.WHATSAPP_FROM }}
+          WA_TOKEN: ${{ secrets.WA_TOKEN }}
+          WA_PHONE_ID: ${{ secrets.WA_PHONE_ID }}
           WHATSAPP_TO: ${{ secrets.WHATSAPP_TO }}
 
           PDF_OUTPUT_DIR: processed_pdfs
+          TEST_MODE: false
