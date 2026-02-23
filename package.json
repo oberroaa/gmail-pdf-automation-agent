@@ -18,7 +18,6 @@
     "googleapis": "^169.0.0",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
-    "pdfjs-dist": "^5.4.449",
-    "twilio": "^5.11.1"
+    "pdfjs-dist": "^5.4.449"
   }
 }

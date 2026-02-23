@@ -2,7 +2,7 @@ name: Run Gmail PDF Agent
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "30 12 * * 1-5"  # 8:30 AM hora de Miami (durante horario de verano)
   workflow_dispatch:
 
 jobs:
