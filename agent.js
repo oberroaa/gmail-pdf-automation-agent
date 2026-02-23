@@ -120,107 +120,124 @@ function detectRuleFromBody(bodyText, ruleNames) {
 async function processEmails() {
     console.log("🔁 Verificando correos nuevos...");
 
-    const labelId = await getOrCreateLabel(LABEL_PROCESSED);
+    try {
+        const labelId = await getOrCreateLabel(LABEL_PROCESSED);
 
-    const res = await gmail.users.messages.list({
-        userId: "me",
-        q: `from:${TARGET_FROM} has:attachment filename:pdf -label:${LABEL_PROCESSED}`,
-        maxResults: 5
-    });
-
-    const messages = res.data.messages || [];
-
-    if (!messages.length) {
-        console.log("📭 No hay correos nuevos para procesar");
-        return;
-    }
-
-    const allRules = getAllRules();
-    const ruleNames = Object.keys(allRules);
-
-
-    for (const msg of messages) {
-        console.log(`📨 Procesando mensaje ${msg.id}`);
-
-        const msgData = await gmail.users.messages.get({
+        const res = await gmail.users.messages.list({
             userId: "me",
-            id: msg.id
+            q: `from:${TARGET_FROM} has:attachment filename:pdf -label:${LABEL_PROCESSED}`,
+            maxResults: 5
         });
 
-        const payload = msgData.data.payload;
-        const bodyText = extractPlainText(payload);
+        const messages = res.data.messages || [];
 
-
-        const requestedRule = detectRuleFromBody(bodyText, ruleNames);
-
-        const ruleObj =
-            (requestedRule && allRules[requestedRule]) ||
-            allRules.default;
-
-        if (!ruleObj || !ruleObj.ruleset) {
-            console.error("❌ No se pudo resolver una regla válida");
-            continue;
+        if (!messages.length) {
+            console.log("📭 No hay correos nuevos para procesar");
+            await sendWhatsApp("📭 Agent Check: No se encontraron correos nuevos de '" + TARGET_FROM + "' con PDFs para procesar.");
+            return;
         }
 
-        console.log(`⚙️ Usando regla: ${ruleObj.name}`);
+        const allRules = getAllRules();
+        const ruleNames = Object.keys(allRules);
 
-        const parts = payload.parts || [];
-        let processed = false;
-        for (const part of parts) {
-            if (processed) break;
-            if (!part.filename?.endsWith(".pdf")) continue;
-            processed = true;
-            const attachment = await gmail.users.messages.attachments.get({
-                userId: "me",
-                messageId: msg.id,
-                id: part.body.attachmentId
-            });
+        for (const msg of messages) {
+            try {
+                console.log(`📨 Procesando mensaje ${msg.id}`);
 
-            const buffer = Buffer.from(
-                attachment.data.data.replace(/-/g, "+").replace(/_/g, "/"),
-                "base64"
-            );
+                const msgData = await gmail.users.messages.get({
+                    userId: "me",
+                    id: msg.id
+                });
 
-            const safeName = part.filename.replace(/[^\w.-]/g, "_");
-            const filePath = path.join(OUTPUT_DIR, `${msg.id}_${safeName}`);
+                const payload = msgData.data.payload;
+                const bodyText = extractPlainText(payload);
 
-            fs.writeFileSync(filePath, buffer);
-            console.log(`📎 PDF guardado: ${filePath}`);
+                const requestedRule = detectRuleFromBody(bodyText, ruleNames);
 
-            console.log("🧠 Analizando PDF...");
-            const resultText = await analyzePdfWithRules(
-                filePath,
-                ruleObj.ruleset
-            );
+                const ruleObj =
+                    (requestedRule && allRules[requestedRule]) ||
+                    allRules.default;
 
-            console.log("📊 Resultado final:\n", resultText);
-
-            await sendWhatsApp(resultText);
-
-            await gmail.users.messages.send({
-                userId: "me",
-                requestBody: {
-                    raw: Buffer.from(
-                        `To: ${TARGET_FROM}\r\n` +
-                        `Subject: Resultado análisis PDF\r\n\r\n` +
-                        resultText
-                    ).toString("base64")
+                if (!ruleObj || !ruleObj.ruleset) {
+                    console.error("❌ No se pudo resolver una regla válida");
+                    await sendWhatsApp(`❌ Error en Msg ${msg.id}: No se pudo resolver una regla de análisis válida.`);
+                    continue;
                 }
-            });
 
-            console.log("📧 Resultado enviado por email");
+                console.log(`⚙️ Usando regla: ${ruleObj.name}`);
 
-            await gmail.users.messages.modify({
-                userId: "me",
-                id: msg.id,
-                requestBody: { addLabelIds: [labelId] }
-            });
+                const parts = payload.parts || [];
+                let pdfFoundInMsg = false;
 
-            console.log("🏷️ Correo marcado como PROCESSED");
+                for (const part of parts) {
+                    if (!part.filename?.endsWith(".pdf")) continue;
+                    pdfFoundInMsg = true;
+
+                    const attachment = await gmail.users.messages.attachments.get({
+                        userId: "me",
+                        messageId: msg.id,
+                        id: part.body.attachmentId
+                    });
+
+                    const buffer = Buffer.from(
+                        attachment.data.data.replace(/-/g, "+").replace(/_/g, "/"),
+                        "base64"
+                    );
+
+                    const safeName = part.filename.replace(/[^\w.-]/g, "_");
+                    const filePath = path.join(OUTPUT_DIR, `${msg.id}_${safeName}`);
+
+                    fs.writeFileSync(filePath, buffer);
+                    console.log(`📎 PDF guardado: ${filePath}`);
+
+                    console.log("🧠 Analizando PDF...");
+                    const resultText = await analyzePdfWithRules(
+                        filePath,
+                        ruleObj.ruleset
+                    );
+
+                    console.log("📊 Resultado final:\n", resultText);
+
+                    await sendWhatsApp(`✅ Resultado de ${part.filename}:\n\n${resultText}`);
+
+                    await gmail.users.messages.send({
+                        userId: "me",
+                        requestBody: {
+                            raw: Buffer.from(
+                                `To: ${TARGET_FROM}\r\n` +
+                                `Subject: Resultado análisis PDF - ${part.filename}\r\n\r\n` +
+                                resultText
+                            ).toString("base64")
+                        }
+                    });
+
+                    console.log("📧 Resultado enviado por email");
+                }
+
+                if (!pdfFoundInMsg) {
+                    await sendWhatsApp(`⚠️ Mensaje ${msg.id} detectado pero no se encontró el archivo PDF adjunto.`);
+                }
+
+                await gmail.users.messages.modify({
+                    userId: "me",
+                    id: msg.id,
+                    requestBody: { addLabelIds: [labelId] }
+                });
+
+                console.log("🏷️ Correo marcado como PROCESSED");
+
+            } catch (msgError) {
+                console.error(`❌ Error procesando el mensaje ${msg.id}:`, msgError);
+                await sendWhatsApp(`❌ Error crítico procesando mensaje ${msg.id}: ${msgError.message}`);
+            }
         }
-    }
 
-    console.log("✅ Ciclo terminado\n");
+        console.log("✅ Ciclo terminado\n");
+
+    } catch (globalError) {
+        console.error("❌ Error global en el proceso:", globalError);
+        await sendWhatsApp(`❌ Error global en el Agente: ${globalError.message}`);
+    }
 }
 
 function isWorkingHours() {
@@ -238,8 +255,12 @@ console.log("🤖 TUUCI AGENT INICIADO");
 if (isWorkingHours()) {
     await processEmails();
 } else {
-    console.log("🕒 Fuera de horario laboral, no se procesa");
+    const msg = "🕒 Agent Check: Fuera de horario laboral (7 AM - 3 PM), el proceso no se ejecutó.";
+    console.log(msg);
+    // Opcional: Descomenta la línea de abajo si quieres que te avise por WhatsApp incluso si está fuera de horario
+    // await sendWhatsApp(msg);
 }
+
 
 
 
