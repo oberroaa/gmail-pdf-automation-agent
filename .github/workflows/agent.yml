@@ -29,7 +29,6 @@ jobs:
           REDIRECT_URI: ${{ secrets.REDIRECT_URI }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-
           WA_TOKEN: ${{ secrets.WA_TOKEN }}
           WA_PHONE_ID: ${{ secrets.WA_PHONE_ID }}
           WHATSAPP_TO: ${{ secrets.WHATSAPP_TO }}
