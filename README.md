@@ -1,102 +1,93 @@
-📄 Gmail PDF Automation Agent
+# 🤖 Gmail PDF Automation Agent (Cloud Version)
 
-Automatización que lee correos de Gmail, extrae información estructurada desde PDFs y envía resultados automáticamente por WhatsApp y Email.
+Agente inteligente que automatiza la lectura de correos de Gmail con adjuntos PDF, los analiza utilizando Inteligencia Artificial (Google Gemini) y envía los resultados tanto por email como por WhatsApp (Meta Cloud API). 
 
-Diseñado para procesos empresariales donde los datos llegan en documentos PDF y deben procesarse sin intervención humana.
+Esta versión ha sido modernizada para funcionar en una infraestructura **Cloud Serverless**, separando la ejecución del agente de la administración.
 
-🚀 ¿Qué hace este agente?
+---
 
-✔️ Monitorea Gmail automáticamente (cada hora)
-✔️ Detecta correos con PDFs de un remitente específico
-✔️ Extrae datos clave desde el PDF (Part Number, Qty, UOM = FT)
-✔️ Agrupa y calcula totales de forma determinista
-✔️ Envía el resultado:
+## 🏗️ Arquitectura del Sistema
 
-📧 por Email
+El proyecto está dividido en tres componentes principales que trabajan de forma sincronizada:
 
-📱 por WhatsApp
-✔️ Marca el correo como PROCESSED para evitar reprocesos
+1.  **Agente (GitHub Actions)**: 
+    *   Se ejecuta de forma programada (CRON).
+    *   Descarga PDFs de Gmail, los analiza y envía notificaciones.
+    *   Consulta las reglas de análisis en tiempo real desde MongoDB.
+2.  **Base de Datos (MongoDB Atlas)**:
+    *   Almacena de forma centralizada todas las reglas de análisis y configuraciones.
+    *   Permite que los cambios realizados en el panel de administración se reflejen instantáneamente en el agente.
+3.  **Panel de Administración (Vercel)**:
+    *   **Frontend**: Interfaz moderna desarrollada con React + Vite.
+    *   **Backend (API)**: Funciones serverless que gestionan el CRUD de reglas en MongoDB.
+    *   Incluye generación de reglas asistida por IA (Gemini).
 
-Todo el flujo es 100% automático.
+---
 
-🧠 ¿Por qué este enfoque es potente?
+## 🚀 Funcionalidades Principales
 
-❌ Sin IA “inestable”
+*   **Análisis Inteligente**: Extracción selectiva de datos de PDFs basada en prefijos de material, unidades de medida (UOM) y reglas personalizadas.
+*   **WhatsApp Meta API**: Notificaciones robustas por WhatsApp gestionando la ventana de 24h (Templates + Free-form text).
+*   **IA-Powered Admin**: Generador de reglas mediante lenguaje natural utilizando Google Gemini.
+*   **Horario Laboral**: El agente respeta horarios específicos (7 AM - 3 PM) para no saturar de notificaciones fuera de tiempo.
+*   **Cloud Ready**: Despliegue optimizado para Vercel y GitHub Actions con persistencia en MongoDB Atlas.
 
-❌ Sin costos por tokens
+---
 
-❌ Sin resultados variables
+## 🛠️ Tecnologías Utilizadas
 
-✅ Parsing determinista
-✅ Resultados reproducibles
-✅ Ideal para producción
-✅ Escalable a miles de documentos
+*   **Runtime**: Node.js (ESM)
+*   **IA**: Google Gemini Pro (Generative AI)
+*   **Database**: MongoDB Atlas
+*   **Hosting**: Vercel (Admin) + GitHub Actions (Agent)
+*   **Comunicaciones**: Meta WhatsApp Cloud API + Gmail API
+*   **Frontend**: React, TypeScript, Tailwind CSS, Vite
 
-Este sistema es perfecto para:
+---
 
-Manufactura
+## ⚙️ Configuración (.env)
 
-Logística
+El sistema requiere las siguientes variables de entorno tanto en local como en los Secrets de GitHub/Vercel:
 
-Compras
+```env
+# Google Auth
+CLIENT_ID=...
+CLIENT_SECRET=...
+REDIRECT_URI=...
+REFRESH_TOKEN=...
 
-Inventarios
+# Google AI
+GEMINI_API_KEY=...
 
-Finanzas
+# WhatsApp Meta API
+WA_TOKEN=...
+WA_PHONE_ID=...
+WHATSAPP_TO=... (números separados por coma)
 
-Operaciones
+# MongoDB
+MONGODB_URI=mongodb+srv://...
 
-🛠️ Tecnologías usadas
+# Admin Config
+ADMIN_PORT=3001
+PDF_OUTPUT_DIR=./processed_pdfs
+```
 
-Node.js
+---
 
-Gmail API (OAuth2)
+## 📁 Estructura del Proyecto
 
-pdfjs-dist
+*   `/admin`: Servidor API de administración (Node.js/Express).
+*   `/admin-frontend`: Código fuente del panel de control (React).
+*   `/api`: Punto de entrada para el despliegue serverless en Vercel.
+*   `agent.js`: Script principal del agente automatizado.
+*   `db.js`: Módulo centralizado de conexión a MongoDB.
+*   `rules-manager.js`: Gestor de reglas sincronizado con la nube.
+*   `whatsapp.js`: Integración con la API oficial de Meta.
+*   `analyze-pdf.js`: Lógica de extracción y análisis de contenido PDF.
+*   `.github/workflows/agent.yml`: Programación de tareas en GitHub Actions.
 
-Twilio WhatsApp API
+---
 
-GitHub Actions (cloud gratis)
+## 📝 Licencia
 
-Regex-based data extraction
-
-📦 Flujo del sistema
-
-Llega un correo con PDF
-
-El agente lo detecta
-
-Descarga el PDF
-
-Extrae datos relevantes
-
-Agrupa y calcula totales
-
-Envía el resultado
-
-Marca el correo como procesado
-
-🔐 Seguridad
-
-Secrets gestionados con GitHub Secrets
-
-No se suben credenciales al repositorio
-
-OAuth seguro con Google
-
-📈 Casos de uso reales
-
-Procesar órdenes de compra
-
-Extraer materiales y cantidades
-
-Automatizar reportes
-
-Reducir trabajo manual
-
-Eliminar errores humanos
-
-👨‍💻 Autor
-
-Otoniel Berroa
-Automatización · Backend · Integraciones · Procesos empresariales
+MIT - Desarrollado para optimizar procesos industriales de análisis de pedidos internos.
