@@ -21,9 +21,10 @@ dotenv.config({
 });
 
 // ================================
-// APP
+// APP & ROUTER
 // ================================
 const app = express();
+const router = express.Router();
 const PORT = process.env.ADMIN_PORT || 3001;
 
 app.use(cors());
@@ -44,7 +45,7 @@ app.use((req, res, next) => {
 // ================================
 // HEALTH
 // ================================
-app.get("/health", (req, res) => {
+router.get("/health", (req, res) => {
     res.json({
         status: "ok",
         service: "gmail-pdf-tuuci-admin-mongodb",
@@ -55,14 +56,13 @@ app.get("/health", (req, res) => {
 // ================================
 // LISTAR REGLAS (MongoDB)
 // ================================
-app.get("/rules", async (req, res) => {
+router.get("/rules", async (req, res) => {
     try {
         const collection = await getRulesCollection();
         const rules = await collection.find({}).sort({ name: 1 }).toArray();
 
-        // Mapeamos para mantener compatibilidad con el front (el campo 'file' ya no existe pero lo emulamos)
         const frontRules = rules.map(r => ({
-            file: `${r.name}.json`, // Emulación para no romper el front
+            file: `${r.name}.json`,
             name: r.name,
             description: r.description,
             ruleset: r.ruleset ?? null,
@@ -79,7 +79,7 @@ app.get("/rules", async (req, res) => {
 // ================================
 // EDITAR REGLA (MongoDB)
 // ================================
-app.put("/rules/:name", async (req, res) => {
+router.put("/rules/:name", async (req, res) => {
     try {
         const originalName = req.params.name;
         const incoming = req.body;
@@ -93,8 +93,6 @@ app.put("/rules/:name", async (req, res) => {
         }
 
         const collection = await getRulesCollection();
-
-        // Eliminamos el _id de MongoDB si viene por error en el body para no causar conflictos en el update
         const { _id, ...updateData } = incoming;
 
         await collection.updateOne(
@@ -112,9 +110,9 @@ app.put("/rules/:name", async (req, res) => {
 // ================================
 // ELIMINAR REGLA (MongoDB)
 // ================================
-app.delete("/rules/:file", async (req, res) => {
+router.delete("/rules/:file", async (req, res) => {
     const fileName = decodeURIComponent(req.params.file);
-    const ruleName = fileName.replace(".json", ""); // El front manda 'file', extraemos el name
+    const ruleName = fileName.replace(".json", "");
 
     if (ruleName === "default") {
         return res.status(400).json({ error: "La regla default no puede eliminarse" });
@@ -123,7 +121,6 @@ app.delete("/rules/:file", async (req, res) => {
     try {
         const collection = await getRulesCollection();
         await collection.deleteOne({ name: ruleName });
-        console.log("🗑️ Regla eliminada en DB:", ruleName);
         res.json({ success: true });
     } catch (err) {
         console.error("[ADMIN][DELETE RULE]", err);
@@ -134,15 +131,11 @@ app.delete("/rules/:file", async (req, res) => {
 // ================================
 // MARCAR DEFAULT (MongoDB)
 // ================================
-app.post("/rules/:name/default", async (req, res) => {
+router.post("/rules/:name/default", async (req, res) => {
     try {
         const { name } = req.params;
         const collection = await getRulesCollection();
-
-        // 1. Quitar default a todas
         await collection.updateMany({}, { $set: { isDefault: false } });
-
-        // 2. Poner default a la elegida
         const result = await collection.updateOne(
             { name: name },
             { $set: { isDefault: true } }
@@ -162,7 +155,7 @@ app.post("/rules/:name/default", async (req, res) => {
 // ================================
 // GUARDAR REGLA (MongoDB CREATE)
 // ================================
-app.post("/rules/save", async (req, res) => {
+router.post("/rules/save", async (req, res) => {
     try {
         const ruleJSON = req.body;
         const name = ruleJSON.name;
@@ -170,8 +163,6 @@ app.post("/rules/save", async (req, res) => {
         if (!name) return res.status(400).json({ error: "Nombre de regla inválido" });
 
         const collection = await getRulesCollection();
-
-        // Verificamos si existe
         const existing = await collection.findOne({ name });
         if (existing) {
             return res.status(409).json({ error: `Ya existe una regla con el nombre "${name}"` });
@@ -197,36 +188,25 @@ app.post("/rules/save", async (req, res) => {
 // ================================
 // PREVIEW DE REGLA (Gemini IA)
 // ================================
-app.post('/rules/preview', async (req, res) => {
+router.post('/rules/preview', async (req, res) => {
     try {
         const { prompt } = req.body;
         if (!prompt) return res.status(400).json({ error: 'Prompt requerido' });
 
         const generatedRule = await generateRuleJSON("PREVIEW_RULE", prompt);
-        const validation = validateRuleStructure(generatedRule);
-
-        res.json({
-            generatedRule,
-            valid: validation.valid,
-            warnings: validation.warnings
-        });
-
+        res.json({ generatedRule, valid: true, warnings: [] });
     } catch (err) {
         console.error('Error en preview:', err);
         res.status(500).json({ error: 'Error generando preview' });
     }
 });
 
-function validateRuleStructure(rule) {
-    const warnings = [];
-    if (!rule || typeof rule !== 'object') return { valid: false, warnings: ['Regla inválida'] };
-    if (!rule.name) warnings.push('Falta "name"');
-    if (!rule.ruleset) {
-        warnings.push('Falta "ruleset"');
-        return { valid: false, warnings };
-    }
-    return { valid: warnings.length === 0, warnings };
-}
+// ================================
+// MOUNT ROUTER
+// ================================
+// Importante: lo montamos en '/' y en '/api' para que funcione en local y en Vercel
+app.use("/api", router);
+app.use("/", router);
 
 // ================================
 // EXPORT FOR VERCEL

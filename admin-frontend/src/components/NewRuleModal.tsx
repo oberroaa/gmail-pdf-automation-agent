@@ -6,13 +6,15 @@ interface Props {
     onError: (message: string) => void;
 }
 
-
 export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
     const [name, setName] = useState("");
     const [prompt, setPrompt] = useState("");
     const [loading, setLoading] = useState(false);
     const [previewRule, setPreviewRule] = useState<any | null>(null);
     const [previewOpen, setPreviewOpen] = useState(false);
+
+    // Usamos el mismo prefijo que en rulesApi.ts
+    const API_URL = "/api";
 
     // =========================
     // GENERAR PREVIEW
@@ -26,7 +28,7 @@ export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:3001/rules/preview", {
+            const res = await fetch(`${API_URL}/rules/preview`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: prompt.trim() })
@@ -55,24 +57,23 @@ export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:3001/rules/save", {
+            const res = await fetch(`${API_URL}/rules/save`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    name: name.trim(),
+                    ...previewRule,
+                    name: name.trim(), // Nos aseguramos de usar el nombre elegido
                     prompt: prompt.trim()
                 })
             });
 
             const data = await res.json();
 
-            // ⛔ ERROR / DUPLICADO
             if (!res.ok) {
                 onError(data.error || "No se pudo crear la regla");
                 return;
             }
 
-            // ✅ ÉXITO
             onCreate(data.rule);
             onClose();
 
@@ -83,8 +84,6 @@ export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
         }
     };
 
-
-
     // =========================
     // REGENERAR PREVIEW
     // =========================
@@ -92,7 +91,7 @@ export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:3001/rules/preview", {
+            const res = await fetch(`${API_URL}/rules/preview`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: prompt.trim() })

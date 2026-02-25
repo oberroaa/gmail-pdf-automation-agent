@@ -60,11 +60,11 @@ export async function updateRule(name: string, data: any) {
     return res.json();
 }
 
-export async function createRule(name: string, prompt: string) {
-    const res = await fetch(`${API_URL}/rules/new`, {
+export async function createRule(ruleData: any) {
+    const res = await fetch(`${API_URL}/rules/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, prompt }),
+        body: JSON.stringify(ruleData),
     });
 
     if (!res.ok) {
