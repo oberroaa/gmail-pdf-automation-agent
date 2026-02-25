@@ -137,7 +137,7 @@ async function processEmails() {
             return;
         }
 
-        const allRules = getAllRules();
+        const allRules = await getAllRules();
         const ruleNames = Object.keys(allRules);
 
         for (const msg of messages) {

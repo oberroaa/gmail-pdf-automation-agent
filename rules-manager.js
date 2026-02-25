@@ -1,52 +1,35 @@
 // ================================
-// RULES MANAGER
+// RULES MANAGER (MongoDB Version)
 // ================================
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import { getRulesCollection } from "./db.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+/**
+ * CARGAR TODAS LAS REGLAS desde MongoDB
+ * NOTA: Ahora es asíncrona porque la BD requiere espera.
+ */
+export async function getAllRules() {
+    try {
+        const collection = await getRulesCollection();
+        const rulesArray = await collection.find({}).toArray();
 
-// 👉 carpeta /rules al mismo nivel que agent.js
-const RULES_DIR = path.join(__dirname, "rules");
-
-// ================================
-// CARGAR TODAS LAS REGLAS
-// ================================
-export function getAllRules() {
-    if (!fs.existsSync(RULES_DIR)) {
-        console.warn("⚠️ RULES_DIR no existe");
-        return {};
-    }
-
-    const files = fs.readdirSync(RULES_DIR)
-        .filter(f => f.endsWith(".json"));
-
-    const rules = {};
-
-    for (const file of files) {
-        const fullPath = path.join(RULES_DIR, file);
-        const content = JSON.parse(fs.readFileSync(fullPath, "utf8"));
-
-        if (!content.name || !content.ruleset) {
-            console.warn(`⚠️ Regla inválida ignorada: ${file}`);
-            continue;
+        const rules = {};
+        for (const r of rulesArray) {
+            rules[r.name] = r;
         }
 
-        rules[content.name] = content;
+        return rules;
+    } catch (error) {
+        console.error("❌ Error cargando reglas desde MongoDB:", error.message);
+        return {};
     }
-
-
-
-    return rules;
 }
 
-// ================================
-// RESOLVER REGLA
-// ================================
-export function resolveRule(requestedRuleName = null) {
-    const rules = getAllRules();
+/**
+ * RESOLVER REGLA
+ * NOTA: Ahora es asíncrona.
+ */
+export async function resolveRule(requestedRuleName = null) {
+    const rules = await getAllRules();
 
     // 1️⃣ Regla solicitada
     if (requestedRuleName && rules[requestedRuleName]) {
