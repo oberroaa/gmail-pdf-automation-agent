@@ -1,5 +1,18 @@
 {
     "version": 2,
+    "builds": [
+        {
+            "src": "admin/server.js",
+            "use": "@vercel/node"
+        },
+        {
+            "src": "admin-frontend/package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        }
+    ],
     "rewrites": [
         {
             "source": "/api/(.*)",
@@ -7,14 +20,7 @@
         },
         {
             "source": "/(.*)",
-            "destination": "/admin-frontend/dist/$1"
-        }
-    ],
-    "redirects": [
-        {
-            "source": "/",
-            "destination": "/index.html",
-            "permanent": false
+            "destination": "/admin-frontend/$1"
         }
     ]
 }
