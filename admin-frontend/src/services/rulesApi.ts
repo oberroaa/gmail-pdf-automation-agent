@@ -6,7 +6,8 @@ export interface Rule {
     isDefault: boolean;
 }
 
-const API_URL = "http://localhost:3001";
+// En Vercel usamos '/api', en local con Vite proxy también usaremos '/api'
+const API_URL = "/api";
 
 export async function getRules(): Promise<Rule[]> {
     const res = await fetch(`${API_URL}/rules`);
@@ -16,18 +17,13 @@ export async function getRules(): Promise<Rule[]> {
     }
 
     const data = await res.json();
-
-    // 🔍 DEBUG CLARO
     console.log("🎯 Datos de reglas desde backend:", data);
-
-    // 👇 EL BACKEND YA DEVUELVE UN ARRAY
     return data;
 }
 
-
 export async function deleteRule(file: string) {
     const res = await fetch(
-        `http://localhost:3001/rules/${encodeURIComponent(file)}`,
+        `${API_URL}/rules/${encodeURIComponent(file)}`,
         { method: "DELETE" }
     );
 
@@ -35,7 +31,6 @@ export async function deleteRule(file: string) {
         throw new Error("Error eliminando regla");
     }
 }
-
 
 export async function setDefaultRule(name: string) {
     const res = await fetch(`${API_URL}/rules/${name}/default`, {
@@ -65,9 +60,8 @@ export async function updateRule(name: string, data: any) {
     return res.json();
 }
 
-
 export async function createRule(name: string, prompt: string) {
-    const res = await fetch("http://localhost:3001/rules/new", {
+    const res = await fetch(`${API_URL}/rules/new`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, prompt }),

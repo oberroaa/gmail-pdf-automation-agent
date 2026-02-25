@@ -32,6 +32,6 @@ jobs:
           WA_TOKEN: ${{ secrets.WA_TOKEN }}
           WA_PHONE_ID: ${{ secrets.WA_PHONE_ID }}
           WHATSAPP_TO: ${{ secrets.WHATSAPP_TO }}
-
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
           PDF_OUTPUT_DIR: processed_pdfs
           TEST_MODE: false

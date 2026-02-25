@@ -1,7 +1,13 @@
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Aseguramos que busque el .env en la raíz del proyecto
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 const uri = process.env.MONGODB_URI;
 let client;
@@ -11,7 +17,7 @@ let db;
  * Conecta a MongoDB y devuelve la base de datos
  */
 export async function connectDB() {
-    if (db) return db; // Si ya estamos conectados, devolvemos la instancia
+    if (db) return db;
 
     if (!uri) {
         throw new Error("❌ MONGODB_URI no definida en el archivo .env");
@@ -24,7 +30,7 @@ export async function connectDB() {
         console.log("🔌 Conectado a MongoDB Atlas");
         return db;
     } catch (error) {
-        console.error("❌ Error conectando a MongoDB:", error.message);
+        console.error("❌ Error conecando a MongoDB:", error.message);
         throw error;
     }
 }

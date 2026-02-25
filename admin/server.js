@@ -229,11 +229,15 @@ function validateRuleStructure(rule) {
 }
 
 // ================================
-// BOOT
+// EXPORT FOR VERCEL
 // ================================
-app.listen(PORT, () => {
-    console.log("----------------------------------------");
-    console.log("� ADMIN SERVER (MONGODB) STARTED");
-    console.log(`📡 http://localhost:${PORT}`);
-    console.log("----------------------------------------");
-});
+export default app;
+
+if (process.env.NODE_ENV !== "production") {
+    app.listen(PORT, () => {
+        console.log("----------------------------------------");
+        console.log("🟢 ADMIN SERVER (MONGODB) STARTED");
+        console.log(`📡 http://localhost:${PORT}`);
+        console.log("----------------------------------------");
+    });
+}
