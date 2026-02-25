@@ -35,7 +35,7 @@ if (!fs.existsSync(pdfPath)) {
 // ================================
 (async () => {
     try {
-        const { name, ruleset } = resolveRule(ruleName);
+        const { name, ruleset } = await resolveRule(ruleName);
 
         console.log(`⚙️ Usando regla: ${name}`);
         console.log("📎 PDF:", pdfPath);
