@@ -30,6 +30,15 @@ const PORT = process.env.ADMIN_PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
+// Middleware para CSP y Seguridad Básica
+app.use((req, res, next) => {
+    res.setHeader(
+        "Content-Security-Policy",
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://localhost:3001 http://localhost:5173;"
+    );
+    next();
+});
+
 // Logger simple
 app.use((req, res, next) => {
     const start = Date.now();
@@ -45,6 +54,13 @@ app.use((req, res, next) => {
 // ================================
 // HEALTH
 // ================================
+router.get("/", (req, res) => {
+    res.json({
+        message: "Gmail PDF Admin API is running",
+        endpoints: ["/api/rules", "/api/health"]
+    });
+});
+
 router.get("/health", (req, res) => {
     res.json({
         status: "ok",
