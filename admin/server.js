@@ -54,7 +54,8 @@ app.use((req, res, next) => {
 // ================================
 // HEALTH
 // ================================
-router.get("/", (req, res) => {
+// Ruta raíz global para evitar el 404
+app.get("/", (req, res) => {
     res.json({
         message: "Gmail PDF Admin API is running",
         endpoints: ["/api/rules", "/api/health"]
@@ -76,6 +77,7 @@ router.get("/rules", async (req, res) => {
     try {
         const collection = await getRulesCollection();
         const rules = await collection.find({}).sort({ name: 1 }).toArray();
+        console.log(`[ADMIN] Se encontraron ${rules.length} reglas`);
 
         const frontRules = rules.map(r => ({
             file: `${r.name}.json`,
@@ -223,6 +225,12 @@ router.post('/rules/preview', async (req, res) => {
 // Importante: lo montamos en '/' y en '/api' para que funcione en local y en Vercel
 app.use("/api", router);
 app.use("/", router);
+
+// Error 404 handler para cualquier otra cosa
+app.use((req, res) => {
+    console.log(`[ADMIN-DB] 404 Not Found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ error: "Ruta no encontrada" });
+});
 
 // ================================
 // EXPORT FOR VERCEL
