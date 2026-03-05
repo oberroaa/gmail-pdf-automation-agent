@@ -8,6 +8,7 @@ import express from "express";
 import cors from "cors";
 import { getRulesCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
+import sendWhatsApp from "../whatsapp.js";
 
 // ================================
 // PATHS & ENV
@@ -216,6 +217,20 @@ router.post('/rules/preview', async (req, res) => {
     } catch (err) {
         console.error('Error en preview:', err);
         res.status(500).json({ error: 'Error generando preview' });
+    }
+});
+
+// ================================
+// TEST WHATSAPP
+// ================================
+router.post("/test-whatsapp", async (req, res) => {
+    try {
+        const testMsg = "🔔 Prueba manual desde el Panel Admin: Conexión OK.";
+        await sendWhatsApp(testMsg);
+        res.json({ success: true, message: "Prueba enviada. Revisa tu WhatsApp." });
+    } catch (err) {
+        console.error("[ADMIN][TEST WA]", err);
+        res.status(500).json({ error: "Error enviando prueba de WhatsApp" });
     }
 });
 
