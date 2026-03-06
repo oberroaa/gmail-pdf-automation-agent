@@ -9,7 +9,7 @@ import dotenv from "dotenv";
 import sendWhatsApp from "./whatsapp.js";
 import analyzePdfWithRules from "./analyze-pdf.js";
 import { getAllRules } from "./rules-manager.js";
-
+import { getEmailsCollection } from "./db.js"; // 
 dotenv.config({ quiet: true });
 
 // ================================
@@ -118,14 +118,29 @@ function detectRuleFromBody(bodyText, ruleNames) {
 // MAIN PROCESS
 // ================================
 async function processEmails() {
-    console.log("🔁 Verificando correos nuevos...");
+    console.log("🔁 Verificando correos nuevos (Modo Configurable)...");
 
     try {
+        // 1. Obtener los emails autorizados desde MongoDB
+        const emailColl = await getEmailsCollection();
+        const settings = await emailColl.find({ active: true }).toArray();
+        const emailList = settings.map(s => s.email);
+
+        // Si no hay emails configurados, usamos el default como respaldo
+        if (emailList.length === 0) {
+            console.log("⚠️ No hay emails configurados en MongoDB, usando default del .env");
+            emailList.push(TARGET_FROM);
+        }
+
+        const emailQuery = emailList.join(" OR ");
+        console.log(`🔍 Buscando emails de: ${emailQuery}`);
+
         const labelId = await getOrCreateLabel(LABEL_PROCESSED);
 
+        // 2. Buscar mensajes de cualquiera de los orígenes autorizados
         const res = await gmail.users.messages.list({
             userId: "me",
-            q: `from:${TARGET_FROM} has:attachment filename:pdf -label:${LABEL_PROCESSED}`,
+            q: `from:(${emailQuery}) has:attachment filename:pdf -label:${LABEL_PROCESSED}`,
             maxResults: 5
         });
 
@@ -133,7 +148,8 @@ async function processEmails() {
 
         if (!messages.length) {
             console.log("📭 No hay correos nuevos para procesar");
-            await sendWhatsApp("📭 Agent Check: No se encontraron correos nuevos de '" + TARGET_FROM + "' con PDFs para procesar.");
+            // Opcional: Avisar por WhatsApp solo a ti
+            // await sendWhatsApp("📭 Agent Check: Sin novedades.");
             return;
         }
 
@@ -153,14 +169,10 @@ async function processEmails() {
                 const bodyText = extractPlainText(payload);
 
                 const requestedRule = detectRuleFromBody(bodyText, ruleNames);
-
-                const ruleObj =
-                    (requestedRule && allRules[requestedRule]) ||
-                    allRules.default;
+                const ruleObj = (requestedRule && allRules[requestedRule]) || allRules.default;
 
                 if (!ruleObj || !ruleObj.ruleset) {
                     console.error("❌ No se pudo resolver una regla válida");
-                    await sendWhatsApp(`❌ Error en Msg ${msg.id}: No se pudo resolver una regla de análisis válida.`);
                     continue;
                 }
 
@@ -191,33 +203,29 @@ async function processEmails() {
                     console.log(`📎 PDF guardado: ${filePath}`);
 
                     console.log("🧠 Analizando PDF...");
-                    const resultText = await analyzePdfWithRules(
-                        filePath,
-                        ruleObj.ruleset
-                    );
+                    const resultText = await analyzePdfWithRules(filePath, ruleObj.ruleset);
 
                     console.log("📊 Resultado final:\n", resultText);
 
+                    // A) Notificar por WhatsApp
                     await sendWhatsApp(`✅ Resultado de ${part.filename}:\n\n${resultText}`);
 
+                    // B) Enviar Email de respuesta (A TODOS los de la lista para que estén informados)
                     await gmail.users.messages.send({
                         userId: "me",
                         requestBody: {
                             raw: Buffer.from(
-                                `To: ${TARGET_FROM}\r\n` +
+                                `To: ${emailList.join(", ")}\r\n` +
                                 `Subject: Resultado análisis PDF - ${part.filename}\r\n\r\n` +
                                 resultText
                             ).toString("base64")
                         }
                     });
 
-                    console.log("📧 Resultado enviado por email");
+                    console.log("📧 Resultado enviado a todas las direcciones configuradas");
                 }
 
-                if (!pdfFoundInMsg) {
-                    await sendWhatsApp(`⚠️ Mensaje ${msg.id} detectado pero no se encontró el archivo PDF adjunto.`);
-                }
-
+                // Marcar como procesado para no volver a leerlo
                 await gmail.users.messages.modify({
                     userId: "me",
                     id: msg.id,
@@ -228,17 +236,17 @@ async function processEmails() {
 
             } catch (msgError) {
                 console.error(`❌ Error procesando el mensaje ${msg.id}:`, msgError);
-                await sendWhatsApp(`❌ Error crítico procesando mensaje ${msg.id}: ${msgError.message}`);
             }
         }
 
-        console.log("✅ Ciclo terminado\n");
+        console.log("✅ Ciclo de procesamiento terminado\n");
 
     } catch (globalError) {
         console.error("❌ Error global en el proceso:", globalError);
         await sendWhatsApp(`❌ Error global en el Agente: ${globalError.message}`);
     }
 }
+
 
 function isWorkingHours() {
     const now = new Date();

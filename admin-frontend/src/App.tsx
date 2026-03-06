@@ -4,7 +4,7 @@ import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
 import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import EmailSettings from "./components/EmailSettings";
 import {
   getRules,
   deleteRule,
@@ -201,6 +201,7 @@ export default function App() {
             />
           )}
         </section>
+        <EmailSettings />
       </main>
 
       {/* MODALES */}

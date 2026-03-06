@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import { getRulesCollection } from "../db.js";
+import { getRulesCollection, getEmailsCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
 import sendWhatsApp from "../whatsapp.js";
 
@@ -219,6 +219,71 @@ router.post('/rules/preview', async (req, res) => {
         res.status(500).json({ error: 'Error generando preview' });
     }
 });
+
+
+// ================================
+// OBTENER CONFIGURACIÓN (Emails)
+// ================================
+router.get("/settings", async (req, res) => {
+    try {
+        const collection = await getEmailsCollection();
+        //Buscamos todos los correos guardados
+        const emails = await collection.find({}).toArray();
+        //Devolvemos el correo guardado
+        res.json(emails);
+    } catch (err) {
+        console.error("[ADMIN][GET SETTINGS]", err);
+        res.status(500).json({ error: "Error al obtener la lista de correos" });
+    }
+});
+
+// ================================
+// GUARDAR NUEVO EMAIL
+// ================================
+router.post("/settings", async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+        const collection = await getEmailsCollection();
+
+
+        const existing = await collection.findOne({ email });
+        if (existing) {
+            return res.status(409).json({ error: `Ya existe un correo con el email "${email}"` });
+        }
+        // Insertamos el nuevo correo en la base de datos
+        await collection.insertOne({
+            email: email,
+            active: true,
+            createdAt: new Date()
+        });
+
+        res.json({ success: true, message: "Email guardado correctamente" });
+    } catch (err) {
+        console.error("[ADMIN][SAVE SETTINGS]", err);
+        res.status(500).json({ error: "Error al guardar el correo" });
+    }
+});
+
+// ================================
+// ELIMINAR EMAIL
+// ================================
+router.delete("/settings/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { ObjectId } = await import("mongodb"); // Necesario para buscar por ID
+
+        const collection = await getEmailsCollection();
+        await collection.deleteOne({ _id: new ObjectId(id) });
+
+        res.json({ success: true, message: "Email eliminado" });
+    } catch (err) {
+        console.error("[ADMIN][DELETE EMAIL]", err);
+        res.status(500).json({ error: "Error al eliminar el correo" });
+    }
+});
+
 
 // ================================
 // TEST WHATSAPP

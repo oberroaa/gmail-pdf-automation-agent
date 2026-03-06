@@ -42,3 +42,11 @@ export async function getRulesCollection() {
     const database = await connectDB();
     return database.collection("rules");
 }
+
+/**
+ * Helper para obtener la coleccion de email
+ */
+export async function getEmailsCollection() {
+    const database = await connectDB();
+    return database.collection("emails");
+}
