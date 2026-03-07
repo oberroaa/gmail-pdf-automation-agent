@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Sparkles } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
+import ItemsManager from "./components/ItemsManager";
 import {
   getRules,
   deleteRule,
@@ -21,6 +22,9 @@ export default function App() {
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
+  const [activeTab, setActiveTab] = useState<"rules" | "items">("rules");
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const fetchRules = async () => {
     try {
@@ -38,6 +42,11 @@ export default function App() {
   useEffect(() => {
     fetchRules();
   }, []);
+
+  const navigateTo = (tab: "rules" | "items") => {
+    setActiveTab(tab);
+    setIsMenuOpen(false); // Cierra el menú al navegar
+  };
 
   const showToast = (msg: string, type: "success" | "error" | "info" = "success") => {
     setToast({ msg, type });
@@ -86,183 +95,196 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* SIDEBAR / HEADER COMBINED */}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-slate-900/60 border-b border-white/5 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-600/20">
-              <Brain className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                Tuuci Agent <span className="text-[10px] font-medium bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700">ADMIN</span>
-              </h1>
-              <p className="text-[10px] text-slate-500 font-medium tracking-wide">AUTOMATIZACIÓN DE PDF & GMAIL</p>
-            </div>
-          </div>
+    <div className="min-h-screen flex bg-[#0a0c10] text-slate-200 overflow-hidden font-sans relative">
 
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowNewRule(true)}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5"
-            >
-              <Plus className="w-4 h-4" />
-              Nueva Regla
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* BOTÓN MENÚ MÓVIL (Solo visible en móviles) */}
+      <button
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="lg:hidden fixed top-4 right-4 z-[60] p-3 bg-indigo-600 rounded-xl shadow-lg text-white hover:bg-indigo-500 transition-colors"
+      >
+        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8">
-        {/* STATS / HEADER */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="glass p-6 rounded-3xl group">
-            <div className="flex justify-between items-center mb-4">
-              <LayoutDashboard className="w-5 h-5 text-indigo-400" />
-              <span className="text-2xl font-black text-white">{rules.length}</span>
-            </div>
-            <h3 className="text-sm font-semibold text-slate-400">Reglas Totales</h3>
-            <p className="text-xs text-slate-500 mt-2">Configuradas en MongoDB Atlas</p>
-          </div>
-
-          <div className="glass p-6 rounded-3xl group overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-2 text-indigo-500/10">
-              <Sparkles className="w-20 h-20" />
-            </div>
-            <div className="flex justify-between items-center mb-4">
-              <Brain className="w-5 h-5 text-purple-400" />
-              <span className="text-2xl font-black text-white">IA</span>
-            </div>
-            <h3 className="text-sm font-semibold text-slate-400">Analisis Proactivo</h3>
-            <p className="text-xs text-slate-500 mt-2">Gemini Pro habilitado</p>
-          </div>
-
-          <div className="glass p-6 rounded-3xl group">
-            <div className="flex justify-between items-center mb-4">
-              <ScrollText className="w-5 h-5 text-emerald-400" />
-              <span className="text-2xl font-black text-white">ON</span>
-            </div>
-            <h3 className="text-sm font-semibold text-slate-400">Estado del Agente</h3>
-            <p className="text-xs text-slate-500 mt-2">GitHub Actions Monitorizando</p>
-          </div>
-        </div>
-
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <ScrollText className="w-5 h-5 text-indigo-400" />
-            <h2 className="text-xl font-bold text-white">Reglas Disponibles</h2>
-          </div>
-
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-20 grayscale opacity-50">
-              <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
-              <p className="text-slate-400 font-medium">Sincronizando con la nube...</p>
-            </div>
-          )}
-
-          {error && (
-            <div className="glass border-red-500/20 bg-red-500/5 p-8 rounded-3xl flex flex-col items-center text-center">
-              <div className="p-4 bg-red-500/10 rounded-full mb-4">
-                <AlertTriangle className="w-8 h-8 text-red-400" />
-              </div>
-              <h3 className="text-white font-bold mb-2">Error de conexión</h3>
-              <p className="text-red-300/80 text-sm max-w-sm mb-6">{error}</p>
-              <button
-                onClick={fetchRules}
-                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold transition-all"
-              >
-                Reintentar
-              </button>
-            </div>
-          )}
-
-          {!loading && !error && rules.length === 0 && (
-            <div className="glass p-12 rounded-3xl text-center border-dashed border-2 border-slate-700">
-              <div className="p-4 bg-slate-800/50 rounded-full w-fit mx-auto mb-4">
-                <Plus className="w-6 h-6 text-slate-500" />
-              </div>
-              <p className="text-slate-400 mb-6 font-medium">No se encontraron reglas en la base de datos.</p>
-              <button
-                onClick={() => setShowNewRule(true)}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20 transition-all"
-              >
-                Crear Mi Primera Regla
-              </button>
-            </div>
-          )}
-
-          {!loading && !error && rules.length > 0 && (
-            <RulesList
-              rules={rules}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onSetDefault={handleSetDefault}
-            />
-          )}
-        </section>
-        <EmailSettings />
-      </main>
-
-      {/* MODALES */}
+      {/* OVERLAY PARA MÓVIL */}
       <AnimatePresence>
-        {editingRule && (
-          <EditRuleModal
-            rule={editingRule}
-            onClose={() => setEditingRule(null)}
-            onSave={handleSaveRule}
-          />
-        )}
-
-        {showNewRule && (
-          <NewRuleModal
-            onClose={() => setShowNewRule(false)}
-            onCreate={handleCreateRule}
-            onError={(msg) => showToast(msg, "error")}
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMenuOpen(false)}
+            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[45]"
           />
         )}
       </AnimatePresence>
 
-      {/* TOAST NOTIFICATIONS */}
+      {/* SIDEBAR NAVIGATION - Responsivo */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 border-r border-white/5 bg-[#0f1117] flex flex-col p-6 gap-8 transition-transform duration-300 ease-in-out
+        lg:relative lg:translate-x-0 
+        ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="flex items-center gap-3 px-2">
+          <div className="p-2.5 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-600/20">
+            <Brain className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-white tracking-tight">Tuuci Agent</h1>
+            <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Admin Panel</span>
+          </div>
+        </div>
+
+        <nav className="flex flex-col gap-2">
+          <button
+            onClick={() => navigateTo("rules")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'rules' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            Reglas & IA
+          </button>
+          <button
+            onClick={() => navigateTo("items")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'items' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <Box className="w-5 h-5" />
+            Materiales
+          </button>
+        </nav>
+
+        <div className="mt-auto border-t border-white/5 pt-6 px-2">
+          <div className="flex items-center gap-2 text-emerald-500">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Servicio Online</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 overflow-y-auto bg-gradient-to-br from-[#0a0c10] to-[#11141d] relative">
+        <div className="max-w-6xl mx-auto p-4 md:p-8 pt-16 md:pt-10">
+
+          <AnimatePresence mode="wait">
+            {activeTab === "rules" ? (
+              <motion.div
+                key="rules"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-black text-white">Configuración IA</h2>
+                    <p className="text-slate-500 text-xs md:text-sm mt-1">Gestiona las reglas de extracción y destinatarios.</p>
+                  </div>
+                  <button
+                    onClick={() => setShowNewRule(true)}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5 w-full md:w-auto justify-center"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nueva Regla
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+                  <div className="glass p-6 rounded-3xl">
+                    <div className="flex justify-between items-center mb-4">
+                      <LayoutDashboard className="w-5 h-5 text-indigo-400" />
+                      <span className="text-2xl font-black text-white">{rules.length}</span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-slate-400">Reglas Totales</h3>
+                  </div>
+
+                  <div className="glass p-6 rounded-3xl border-indigo-500/20">
+                    <div className="flex justify-between items-center mb-4">
+                      <Brain className="w-5 h-5 text-purple-400" />
+                      <span className="text-2xl font-black text-white">IA</span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-slate-400">Analisis Proactivo</h3>
+                  </div>
+
+                  <div className="glass p-6 rounded-3xl">
+                    <div className="flex justify-between items-center mb-4">
+                      <ScrollText className="w-5 h-5 text-emerald-400" />
+                      <span className="text-2xl font-black text-white">ON</span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-slate-400">Agente Monitor</h3>
+                  </div>
+                </div>
+
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-24 opacity-50">
+                    <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
+                    <p className="text-slate-400 font-medium tracking-wide">Sincronizando...</p>
+                  </div>
+                ) : error ? (
+                  <div className="glass border-red-500/20 bg-red-500/5 p-8 rounded-3xl flex flex-col items-center text-center">
+                    <AlertTriangle className="w-10 h-10 text-red-500 mb-4" />
+                    <h3 className="text-white font-bold mb-2 text-lg">Error de conexión</h3>
+                    <button onClick={fetchRules} className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-bold transition-all mt-4">Reintentar</button>
+                  </div>
+                ) : (
+                  <>
+                    <RulesList rules={rules} onEdit={handleEdit} onDelete={handleDelete} onSetDefault={handleSetDefault} />
+                    <div className="mt-8">
+                      <EmailSettings />
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="items"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-10">
+                  <h2 className="text-2xl md:text-3xl font-black text-white">Inventario</h2>
+                  <p className="text-slate-500 text-xs md:text-sm mt-1">Items configurados para identificación automática.</p>
+                </div>
+                <ItemsManager />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+        </div>
+      </main>
+
+      {/* MODALES & NOTIFICACIONES */}
       <AnimatePresence>
+        {editingRule && (
+          <EditRuleModal rule={editingRule} onClose={() => setEditingRule(null)} onSave={handleSaveRule} />
+        )}
+        {showNewRule && (
+          <NewRuleModal onClose={() => setShowNewRule(false)} onCreate={handleCreateRule} onError={(msg) => showToast(msg, "error")} />
+        )}
         {toast && (
           <motion.div
-            initial={{ opacity: 0, x: 20, y: 0 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.9, x: 20 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
             exit={{ opacity: 0, scale: 0.9, x: 20 }}
-            className={`fixed bottom-8 right-8 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl glass border-l-4 
+            className={`fixed bottom-4 right-4 left-4 md:left-auto md:bottom-8 md:right-8 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl glass border-l-4 
                 ${toast.type === "success" ? "border-l-emerald-500" : toast.type === "error" ? "border-l-red-500" : "border-l-indigo-500"}
             `}
           >
-            <div className={`p-1.5 rounded-lg 
-                ${toast.type === "success" ? "bg-emerald-500/10 text-emerald-500" : toast.type === "error" ? "bg-red-500/10 text-red-500" : "bg-indigo-500/10 text-indigo-500"}
-            `}>
-              {toast.type === "success" ? <CheckCircle className="w-4 h-4" /> : toast.type === "error" ? <AlertTriangle className="w-4 h-4" /> : <Brain className="w-4 h-4" />}
+            <div className={`p-1.5 rounded-lg ${toast.type === "success" ? "bg-emerald-500/10 text-emerald-500" : toast.type === "error" ? "bg-red-500/10 text-red-500" : "bg-indigo-500/10 text-indigo-500"}`}>
+              {toast.type === "success" ? <CheckCircleIcon className="w-4 h-4" /> : toast.type === "error" ? <AlertTriangle className="w-4 h-4" /> : <Brain className="w-4 h-4" />}
             </div>
-            <span className="text-sm font-semibold text-white whitespace-nowrap">{toast.msg}</span>
+            <span className="text-xs md:text-sm font-semibold text-white">{toast.msg}</span>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
+
 }
 
-function CheckCircle(props: any) {
+function CheckCircleIcon(props: any) {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
     </svg>
   );
 }

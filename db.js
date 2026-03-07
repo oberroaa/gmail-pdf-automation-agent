@@ -50,3 +50,11 @@ export async function getEmailsCollection() {
     const database = await connectDB();
     return database.collection("emails");
 }
+
+/**
+ * Helper para obtener la colección de items
+ */
+export async function getItemsCollection() {
+    const database = await connectDB();
+    return database.collection("items");
+}

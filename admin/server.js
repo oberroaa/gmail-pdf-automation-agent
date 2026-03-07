@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import { getRulesCollection, getEmailsCollection } from "../db.js";
+import { getRulesCollection, getEmailsCollection, getItemsCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
 import sendWhatsApp from "../whatsapp.js";
 
@@ -311,6 +311,94 @@ app.use((req, res) => {
     console.log(`[ADMIN-DB] 404 Not Found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({ error: "Ruta no encontrada" });
 });
+
+// ================================
+// GESTIÓN DE ITEMS (Nueva Tabla)
+// ================================
+
+// 1. Obtener todos los items
+router.get("/items", async (req, res) => {
+    try {
+        const collection = await getItemsCollection();
+        const items = await collection.find({}).sort({ createdAt: -1 }).toArray();
+        res.json(items);
+    } catch (err) {
+        console.error("[ADMIN][GET ITEMS]", err);
+        res.status(500).json({ error: "Error al obtener items" });
+    }
+});
+
+// 2. Guardar un nuevo item
+router.post("/items", async (req, res) => {
+    try {
+        const { partNumber, description, qtyReq, uom } = req.body;
+
+        // Aquí es donde definimos la estructura que pediste:
+        const newItem = {
+            partNumber: String(partNumber),
+            description: String(description),
+            qtyReq: Number(qtyReq),
+            uom: String(uom),
+            active: true,             // Activo por defecto
+            createdAt: new Date()
+        };
+
+        const collection = await getItemsCollection();
+        await collection.insertOne(newItem);
+        res.json({ success: true, item: newItem });
+    } catch (err) {
+        console.error("[ADMIN][SAVE ITEM]", err);
+        res.status(500).json({ error: "Error al guardar el item" });
+    }
+});
+
+// 3. Eliminar un item
+router.delete("/items/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { ObjectId } = await import("mongodb");
+        const collection = await getItemsCollection();
+        await collection.deleteOne({ _id: new ObjectId(id) });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("[ADMIN][DELETE ITEM]", err);
+        res.status(500).json({ error: "Error al eliminar" });
+    }
+});
+
+// 4. Editar un item existente
+router.put("/items/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { partNumber, description, qtyReq, uom, active } = req.body;
+        const { ObjectId } = await import("mongodb");
+
+        const updateData = {
+            partNumber: String(partNumber),
+            description: String(description),
+            qtyReq: Number(qtyReq),
+            uom: String(uom),
+            active: Boolean(active), // Permite activar o desactivar
+            updatedAt: new Date()
+        };
+
+        const collection = await getItemsCollection();
+        const result = await collection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updateData }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: "Item no encontrado" });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("[ADMIN][UPDATE ITEM]", err);
+        res.status(500).json({ error: "Error al actualizar el item" });
+    }
+});
+
 
 // ================================
 // EXPORT FOR VERCEL
