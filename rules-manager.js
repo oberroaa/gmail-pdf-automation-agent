@@ -26,21 +26,25 @@ export async function getAllRules() {
 
 /**
  * RESOLVER REGLA
- * NOTA: Ahora es asíncrona.
+ * Busca la regla por nombre, o la que esté marcada como 'isDefault'
  */
 export async function resolveRule(requestedRuleName = null) {
-    const rules = await getAllRules();
+    const collection = await getRulesCollection();
 
-    // 1️⃣ Regla solicitada
-    if (requestedRuleName && rules[requestedRuleName]) {
-        return rules[requestedRuleName];
+    // 1️⃣ Si el email pidió una regla específica por nombre
+    if (requestedRuleName) {
+        const rule = await collection.findOne({ name: requestedRuleName });
+        if (rule) return rule;
     }
 
-    // 2️⃣ Default
-    if (rules.default) {
-        return rules.default;
-    }
+    // 2️⃣ Si no, buscamos la que marcaste como Default (la estrella) en el Dashboard
+    const defaultRule = await collection.findOne({ isDefault: true });
+    if (defaultRule) return defaultRule;
 
-    // 3️⃣ Error real
-    throw new Error("No se pudo resolver ninguna regla válida");
+    // 3️⃣ Si no hay ninguna marcada como default, buscamos una que se llame "default"
+    const fallbackRule = await collection.findOne({ name: "default" });
+    if (fallbackRule) return fallbackRule;
+
+    throw new Error("No se pudo resolver ninguna regla válida. Configura una como 'Default' en el panel.");
 }
+

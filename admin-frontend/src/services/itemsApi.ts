@@ -11,9 +11,16 @@ export interface Item {
     updatedAt?: string;
 }
 
-// 1. Obtener todos los items
-export async function getItems(): Promise<Item[]> {
-    const res = await fetch(`${API_URL}/items`);
+export interface PaginatedResponse {
+    items: Item[];
+    total: number;
+    page: number;
+    totalPages: number;
+}
+
+// 1. Obtener todos los items (con paginación y búsqueda)
+export async function getItems(page: number = 1, limit: number = 10, search: string = ""): Promise<PaginatedResponse> {
+    const res = await fetch(`${API_URL}/items?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
     if (!res.ok) throw new Error("Error obteniendo items");
     return res.json();
 }
@@ -48,3 +55,14 @@ export async function deleteItem(id: string): Promise<void> {
     });
     if (!res.ok) throw new Error("Error al eliminar");
 }
+
+// 5. Eliminar múltiples items
+export async function bulkDeleteItems(ids: string[]): Promise<void> {
+    const res = await fetch(`${API_URL}/items/bulk-delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+    });
+    if (!res.ok) throw new Error("Error en el borrado masivo");
+}
+

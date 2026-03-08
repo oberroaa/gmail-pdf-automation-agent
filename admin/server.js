@@ -300,28 +300,45 @@ router.post("/test-whatsapp", async (req, res) => {
 });
 
 // ================================
-// MOUNT ROUTER
-// ================================
-// Importante: lo montamos en '/' y en '/api' para que funcione en local y en Vercel
-app.use("/api", router);
-app.use("/", router);
-
-// Error 404 handler para cualquier otra cosa
-app.use((req, res) => {
-    console.log(`[ADMIN-DB] 404 Not Found: ${req.method} ${req.originalUrl}`);
-    res.status(404).json({ error: "Ruta no encontrada" });
-});
-
-// ================================
 // GESTIÓN DE ITEMS (Nueva Tabla)
 // ================================
 
-// 1. Obtener todos los items
+// 1. Obtener todos los items (con PAGINACIÓN y BÚSQUEDA)
 router.get("/items", async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || "";
+        const skip = (page - 1) * limit;
+
         const collection = await getItemsCollection();
-        const items = await collection.find({}).sort({ createdAt: -1 }).toArray();
-        res.json(items);
+
+        // Creamos un filtro de búsqueda (busca en partNumber o description)
+        const query = search
+            ? {
+                $or: [
+                    { partNumber: { $regex: search, $options: "i" } },
+                    { description: { $regex: search, $options: "i" } }
+                ]
+            }
+            : {};
+
+        // Obtenemos el total de documentos que coinciden con la búsqueda
+        const total = await collection.countDocuments(query);
+
+        // Obtenemos los items de la página actual filtrados
+        const items = await collection.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+        res.json({
+            items,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
     } catch (err) {
         console.error("[ADMIN][GET ITEMS]", err);
         res.status(500).json({ error: "Error al obtener items" });
@@ -397,6 +414,38 @@ router.put("/items/:id", async (req, res) => {
         console.error("[ADMIN][UPDATE ITEM]", err);
         res.status(500).json({ error: "Error al actualizar el item" });
     }
+});
+
+// 5. Eliminar MÚLTIPLES items
+router.post("/items/bulk-delete", async (req, res) => {
+    try {
+        const { ids } = req.body; // Recibimos array de IDs
+        if (!Array.isArray(ids)) return res.status(400).json({ error: "Se requiere un array de IDs" });
+
+        const { ObjectId } = await import("mongodb");
+        const collection = await getItemsCollection();
+
+        const objectIds = ids.map(id => new ObjectId(id));
+        await collection.deleteMany({ _id: { $in: objectIds } });
+
+        res.json({ success: true, count: ids.length });
+    } catch (err) {
+        console.error("[ADMIN][BULK DELETE]", err);
+        res.status(500).json({ error: "Error en el borrado masivo" });
+    }
+});
+
+// ================================
+// MOUNT ROUTER
+// ================================
+// Importante: lo montamos en '/' y en '/api' para que funcione en local y en Vercel
+app.use("/api", router);
+app.use("/", router);
+
+// Error 404 handler para cualquier otra cosa
+app.use((req, res) => {
+    console.log(`[ADMIN-DB] 404 Not Found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ error: "Ruta no encontrada" });
 });
 
 

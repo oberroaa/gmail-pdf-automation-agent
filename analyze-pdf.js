@@ -1,8 +1,9 @@
 // ================================
-// PDF ANALYZER WITH RULES
+// PDF ANALYZER WITH RULES & LEARNING
 // ================================
 import fs from "fs";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { getItemsCollection } from "./db.js";
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
@@ -30,34 +31,29 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
     const allowedUoms = ruleset.filters?.uom_include || [];
     const allowedPrefixes = ruleset.filters?.material_prefix || [];
 
-    /**
-     * Regex más flexible:
-     * - materiales alfanuméricos largos (OMAS8X12RECT, BMFF8.5HEX, BDA80083)
-     * - cantidad decimal
-     * - UOM separada o pegada
-     */
-    const regex = /\b([A-Z0-9.\-]{5,})\b[\s\S]{0,100}?(\d+(?:\.\d+)?)\s*(FT|EA|MT)\b/gi;
+    // Nueva Regex que captura: [1]PartNumber, [2]Descripción, [3]Cantidad, [4]UOM
+    const regex = /\b([A-Z0-9.\-]{5,})\b\s*([\s\S]{0,150}?)\s*(\d+(?:\.\d+)?)\s*(FT|EA|MT)\b/gi;
 
     const rows = [];
     let match;
 
     while ((match = regex.exec(pdfText)) !== null) {
         const partNumber = match[1];
-        const qty = Number(match[2]);
-        const uom = match[3];
+        // Limpiamos la descripción de saltos de línea y espacios extra
+        const description = match[2].replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+        const qty = Number(match[3]);
+        const uom = match[4];
 
         // 🔹 Filtro UOM
         if (allowedUoms.length && !allowedUoms.includes(uom)) continue;
 
         // 🔹 Filtro prefijo material
         if (allowedPrefixes.length) {
-            const ok = allowedPrefixes.some(prefix =>
-                partNumber.startsWith(prefix)
-            );
+            const ok = allowedPrefixes.some(prefix => partNumber.startsWith(prefix));
             if (!ok) continue;
         }
 
-        rows.push({ partNumber, qty, uom });
+        rows.push({ partNumber, description, qty, uom });
     }
 
     // ================================
@@ -70,11 +66,53 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
 
         grouped[key] ??= {
             partNumber: r.partNumber,
+            description: r.description,
             uom: r.uom,
             total: 0
         };
 
         grouped[key].total += r.qty;
+    }
+
+    // Redondear totales a 2 decimales para evitar números como 550.4630000000001
+    for (const key of Object.keys(grouped)) {
+        grouped[key].total = parseFloat(grouped[key].total.toFixed(2));
+    }
+
+    // ================================
+    // GUARDADO AUTOMÁTICO / ACTUALIZACIÓN EN DB
+    // ================================
+    try {
+        const itemsColl = await getItemsCollection();
+
+        for (const key of Object.keys(grouped)) {
+            const r = grouped[key];
+
+            // Buscamos si el Part Number ya existe
+            const existing = await itemsColl.findOne({ partNumber: r.partNumber });
+
+            if (!existing) {
+                // ESCENARIO 1: El material es nuevo, lo creamos completo
+                console.log(`🆕 Guardando nuevo: ${r.partNumber} (${r.description})`);
+                await itemsColl.insertOne({
+                    partNumber: r.partNumber,
+                    description: r.description || "Sin descripción",
+                    qtyReq: r.total,
+                    uom: r.uom,
+                    active: true,
+                    createdAt: new Date()
+                });
+            } else {
+                // ESCENARIO 2: Ya existe, SOLO actualizamos la cantidad (qtyReq)
+                console.log(`🆙 Actualizando Cantidad para: ${r.partNumber} -> ${r.total}`);
+                await itemsColl.updateOne(
+                    { partNumber: r.partNumber },
+                    { $set: { qtyReq: r.total, updatedAt: new Date() } }
+                );
+            }
+        }
+    } catch (dbError) {
+        console.error("❌ Error actualizando la base de datos de items:", dbError);
     }
 
     // ================================
