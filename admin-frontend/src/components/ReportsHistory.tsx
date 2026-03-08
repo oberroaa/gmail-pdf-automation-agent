@@ -76,19 +76,19 @@ export default function ReportsHistory() {
                                         <table className="w-full text-xs text-left min-w-[500px]">
                                             <thead>
                                                 <tr className="text-slate-500 font-bold uppercase tracking-widest border-b border-slate-700/50">
-                                                    <th className="pb-2">Part Number</th>
-                                                    <th className="pb-2">Descripción</th>
-                                                    <th className="pb-2 text-center">Qty</th>
-                                                    <th className="pb-2 text-center">UOM</th>
+                                                    <th className="pb-2 min-w-[120px]">Part Number</th>
+                                                    <th className="pb-2 min-w-[200px]">Descripción</th>
+                                                    <th className="pb-2 text-center w-20">Qty</th>
+                                                    <th className="pb-2 text-center w-20" translate="no">UOM</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="text-slate-300">
                                                 {report.itemsFound.map((item, idx) => (
                                                     <tr key={idx} className="border-b border-slate-700/20 last:border-0 hover:bg-white/5">
-                                                        <td className="py-2 font-mono text-indigo-300">{item.partNumber}</td>
-                                                        <td className="py-2 pr-4">{item.description}</td>
-                                                        <td className="py-2 text-center font-bold text-white">{item.qty.toFixed(2)}</td>
-                                                        <td className="py-2 text-center text-slate-500 font-medium">{item.uom}</td>
+                                                        <td className="py-2 font-mono text-indigo-300 whitespace-nowrap">{item.partNumber}</td>
+                                                        <td className="py-2 pr-4 text-[10px] leading-tight text-slate-400">{item.description}</td>
+                                                        <td className="py-2 text-center font-bold text-white whitespace-nowrap">{item.qty.toFixed(2)}</td>
+                                                        <td className="py-2 text-center text-slate-500 font-medium whitespace-nowrap" translate="no">{item.uom}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
