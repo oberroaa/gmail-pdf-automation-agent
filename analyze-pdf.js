@@ -94,6 +94,7 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
             if (!existing) {
                 // ESCENARIO 1: El material es nuevo, lo creamos completo
                 console.log(`🆕 Guardando nuevo: ${r.partNumber} (${r.description})`);
+                r.active = true; // Por defecto activo
                 await itemsColl.insertOne({
                     partNumber: r.partNumber,
                     description: r.description || "Sin descripción",
@@ -103,8 +104,12 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
                     createdAt: new Date()
                 });
             } else {
-                // ESCENARIO 2: Ya existe, SOLO actualizamos la cantidad (qtyReq)
+                // ESCENARIO 2: Ya existe
                 console.log(`🆙 Actualizando Cantidad para: ${r.partNumber} -> ${r.total}`);
+
+                // Guardamos su estado actual en el objeto grouped para el reporte
+                r.active = existing.active !== false;
+
                 await itemsColl.updateOne(
                     { partNumber: r.partNumber },
                     { $set: { qtyReq: r.total, updatedAt: new Date() } }
@@ -121,22 +126,29 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
     try {
         const reportsColl = await getReportsCollection();
 
-        // Creamos el objeto del reporte
-        const newReport = {
-            fileName: pdfPath.split(/[\\/]/).pop(), // Extrae el nombre del archivo
-            date: new Date(),
-            itemsFound: Object.values(grouped).map(item => ({
-                partNumber: item.partNumber,
-                description: item.description,
-                qty: item.total,
-                uom: item.uom // <-- UOM incluido
-            })),
-            totalItems: Object.keys(grouped).length,
-            status: "Procesado"
-        };
+        // Filtramos solo los items que están ACTIVOS
+        const activeItems = Object.values(grouped).filter(item => item.active !== false);
 
-        await reportsColl.insertOne(newReport);
-        console.log(`📊 Reporte guardado en base de datos para: ${newReport.fileName}`);
+        if (activeItems.length > 0) {
+            // Creamos el objeto del reporte
+            const newReport = {
+                fileName: pdfPath.split(/[\\/]/).pop(),
+                date: new Date(),
+                itemsFound: activeItems.map(item => ({
+                    partNumber: item.partNumber,
+                    description: item.description,
+                    qty: item.total,
+                    uom: item.uom
+                })),
+                totalItems: activeItems.length,
+                status: "Procesado"
+            };
+
+            await reportsColl.insertOne(newReport);
+            console.log(`📊 Reporte guardado (solo items activos) para: ${newReport.fileName}`);
+        } else {
+            console.log(`ℹ️ No se generó reporte para ${pdfPath.split(/[\\/]/).pop()} porque todos los items encontrados están inactivos.`);
+        }
     } catch (reportError) {
         console.error("❌ Error guardando el reporte:", reportError);
     }
