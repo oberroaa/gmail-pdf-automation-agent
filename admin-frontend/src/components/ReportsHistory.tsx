@@ -72,26 +72,28 @@ export default function ReportsHistory() {
 
                             {expandedId === report._id && (
                                 <div className="p-4 bg-slate-900/40 border-t border-slate-700/50 animate-in slide-in-from-top-2 duration-300">
-                                    <table className="w-full text-xs text-left">
-                                        <thead>
-                                            <tr className="text-slate-500 font-bold uppercase tracking-widest border-b border-slate-700/50">
-                                                <th className="pb-2">Part Number</th>
-                                                <th className="pb-2">Descripción</th>
-                                                <th className="pb-2 text-center">Qty</th>
-                                                <th className="pb-2 text-center">UOM</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="text-slate-300">
-                                            {report.itemsFound.map((item, idx) => (
-                                                <tr key={idx} className="border-b border-slate-700/20 last:border-0 hover:bg-white/5">
-                                                    <td className="py-2 font-mono text-indigo-300">{item.partNumber}</td>
-                                                    <td className="py-2 pr-4">{item.description}</td>
-                                                    <td className="py-2 text-center font-bold text-white">{item.qty.toFixed(2)}</td>
-                                                    <td className="py-2 text-center text-slate-500 font-medium">{item.uom}</td>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-xs text-left min-w-[500px]">
+                                            <thead>
+                                                <tr className="text-slate-500 font-bold uppercase tracking-widest border-b border-slate-700/50">
+                                                    <th className="pb-2">Part Number</th>
+                                                    <th className="pb-2">Descripción</th>
+                                                    <th className="pb-2 text-center">Qty</th>
+                                                    <th className="pb-2 text-center">UOM</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="text-slate-300">
+                                                {report.itemsFound.map((item, idx) => (
+                                                    <tr key={idx} className="border-b border-slate-700/20 last:border-0 hover:bg-white/5">
+                                                        <td className="py-2 font-mono text-indigo-300">{item.partNumber}</td>
+                                                        <td className="py-2 pr-4">{item.description}</td>
+                                                        <td className="py-2 text-center font-bold text-white">{item.qty.toFixed(2)}</td>
+                                                        <td className="py-2 text-center text-slate-500 font-medium">{item.uom}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             )}
                         </div>
