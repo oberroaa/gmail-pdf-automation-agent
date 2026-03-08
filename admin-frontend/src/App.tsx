@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
+import ReportsHistory from "./components/ReportsHistory";
 import {
   getRules,
   deleteRule,
@@ -22,7 +23,7 @@ export default function App() {
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [activeTab, setActiveTab] = useState<"rules" | "items">("rules");
+  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports">("rules");
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -43,9 +44,9 @@ export default function App() {
     fetchRules();
   }, []);
 
-  const navigateTo = (tab: "rules" | "items") => {
+  const navigateTo = (tab: "rules" | "items" | "reports") => {
     setActiveTab(tab);
-    setIsMenuOpen(false); // Cierra el menú al navegar
+    setIsMenuOpen(false);
   };
 
   const showToast = (msg: string, type: "success" | "error" | "info" = "success") => {
@@ -97,7 +98,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex bg-[#0a0c10] text-slate-200 overflow-hidden font-sans relative">
 
-      {/* BOTÓN MENÚ MÓVIL (Solo visible en móviles) */}
+      {/* BOTÓN MENÚ MÓVIL */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         className="lg:hidden fixed top-4 right-4 z-[60] p-3 bg-indigo-600 rounded-xl shadow-lg text-white hover:bg-indigo-500 transition-colors"
@@ -118,7 +119,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* SIDEBAR NAVIGATION - Responsivo */}
+      {/* SIDEBAR NAVIGATION */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-64 border-r border-white/5 bg-[#0f1117] flex flex-col p-6 gap-8 transition-transform duration-300 ease-in-out
         lg:relative lg:translate-x-0 
@@ -148,6 +149,13 @@ export default function App() {
           >
             <Box className="w-5 h-5" />
             Materiales
+          </button>
+          <button
+            onClick={() => navigateTo("reports")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'reports' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <ClipboardList className="w-5 h-5" />
+            Historial
           </button>
         </nav>
 
@@ -187,27 +195,19 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-                  <div className="glass p-6 rounded-3xl">
-                    <div className="flex justify-between items-center mb-4">
-                      <LayoutDashboard className="w-5 h-5 text-indigo-400" />
-                      <span className="text-2xl font-black text-white">{rules.length}</span>
-                    </div>
+                  <div className="glass p-6 rounded-3xl text-center">
+                    <LayoutDashboard className="w-5 h-5 text-indigo-400 mx-auto mb-2" />
+                    <span className="text-2xl font-black text-white block">{rules.length}</span>
                     <h3 className="text-sm font-semibold text-slate-400">Reglas Totales</h3>
                   </div>
-
-                  <div className="glass p-6 rounded-3xl border-indigo-500/20">
-                    <div className="flex justify-between items-center mb-4">
-                      <Brain className="w-5 h-5 text-purple-400" />
-                      <span className="text-2xl font-black text-white">IA</span>
-                    </div>
+                  <div className="glass p-6 rounded-3xl text-center">
+                    <Brain className="w-5 h-5 text-purple-400 mx-auto mb-2" />
+                    <span className="text-2xl font-black text-white block">IA</span>
                     <h3 className="text-sm font-semibold text-slate-400">Analisis Proactivo</h3>
                   </div>
-
-                  <div className="glass p-6 rounded-3xl">
-                    <div className="flex justify-between items-center mb-4">
-                      <ScrollText className="w-5 h-5 text-emerald-400" />
-                      <span className="text-2xl font-black text-white">ON</span>
-                    </div>
+                  <div className="glass p-6 rounded-3xl text-center">
+                    <ScrollText className="w-5 h-5 text-emerald-400 mx-auto mb-2" />
+                    <span className="text-2xl font-black text-white block">ON</span>
                     <h3 className="text-sm font-semibold text-slate-400">Agente Monitor</h3>
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export default function App() {
                   </>
                 )}
               </motion.div>
-            ) : (
+            ) : activeTab === "items" ? (
               <motion.div
                 key="items"
                 initial={{ opacity: 0, x: -10 }}
@@ -245,6 +245,20 @@ export default function App() {
                   <p className="text-slate-500 text-xs md:text-sm mt-1">Items configurados para identificación automática.</p>
                 </div>
                 <ItemsManager />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="reports"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-10">
+                  <h2 className="text-2xl md:text-3xl font-black text-white">Historial de Reportes</h2>
+                  <p className="text-slate-500 text-xs md:text-sm mt-1">Consulta los resultados de los análisis diarios.</p>
+                </div>
+                <ReportsHistory />
               </motion.div>
             )}
           </AnimatePresence>
@@ -278,7 +292,6 @@ export default function App() {
       </AnimatePresence>
     </div>
   );
-
 }
 
 function CheckCircleIcon(props: any) {

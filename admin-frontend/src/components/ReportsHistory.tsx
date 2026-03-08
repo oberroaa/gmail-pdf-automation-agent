@@ -1,0 +1,103 @@
+import { useEffect, useState } from "react";
+import { getReports, type Report } from "../services/reportsApi";
+import { ClipboardList, Calendar, FileText, ChevronDown, ChevronUp, Loader2, AlertCircle } from "lucide-react";
+
+export default function ReportsHistory() {
+    const [reports, setReports] = useState<Report[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+
+    const loadReports = async () => {
+        try {
+            setLoading(true);
+            const data = await getReports(1, 50); // Traemos los últimos 50
+            setReports(data.reports);
+        } catch (err) {
+            console.error("Error cargando reportes", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadReports();
+    }, []);
+
+    const toggleExpand = (id: string) => {
+        setExpandedId(expandedId === id ? null : id);
+    };
+
+    return (
+        <div className="glass p-6 rounded-3xl mt-8">
+            <div className="flex items-center gap-3 mb-8">
+                <ClipboardList className="w-5 h-5 text-indigo-400" />
+                <h2 className="text-xl font-bold text-white">Historial de Análisis</h2>
+            </div>
+
+            {loading ? (
+                <div className="text-center py-20"><Loader2 className="animate-spin mx-auto text-indigo-500 w-10 h-10" /></div>
+            ) : reports.length === 0 ? (
+                <div className="text-center py-20">
+                    <AlertCircle className="w-10 h-10 text-slate-600 mx-auto mb-4" />
+                    <p className="text-slate-500 italic">No hay registros de análisis aún.</p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {reports.map((report) => (
+                        <div key={report._id} className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden transition-all hover:bg-slate-800/60">
+                            <div
+                                className="p-4 flex items-center justify-between cursor-pointer"
+                                onClick={() => toggleExpand(report._id)}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-indigo-500/10 rounded-xl">
+                                        <FileText className="w-5 h-5 text-indigo-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-bold text-sm">{report.fileName}</h3>
+                                        <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(report.date).toLocaleString()}</span>
+                                            <span className="text-slate-600">|</span>
+                                            <span>{report.totalItems} materiales encontrados</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-emerald-500/20">
+                                        Procesado
+                                    </span>
+                                    {expandedId === report._id ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
+                                </div>
+                            </div>
+
+                            {expandedId === report._id && (
+                                <div className="p-4 bg-slate-900/40 border-t border-slate-700/50 animate-in slide-in-from-top-2 duration-300">
+                                    <table className="w-full text-xs text-left">
+                                        <thead>
+                                            <tr className="text-slate-500 font-bold uppercase tracking-widest border-b border-slate-700/50">
+                                                <th className="pb-2">Part Number</th>
+                                                <th className="pb-2">Descripción</th>
+                                                <th className="pb-2 text-center">Qty</th>
+                                                <th className="pb-2 text-center">UOM</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-slate-300">
+                                            {report.itemsFound.map((item, idx) => (
+                                                <tr key={idx} className="border-b border-slate-700/20 last:border-0 hover:bg-white/5">
+                                                    <td className="py-2 font-mono text-indigo-300">{item.partNumber}</td>
+                                                    <td className="py-2 pr-4">{item.description}</td>
+                                                    <td className="py-2 text-center font-bold text-white">{item.qty.toFixed(2)}</td>
+                                                    <td className="py-2 text-center text-slate-500 font-medium">{item.uom}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}

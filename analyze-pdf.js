@@ -3,7 +3,7 @@
 // ================================
 import fs from "fs";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import { getItemsCollection } from "./db.js";
+import { getItemsCollection, getReportsCollection } from "./db.js";
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
@@ -114,6 +114,33 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
     } catch (dbError) {
         console.error("❌ Error actualizando la base de datos de items:", dbError);
     }
+
+    // ================================
+    // GUARDADO DE REPORTE (Historial)
+    // ================================
+    try {
+        const reportsColl = await getReportsCollection();
+
+        // Creamos el objeto del reporte
+        const newReport = {
+            fileName: pdfPath.split(/[\\/]/).pop(), // Extrae el nombre del archivo
+            date: new Date(),
+            itemsFound: Object.values(grouped).map(item => ({
+                partNumber: item.partNumber,
+                description: item.description,
+                qty: item.total,
+                uom: item.uom // <-- UOM incluido
+            })),
+            totalItems: Object.keys(grouped).length,
+            status: "Procesado"
+        };
+
+        await reportsColl.insertOne(newReport);
+        console.log(`📊 Reporte guardado en base de datos para: ${newReport.fileName}`);
+    } catch (reportError) {
+        console.error("❌ Error guardando el reporte:", reportError);
+    }
+
 
     // ================================
     // OUTPUT HUMANO

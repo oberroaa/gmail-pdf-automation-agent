@@ -58,3 +58,11 @@ export async function getItemsCollection() {
     const database = await connectDB();
     return database.collection("items");
 }
+
+/**
+ * Helper para obtener la colección de reportes
+ */
+export async function getReportsCollection() {
+    const database = await connectDB();
+    return database.collection("reports");
+}

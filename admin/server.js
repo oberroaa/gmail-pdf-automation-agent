@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import { getRulesCollection, getEmailsCollection, getItemsCollection } from "../db.js";
+import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
 import sendWhatsApp from "../whatsapp.js";
 
@@ -446,6 +446,33 @@ app.use("/", router);
 app.use((req, res) => {
     console.log(`[ADMIN-DB] 404 Not Found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({ error: "Ruta no encontrada" });
+});
+
+// ================================
+// HISTORIAL DE REPORTES
+// ================================
+
+// Obtener todos los reportes (paginados)
+router.get("/reports", async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const collection = await getReportsCollection();
+        const total = await collection.countDocuments();
+
+        const reports = await collection.find({})
+            .sort({ date: -1 }) // Los más nuevos primero
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+        res.json({ reports, total, page, totalPages: Math.ceil(total / limit) });
+    } catch (err) {
+        console.error("[ADMIN][GET REPORTS]", err);
+        res.status(500).json({ error: "Error al obtener historial" });
+    }
 });
 
 
