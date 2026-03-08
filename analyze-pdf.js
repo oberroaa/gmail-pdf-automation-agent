@@ -105,14 +105,15 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
                 });
             } else {
                 // ESCENARIO 2: Ya existe
-                console.log(`🆙 Actualizando Cantidad para: ${r.partNumber} -> ${r.total}`);
+                const newQty = parseFloat(((existing.qtyReq || 0) + r.total).toFixed(2));
+                console.log(`🆙 Sumando Cantidad para: ${r.partNumber} -> ${existing.qtyReq} + ${r.total} = ${newQty}`);
 
                 // Guardamos su estado actual en el objeto grouped para el reporte
                 r.active = existing.active !== false;
 
                 await itemsColl.updateOne(
                     { partNumber: r.partNumber },
-                    { $set: { qtyReq: r.total, updatedAt: new Date() } }
+                    { $set: { qtyReq: newQty, updatedAt: new Date() } }
                 );
             }
         }
