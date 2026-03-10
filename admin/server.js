@@ -390,14 +390,20 @@ router.put("/items/:id", async (req, res) => {
         const { partNumber, description, qtyReq, uom, active } = req.body;
         const { ObjectId } = await import("mongodb");
 
-        const updateData = {
-            partNumber: String(partNumber),
-            description: String(description),
-            qtyReq: Number(qtyReq),
-            uom: String(uom),
-            active: Boolean(active), // Permite activar o desactivar
-            updatedAt: new Date()
-        };
+        // 1. Creamos un objeto de actualización vacío pero con la fecha de hoy
+        const updateData = { updatedAt: new Date() };
+
+        // 2. Solo agregamos al objeto lo que realmente venga en el "body"
+        if (partNumber !== undefined) updateData.partNumber = String(partNumber);
+        if (description !== undefined) updateData.description = String(description);
+        if (uom !== undefined) updateData.uom = String(uom);
+        if (active !== undefined) updateData.active = Boolean(active);
+
+        // 3. Para la cantidad, aseguramos que sea entero solo si se envió una cantidad
+        if (qtyReq !== undefined) {
+            updateData.qtyReq = Math.round(Number(qtyReq) || 0);
+        }
+
 
         const collection = await getItemsCollection();
         const result = await collection.updateOne(
