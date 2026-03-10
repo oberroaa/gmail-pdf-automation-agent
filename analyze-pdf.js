@@ -92,30 +92,32 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
             const existing = await itemsColl.findOne({ partNumber: r.partNumber });
 
             if (!existing) {
-                // ESCENARIO 1: El material es nuevo, lo creamos completo
-                console.log(`🆕 Guardando nuevo: ${r.partNumber} (${r.description})`);
-                r.active = true; // Por defecto activo
+                // ESCENARIO 1: El material es nuevo, lo creamos con cantidad 0
+                console.log(`🆕 Registrando nuevo material: ${r.partNumber} con balance inicial 0`);
                 await itemsColl.insertOne({
                     partNumber: r.partNumber,
                     description: r.description || "Sin descripción",
-                    qtyReq: r.total,
+                    qtyReq: 0, // 👈 Forzamos que empiece en 0 como pediste
                     uom: r.uom,
                     active: true,
                     createdAt: new Date()
                 });
+                r.active = true;
             } else {
                 // ESCENARIO 2: Ya existe
-                const newQty = parseFloat(((existing.qtyReq || 0) + r.total).toFixed(2));
-                console.log(`🆙 Sumando Cantidad para: ${r.partNumber} -> ${existing.qtyReq} + ${r.total} = ${newQty}`);
+                console.log(`ℹ️ El material ${r.partNumber} ya existe. No se modifica el inventario.`);
 
-                // Guardamos su estado actual en el objeto grouped para el reporte
+                // Mantenemos el estado activo del registro existente para el reporte
                 r.active = existing.active !== false;
 
+                // Solo actualizamos la fecha de "última vez visto" o descripción si quieres,
+                // pero NO actualizamos qtyReq (el inventario)
                 await itemsColl.updateOne(
                     { partNumber: r.partNumber },
-                    { $set: { qtyReq: newQty, updatedAt: new Date() } }
+                    { $set: { updatedAt: new Date() } }
                 );
             }
+
         }
     } catch (dbError) {
         console.error("❌ Error actualizando la base de datos de items:", dbError);

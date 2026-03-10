@@ -354,7 +354,7 @@ router.post("/items", async (req, res) => {
         const newItem = {
             partNumber: String(partNumber),
             description: String(description),
-            qtyReq: Number(qtyReq),
+            qtyReq: Math.round(Number(qtyReq) || 0), // 👈 Convierte a entero
             uom: String(uom),
             active: true,             // Activo por defecto
             createdAt: new Date()
