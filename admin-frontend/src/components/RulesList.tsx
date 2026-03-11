@@ -15,10 +15,16 @@ export default function RulesList({
     onDelete,
     onSetDefault,
 }: RulesListProps) {
+    const sortedRules = [...rules].sort((a, b) => {
+        if (a.isDefault) return -1;
+        if (b.isDefault) return 1;
+        return 0;
+    });
+
     return (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
-                {rules.map((rule, index) => {
+                {sortedRules.map((rule, index) => {
                     const isDefault = rule.isDefault;
 
                     return (

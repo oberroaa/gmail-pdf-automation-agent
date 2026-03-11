@@ -77,7 +77,7 @@ router.get("/health", (req, res) => {
 router.get("/rules", async (req, res) => {
     try {
         const collection = await getRulesCollection();
-        const rules = await collection.find({}).sort({ name: 1 }).toArray();
+        const rules = await collection.find({}).sort({ isDefault: -1, name: 1 }).toArray();
         console.log(`[ADMIN] Se encontraron ${rules.length} reglas`);
 
         const frontRules = rules.map(r => ({
