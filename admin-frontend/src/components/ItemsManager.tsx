@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { getItems, saveItem, deleteItem, updateItem, bulkDeleteItems, type Item } from "../services/itemsApi";
-import { Boxes, Plus, Trash2, Loader2, CheckCircle2, XCircle, Search, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+    Boxes, Plus, Trash2, Loader2, CheckCircle2, XCircle,
+    Search, AlertCircle, ChevronLeft, ChevronRight, Pencil, Save, X
+} from "lucide-react";
 
 export default function ItemsManager() {
     const [items, setItems] = useState<Item[]>([]);
@@ -24,6 +27,10 @@ export default function ItemsManager() {
         qtyReq: 0,
         uom: "EA"
     });
+    // Estados para edición
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editFormData, setEditFormData] = useState<Partial<Item>>({});
+
 
     const loadItems = async () => {
         try {
@@ -112,6 +119,28 @@ export default function ItemsManager() {
             alert("Error en el borrado masivo");
         }
     };
+
+    const startEditing = (item: Item) => {
+        setEditingId(item._id!);
+        setEditFormData({ ...item });
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditFormData({});
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingId) return;
+        try {
+            await updateItem(editingId, editFormData);
+            setEditingId(null);
+            await loadItems();
+        } catch (err) {
+            alert("Error al guardar los cambios");
+        }
+    };
+
 
     return (
         <div className="glass p-6 rounded-3xl mt-8">
@@ -217,12 +246,37 @@ export default function ItemsManager() {
                                         onChange={() => toggleSelect(item._id!)}
                                     />
                                 </td>
-                                <td className="px-4 py-3 border-y border-slate-700/50 text-white font-medium text-sm">{item.partNumber}</td>
-                                <td className="px-4 py-3 border-y border-slate-700/50 text-slate-300 text-sm max-w-xs truncate">{item.description}</td>
-                                <td className="px-4 py-3 border-y border-slate-700/50 text-center text-white text-sm font-bold">
-                                    {typeof item.qtyReq === 'number' ? item.qtyReq.toFixed(2) : item.qtyReq}
+                                <td className="px-4 py-3 border-y border-slate-700/50 text-white font-medium text-sm">
+                                    {editingId === item._id ? (
+                                        <input
+                                            className="bg-slate-700 border border-indigo-500 rounded px-2 py-1 text-white w-full"
+                                            value={editFormData.partNumber}
+                                            onChange={e => setEditFormData({ ...editFormData, partNumber: e.target.value })}
+                                        />
+                                    ) : item.partNumber}
                                 </td>
-                                <td className="px-4 py-3 border-y border-slate-700/50 text-center text-slate-400 text-xs">{item.uom}</td>
+                                <td className="px-4 py-3 border-y border-slate-700/50 text-slate-300 text-sm max-w-xs truncate">
+                                    {editingId === item._id ? (
+                                        <input
+                                            className="bg-slate-700 border border-indigo-500 rounded px-2 py-1 text-white w-full"
+                                            value={editFormData.description}
+                                            onChange={e => setEditFormData({ ...editFormData, description: e.target.value })}
+                                        />
+                                    ) : item.description}
+                                </td>
+                                <td className="px-4 py-3 border-y border-slate-700/50 text-center text-white text-sm font-bold">
+                                    {editingId === item._id ? (
+                                        <input
+                                            type="number"
+                                            className="bg-slate-700 border border-indigo-500 rounded px-2 py-1 text-white w-20 text-center"
+                                            value={editFormData.qtyReq}
+                                            onChange={e => setEditFormData({ ...editFormData, qtyReq: Number(e.target.value) })}
+                                        />
+                                    ) : (typeof item.qtyReq === 'number' ? item.qtyReq.toFixed(0) : item.qtyReq)}
+                                </td>
+                                <td className="px-4 py-3 border-y border-slate-700/50 text-center text-slate-400 text-xs">
+                                    {item.uom}
+                                </td>
                                 <td className="px-4 py-3 border-y border-slate-700/50 text-center">
                                     <button onClick={() => toggleActive(item)}>
                                         {item.active ?
@@ -231,10 +285,26 @@ export default function ItemsManager() {
                                         }
                                     </button>
                                 </td>
-                                <td className="px-4 py-3 rounded-r-xl border-y border-r border-slate-700/50 text-right">
-                                    <button onClick={() => handleDelete(item._id!)} className="text-slate-500 hover:text-red-400 p-2">
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                <td className="px-4 py-3 rounded-r-xl border-y border-r border-slate-700/50 text-right space-x-2">
+                                    {editingId === item._id ? (
+                                        <>
+                                            <button onClick={handleSaveEdit} className="text-emerald-400 hover:text-emerald-300 p-1" title="Guardar">
+                                                <Save className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={cancelEdit} className="text-slate-400 hover:text-white p-1" title="Cancelar">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button onClick={() => startEditing(item)} className="text-slate-500 hover:text-indigo-400 p-1" title="Editar">
+                                                <Pencil className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => handleDelete(item._id!)} className="text-slate-500 hover:text-red-400 p-1" title="Eliminar">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))}
