@@ -455,42 +455,49 @@ router.post("/upload-pdf", upload.single("pdfFile"), async (req, res) => {
             return res.status(400).json({ error: "Por favor, selecciona un archivo PDF." });
         }
 
-        // 1. Buscar la regla por defecto en MongoDB
+        // --- CAMBIO AQUÍ: Obtener el nombre de la regla del body ---
+        const { ruleName } = req.body;
         const rulesCollection = await getRulesCollection();
-        const defaultRule = await rulesCollection.findOne({ isDefault: true });
 
-        if (!defaultRule) {
-            // Borrar archivo temporal y devolver error
-            fs.unlinkSync(req.file.path);
-            return res.status(400).json({ error: "No se encontró ninguna regla predeterminada (default) activa." });
+        let selectedRule;
+
+        // Si el usuario seleccionó una regla específica, la buscamos
+        if (ruleName) {
+            selectedRule = await rulesCollection.findOne({ name: ruleName });
         }
 
-        // 2. Analizar el PDF usando la función existente de tu agente
-        console.log(`[ADMIN] Analizando PDF manual: ${req.file.originalname}`);
+        // Si no se envió regla o no se encontró, usamos la default
+        if (!selectedRule) {
+            selectedRule = await rulesCollection.findOne({ isDefault: true });
+        }
 
-        // Asignamos el nombre original al archivo temporalmente para que el historial lo guarde bien
+        if (!selectedRule) {
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+            return res.status(400).json({ error: "No se encontró la regla seleccionada ni una regla predeterminada." });
+        }
+
+        console.log(`[ADMIN] Analizando PDF con regla: ${selectedRule.name}`);
+
+        // Preparar archivo temporal
         const tempPath = req.file.path;
         const tempPathWithName = tempPath + "-" + req.file.originalname;
         fs.renameSync(tempPath, tempPathWithName);
 
-        // Ejecutamos tu analizador (analiza, guarda inventario y guarda reporte automáticamente)
-        const resultText = await analyzePdfWithRules(tempPathWithName, defaultRule.ruleset || defaultRule);
+        // --- CAMBIO AQUÍ: Usamos selectedRule para el análisis ---
+        const resultText = await analyzePdfWithRules(tempPathWithName, selectedRule.ruleset || selectedRule);
 
-        // 3. Limpieza: Eliminar el archivo temporal para no llenar el servidor
-        fs.unlinkSync(tempPathWithName);
+        // Limpieza
+        if (fs.existsSync(tempPathWithName)) fs.unlinkSync(tempPathWithName);
 
-        // 4. Responder al Frontend que todo salió bien
         res.json({
             success: true,
-            message: "Análisis completado exitosamente",
+            message: `Análisis completado con regla "${selectedRule.name}"`,
             result: resultText
         });
 
     } catch (err) {
         console.error("[ADMIN][UPLOAD PDF]", err);
-        // Intentar borrar archivo en caso de error si aún existe
         if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-
         res.status(500).json({ error: "Ocurrió un error al analizar el PDF." });
     }
 });
@@ -542,9 +549,9 @@ router.delete("/reports/:id", async (req, res) => {
         const { id } = req.params;
         const { ObjectId } = await import("mongodb");
         const collection = await getReportsCollection();
-        
+
         const result = await collection.deleteOne({ _id: new ObjectId(id) });
-        
+
         if (result.deletedCount === 0) {
             return res.status(404).json({ error: "Reporte no encontrado" });
         }
