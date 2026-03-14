@@ -38,8 +38,13 @@ export default async function sendWhatsApp(message) {
 
             const textData = await textResponse.json();
 
-            // 2. Si falla porque la ventana de 24h está cerrada (error 131047)
-            if (!textResponse.ok && textData.error?.code === 131047) {
+            // NUEVO: Verificamos qué error nos está devolviendo la API de Meta
+            if (!textResponse.ok) {
+                console.log(`⚠️ Error de Meta al enviar texto a ${to}:`, JSON.stringify(textData.error));
+            }
+
+            // 2. Si falla porque la ventana de 24h está cerrada (error 131047, 131026 o similar)
+            if (!textResponse.ok && (textData.error?.code === 131047 || textData.error?.code === 131026 || textData.error?.code === 135000)) {
                 console.log(`⚠️ Ventana de 24h cerrada para ${to}. Abriendo con template...`);
 
                 // Enviamos template para abrir ventana

@@ -14,6 +14,7 @@ import {
   updateRule,
   type Rule,
 } from "./services/rulesApi";
+import ManualAnalyzer from './components/ManualAnalyzer';
 
 export default function App() {
   const [rules, setRules] = useState<Rule[]>([]);
@@ -23,7 +24,8 @@ export default function App() {
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports">("rules");
+  // Añadimos el nuevo estado al tipo de la pestaña activa
+  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf">("rules");
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -44,7 +46,7 @@ export default function App() {
     fetchRules();
   }, []);
 
-  const navigateTo = (tab: "rules" | "items" | "reports") => {
+  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf") => {
     setActiveTab(tab);
     setIsMenuOpen(false);
   };
@@ -143,6 +145,7 @@ export default function App() {
             <LayoutDashboard className="w-5 h-5" />
             Reglas & IA
           </button>
+
           <button
             onClick={() => navigateTo("items")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'items' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
@@ -150,12 +153,23 @@ export default function App() {
             <Box className="w-5 h-5" />
             Materiales
           </button>
+
           <button
             onClick={() => navigateTo("reports")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'reports' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
           >
             <ClipboardList className="w-5 h-5" />
             Historial
+          </button>
+
+          <button
+            onClick={() => navigateTo("manual-pdf")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'manual-pdf' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            Procesar PDF
           </button>
         </nav>
 
@@ -232,6 +246,7 @@ export default function App() {
                   </>
                 )}
               </motion.div>
+
             ) : activeTab === "items" ? (
               <motion.div
                 key="items"
@@ -246,7 +261,8 @@ export default function App() {
                 </div>
                 <ItemsManager />
               </motion.div>
-            ) : (
+
+            ) : activeTab === "reports" ? (
               <motion.div
                 key="reports"
                 initial={{ opacity: 0, x: -10 }}
@@ -260,7 +276,22 @@ export default function App() {
                 </div>
                 <ReportsHistory />
               </motion.div>
-            )}
+
+            ) : activeTab === "manual-pdf" ? (
+              <motion.div
+                key="manual-pdf"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-10">
+                  <h2 className="text-2xl md:text-3xl font-black text-white">Analizador Manual de PDF</h2>
+                  <p className="text-slate-500 text-xs md:text-sm mt-1">Sube un PDF para análisis inmediato.</p>
+                </div>
+                <ManualAnalyzer />
+              </motion.div>
+            ) : null}
           </AnimatePresence>
 
         </div>

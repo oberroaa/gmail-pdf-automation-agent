@@ -9,6 +9,9 @@ import cors from "cors";
 import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
 import sendWhatsApp from "../whatsapp.js";
+import multer from "multer";
+import analyzePdfWithRules from "../analyze-pdf.js";
+import fs from "fs";
 
 // ================================
 // PATHS & ENV
@@ -27,6 +30,8 @@ dotenv.config({
 const app = express();
 const router = express.Router();
 const PORT = process.env.ADMIN_PORT || 3001;
+// Configuración para guardar archivos subidos temporalmente
+const upload = multer({ dest: path.join(rootDir, "uploads/") });
 
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
@@ -440,6 +445,56 @@ router.post("/items/bulk-delete", async (req, res) => {
         res.status(500).json({ error: "Error en el borrado masivo" });
     }
 });
+
+// ================================
+// SUBIR Y ANALIZAR PDF (MANUAL)
+// ================================
+router.post("/upload-pdf", upload.single("pdfFile"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "Por favor, selecciona un archivo PDF." });
+        }
+
+        // 1. Buscar la regla por defecto en MongoDB
+        const rulesCollection = await getRulesCollection();
+        const defaultRule = await rulesCollection.findOne({ isDefault: true });
+
+        if (!defaultRule) {
+            // Borrar archivo temporal y devolver error
+            fs.unlinkSync(req.file.path);
+            return res.status(400).json({ error: "No se encontró ninguna regla predeterminada (default) activa." });
+        }
+
+        // 2. Analizar el PDF usando la función existente de tu agente
+        console.log(`[ADMIN] Analizando PDF manual: ${req.file.originalname}`);
+
+        // Asignamos el nombre original al archivo temporalmente para que el historial lo guarde bien
+        const tempPath = req.file.path;
+        const tempPathWithName = tempPath + "-" + req.file.originalname;
+        fs.renameSync(tempPath, tempPathWithName);
+
+        // Ejecutamos tu analizador (analiza, guarda inventario y guarda reporte automáticamente)
+        const resultText = await analyzePdfWithRules(tempPathWithName, defaultRule.ruleset || defaultRule);
+
+        // 3. Limpieza: Eliminar el archivo temporal para no llenar el servidor
+        fs.unlinkSync(tempPathWithName);
+
+        // 4. Responder al Frontend que todo salió bien
+        res.json({
+            success: true,
+            message: "Análisis completado exitosamente",
+            result: resultText
+        });
+
+    } catch (err) {
+        console.error("[ADMIN][UPLOAD PDF]", err);
+        // Intentar borrar archivo en caso de error si aún existe
+        if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+
+        res.status(500).json({ error: "Ocurrió un error al analizar el PDF." });
+    }
+});
+
 
 // ================================
 // MOUNT ROUTER
