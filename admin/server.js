@@ -536,6 +536,25 @@ router.get("/reports", async (req, res) => {
     }
 });
 
+// Eliminar un reporte por ID
+router.delete("/reports/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { ObjectId } = await import("mongodb");
+        const collection = await getReportsCollection();
+        
+        const result = await collection.deleteOne({ _id: new ObjectId(id) });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: "Reporte no encontrado" });
+        }
+        res.json({ success: true, message: "Reporte eliminado" });
+    } catch (err) {
+        console.error("[ADMIN][DELETE REPORT]", err);
+        res.status(500).json({ error: "Error eliminando el reporte" });
+    }
+});
+
 
 // ================================
 // EXPORT FOR VERCEL

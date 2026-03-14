@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getReports, type Report } from "../services/reportsApi";
-import { ClipboardList, Calendar, FileText, ChevronDown, ChevronUp, Loader2, AlertCircle } from "lucide-react";
+import { getReports, deleteReport, type Report } from "../services/reportsApi";
+import { ClipboardList, Calendar, FileText, ChevronDown, ChevronUp, Loader2, AlertCircle, Trash2 } from "lucide-react";
 
 export default function ReportsHistory() {
     const [reports, setReports] = useState<Report[]>([]);
@@ -16,6 +16,22 @@ export default function ReportsHistory() {
             console.error("Error cargando reportes", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Evitar que se expanda el acordeón
+        const confirmDelete = window.confirm("¿Seguro que deseas eliminar este reporte del historial?");
+        if (!confirmDelete) return;
+
+        try {
+            await deleteReport(id);
+            // Actualizamos la UI inmediatamente sin hacer otra petición
+            setReports((prev) => prev.filter(r => r._id !== id));
+            if (expandedId === id) setExpandedId(null);
+        } catch (error) {
+            console.error("Error al eliminar el reporte", error);
+            alert("No se pudo eliminar el reporte.");
         }
     };
 
@@ -63,10 +79,20 @@ export default function ReportsHistory() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-emerald-500/20">
+                                    <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-emerald-500/20 mr-2 md:mr-0">
                                         Procesado
                                     </span>
-                                    {expandedId === report._id ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
+                                    
+                                    {/* BOTÓN ELIMINAR */}
+                                    <button 
+                                        onClick={(e) => handleDelete(report._id, e)}
+                                        className="p-1.5 md:p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent mr-2 md:mr-0 z-10"
+                                        title="Eliminar Reporte"
+                                    >
+                                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                    </button>
+
+                                    {expandedId === report._id ? <ChevronUp className="w-5 h-5 text-slate-500 hidden md:block" /> : <ChevronDown className="w-5 h-5 text-slate-500 hidden md:block" />}
                                 </div>
                             </div>
 

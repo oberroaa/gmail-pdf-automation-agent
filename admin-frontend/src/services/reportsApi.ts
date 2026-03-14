@@ -29,3 +29,12 @@ export async function getReports(page: number = 1, limit: number = 10): Promise<
     if (!res.ok) throw new Error("Error obteniendo reportes");
     return res.json();
 }
+
+// Eliminar un reporte
+export async function deleteReport(id: string): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(`${API_URL}/reports/${id}`, {
+        method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Error eliminando el reporte");
+    return res.json();
+}
