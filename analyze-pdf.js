@@ -10,9 +10,9 @@ import "./setup-pdf.js";
 import { getItemsCollection, getReportsCollection } from "./db.js";
 
 // Configuración para entornos Serverless (Vercel) con Versión 3.x
-// En CJS el disableWorker funciona perfectamente sin crashes de ruta
-pdfjsLib.GlobalWorkerOptions.workerSrc = false;
-console.log("📑 PDF.js v3 inicializado (Modo Robusto)");
+// Usamos el CDN oficial de Mozilla para garantizar que el Worker siempre esté disponible
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+console.log("📑 PDF.js v3 inicializado (Modo CDN Robusto)");
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
