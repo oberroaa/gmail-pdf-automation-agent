@@ -4,7 +4,11 @@
 import fs from "fs";
 import "./setup-pdf.js";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import * as pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.mjs";
 import { getItemsCollection, getReportsCollection } from "./db.js";
+
+// Configurar el worker de PDF.js para servidores como Vercel (modo portable)
+pdfjsLib.GlobalWorkerOptions.workerPort = pdfjsWorker;
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
