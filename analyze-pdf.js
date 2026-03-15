@@ -10,9 +10,13 @@ import "./setup-pdf.js";
 import { getItemsCollection, getReportsCollection } from "./db.js";
 
 // Configuración para entornos Serverless (Vercel) con Versión 3.x
-// Usamos el CDN oficial de Mozilla para garantizar que el Worker siempre esté disponible
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-console.log("📑 PDF.js v3 inicializado (Modo CDN Robusto)");
+// Le decimos a Node exactamente donde está el archivo del worker en el disco duro
+try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve("pdfjs-dist/build/pdf.worker.js");
+} catch (e) {
+    console.log("⚠️ No se pudo resolver la ruta del worker, se usará el modo por defecto.");
+}
+console.log("📑 PDF.js v3 inicializado (Modo Ruta Local)");
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
