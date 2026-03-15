@@ -6,9 +6,9 @@ import "./setup-pdf.js";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { getItemsCollection, getReportsCollection } from "./db.js";
 
-// En Vercel no usamos Worker externo para evitar errores de ruta/tipo.
-// PDF.js usará automáticamente el "Fake Worker" si no se define workerSrc.
-console.log("📑 PDF.js inicializado (Modo Vercel/Node)");
+// Configuración para entornos Serverless (Vercel)
+// Forzamos a que NO use workers externos
+console.log("📑 PDF.js inicializado en modo integración directa");
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
@@ -18,7 +18,12 @@ console.log("📑 PDF.js inicializado (Modo Vercel/Node)");
  */
 export default async function analyzePdfWithRules(pdfPath, ruleset, displayName = null) {
     const data = new Uint8Array(fs.readFileSync(pdfPath));
-    const pdf = await pdfjsLib.getDocument({ data }).promise;
+    // 👈 Usamos verbosidad 0 y desactivamos el worker para que no lo busque fuera
+    const pdf = await pdfjsLib.getDocument({ 
+        data, 
+        verbosity: 0,
+        disableWorker: true 
+    }).promise;
 
     let pdfText = "";
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
