@@ -2,6 +2,7 @@
 // PDF ANALYZER WITH RULES & LEARNING
 // ================================
 import fs from "fs";
+import "./setup-pdf.js";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { getItemsCollection, getReportsCollection } from "./db.js";
 
