@@ -7,8 +7,9 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { getItemsCollection, getReportsCollection } from "./db.js";
 
 // Configuración para entornos Serverless (Vercel)
-// Forzamos a que NO use workers externos
-console.log("📑 PDF.js inicializado en modo integración directa");
+// Usamos el worker desde un CDN para evitar errores de ruta en Vercel
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.5.207/pdf.worker.min.mjs`;
+console.log("📑 PDF.js inicializado (Modo CDN Worker)");
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
