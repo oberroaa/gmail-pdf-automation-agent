@@ -1,5 +1,6 @@
-// Este archivo crea los objetos visuales que pdfjs-dist busca en Vercel
-// para evitar que dependa de librerías gráficas pesadas como canvas.
-global.DOMMatrix = global.DOMMatrix || class DOMMatrix {};
-global.ImageData = global.ImageData || class ImageData {};
-global.Path2D = global.Path2D || class Path2D {};
+import { DOMMatrix, ImageData, Path2D } from '@napi-rs/canvas';
+
+// Inyectar en el global para que pdfjs-dist los encuentre
+globalThis.DOMMatrix = DOMMatrix;
+globalThis.ImageData = ImageData;
+globalThis.Path2D = Path2D;
