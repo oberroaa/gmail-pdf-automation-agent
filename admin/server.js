@@ -452,6 +452,7 @@ router.post("/items/bulk-delete", async (req, res) => {
 // SUBIR Y ANALIZAR PDF (MANUAL)
 // ================================
 router.post("/upload-pdf", upload.single("pdfFile"), async (req, res) => {
+    console.log(`[ADMIN] Solicitud de subida recibida: ${req.file?.originalname || "Sin nombre"}`);
     try {
         if (!req.file) {
             return res.status(400).json({ error: "Por favor, selecciona un archivo PDF." });
