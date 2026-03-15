@@ -482,14 +482,12 @@ router.post("/upload-pdf", upload.single("pdfFile"), async (req, res) => {
 
         // Preparar archivo temporal
         const tempPath = req.file.path;
-        const tempPathWithName = tempPath + "-" + req.file.originalname;
-        fs.renameSync(tempPath, tempPathWithName);
 
-        // --- CAMBIO AQUÍ: Usamos selectedRule para el análisis ---
-        const resultText = await analyzePdfWithRules(tempPathWithName, selectedRule.ruleset || selectedRule);
+        // --- CAMBIO AQUÍ: Usamos tempPath directamente para el análisis ---
+        const resultText = await analyzePdfWithRules(tempPath, selectedRule.ruleset || selectedRule, req.file.originalname);
 
-        // Limpieza
-        if (fs.existsSync(tempPathWithName)) fs.unlinkSync(tempPathWithName);
+        // Limpieza (multer ya borra a veces, pero aseguramos)
+        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
 
         res.json({
             success: true,
@@ -500,7 +498,11 @@ router.post("/upload-pdf", upload.single("pdfFile"), async (req, res) => {
     } catch (err) {
         console.error("[ADMIN][UPLOAD PDF]", err);
         if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-        res.status(500).json({ error: "Ocurrió un error al analizar el PDF." });
+        res.status(500).json({ 
+            error: "Error al analizar el PDF", 
+            details: err.message,
+            stack: process.env.NODE_ENV === "production" ? undefined : err.stack 
+        });
     }
 });
 

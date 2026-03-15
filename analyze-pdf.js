@@ -10,8 +10,9 @@ import { getItemsCollection, getReportsCollection } from "./db.js";
  * Analiza un PDF según las reglas provistas y devuelve texto humano
  * @param {string} pdfPath
  * @param {object} ruleset
+ * @param {string} displayName (Opcional, para el reporte)
  */
-export default async function analyzePdfWithRules(pdfPath, ruleset) {
+export default async function analyzePdfWithRules(pdfPath, ruleset, displayName = null) {
     const data = new Uint8Array(fs.readFileSync(pdfPath));
     const pdf = await pdfjsLib.getDocument({ data }).promise;
 
@@ -136,7 +137,7 @@ export default async function analyzePdfWithRules(pdfPath, ruleset) {
         if (activeItems.length > 0) {
             // Creamos el objeto del reporte
             const newReport = {
-                fileName: pdfPath.split(/[\\/]/).pop(),
+                fileName: displayName || pdfPath.split(/[\\/]/).pop(),
                 date: new Date(),
                 itemsFound: activeItems.map(item => ({
                     partNumber: item.partNumber,

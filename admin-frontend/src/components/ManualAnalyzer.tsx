@@ -67,7 +67,10 @@ export default function ManualAnalyzer() {
             const data = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.error || "Error al procesar el archivo");
+                const errorMessage = data.details 
+                    ? `${data.error}: ${data.details}` 
+                    : (data.error || "Error al procesar el archivo");
+                throw new Error(errorMessage);
             }
 
             setResult(data.result);

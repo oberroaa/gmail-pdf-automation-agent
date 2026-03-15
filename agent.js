@@ -203,7 +203,7 @@ async function processEmails() {
                     console.log(`📎 PDF guardado: ${filePath}`);
 
                     console.log("🧠 Analizando PDF...");
-                    const resultText = await analyzePdfWithRules(filePath, ruleObj.ruleset);
+                    const resultText = await analyzePdfWithRules(filePath, ruleObj.ruleset, part.filename);
 
                     console.log("📊 Resultado final:\n", resultText);
 
