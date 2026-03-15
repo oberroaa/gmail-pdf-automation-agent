@@ -12,6 +12,8 @@
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
     "@google/generative-ai": "^0.24.1",
+    "@napi-rs/canvas": "^0.1.96",
+    "canvas": "^3.2.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
