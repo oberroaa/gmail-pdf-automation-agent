@@ -20,6 +20,6 @@
     "mongodb": "^7.1.0",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
-    "pdfjs-dist": "^5.5.207"
+    "pdfjs-dist": "^3.11.174"
   }
 }

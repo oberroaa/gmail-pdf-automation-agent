@@ -2,14 +2,17 @@
 // PDF ANALYZER WITH RULES & LEARNING
 // ================================
 import fs from "fs";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdfjsLib = require("pdfjs-dist/build/pdf.js");
+
 import "./setup-pdf.js";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { getItemsCollection, getReportsCollection } from "./db.js";
 
-// Configuración para entornos Serverless (Vercel)
-// Usamos el worker desde un CDN para evitar errores de ruta en Vercel
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.5.207/pdf.worker.min.mjs`;
-console.log("📑 PDF.js inicializado (Modo CDN Worker)");
+// Configuración para entornos Serverless (Vercel) con Versión 3.x
+// En CJS el disableWorker funciona perfectamente sin crashes de ruta
+pdfjsLib.GlobalWorkerOptions.workerSrc = false;
+console.log("📑 PDF.js v3 inicializado (Modo Robusto)");
 
 /**
  * Analiza un PDF según las reglas provistas y devuelve texto humano
@@ -19,11 +22,10 @@ console.log("📑 PDF.js inicializado (Modo CDN Worker)");
  */
 export default async function analyzePdfWithRules(pdfPath, ruleset, displayName = null) {
     const data = new Uint8Array(fs.readFileSync(pdfPath));
-    // 👈 Usamos verbosidad 0 y desactivamos el worker para que no lo busque fuera
     const pdf = await pdfjsLib.getDocument({ 
         data, 
-        verbosity: 0,
-        disableWorker: true 
+        disableWorker: true, // 👈 Versión 3 lo respeta en CJS
+        verbosity: 0 
     }).promise;
 
     let pdfText = "";
