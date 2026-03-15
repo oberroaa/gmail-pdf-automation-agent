@@ -13,17 +13,20 @@ dotenv.config({
   path: path.resolve(__dirname, "../../.env")
 });
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error("❌ GEMINI_API_KEY no está definida");
-}
-
-console.log("🔑 GEMINI_API_KEY cargada ✅");
-
 // ------------------ CLIENTE ------------------
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+let genAI;
+if (process.env.GEMINI_API_KEY) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    console.log("🔑 GEMINI_API_KEY cargada ✅");
+} else {
+    console.warn("⚠️ GEMINI_API_KEY no definida. Algunas funciones de IA no estarán disponibles.");
+}
 
 // ------------------ GENERADOR ------------------
 export async function generateRuleJSON(name, userPrompt) {
+  if (!genAI) {
+    throw new Error("❌ GEMINI_API_KEY no configurada. No se puede generar la regla con IA.");
+  }
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash-lite"
   });

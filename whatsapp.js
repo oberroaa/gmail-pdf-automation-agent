@@ -6,8 +6,9 @@ dotenv.config();
 const TOKEN = process.env.WA_TOKEN;
 const PHONE_ID = process.env.WA_PHONE_ID;
 
-const TO_LIST = process.env.WHATSAPP_TO
+const TO_LIST = (process.env.WHATSAPP_TO || "")
     .split(",")
+    .filter(n => n.trim().length > 0) // Evita elementos vacíos si no hay nada definido
     .map(n => n.trim().replace("whatsapp:", "").replace("+", ""));
 
 export default async function sendWhatsApp(message) {
