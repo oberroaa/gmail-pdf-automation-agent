@@ -1,5 +1,6 @@
 // admin/server.js
 // Servidor ADMIN con MongoDB Atlas (CRUD completo)
+import "../setup-pdf.js";
 
 import dotenv from "dotenv";
 import path from "path";
