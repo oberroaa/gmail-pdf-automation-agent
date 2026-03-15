@@ -31,8 +31,9 @@ dotenv.config({
 const app = express();
 const router = express.Router();
 const PORT = process.env.ADMIN_PORT || 3001;
-// Configuración para guardar archivos subidos temporalmente
-const upload = multer({ dest: path.join(rootDir, "uploads/") });
+// Configuración para guardar archivos subidos temporalmente (Vercel requiere /tmp)
+const uploadDir = process.env.VERCEL ? "/tmp" : path.join(rootDir, "uploads/");
+const upload = multer({ dest: uploadDir });
 
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
