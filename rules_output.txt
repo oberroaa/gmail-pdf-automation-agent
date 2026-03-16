@@ -1,0 +1,77 @@
+[dotenv@17.2.3] injecting env (11) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+🔌 Conectado a MongoDB Atlas
+=== REGLAS EN DB ===
+[
+  {
+    "_id": "699e46f5d4b698ea6bda09de",
+    "name": "default",
+    "description": "Regla por defecto FT",
+    "file": "default.json",
+    "isDefault": true,
+    "ruleset": {
+      "filters": {
+        "uom_include": [
+          "FT"
+        ],
+        "material_prefix": [
+          "BDA",
+          "JAV",
+          "DEC",
+          "WTK",
+          "SAT",
+          "FBR",
+          "MIL",
+          "SSP",
+          "FBW",
+          "1010028",
+          "1009230"
+        ]
+      },
+      "format": {
+        "decimals": 3
+      }
+    },
+    "updatedAt": "2026-03-08T20:10:02.797Z"
+  },
+  {
+    "_id": "699e46f5d4b698ea6bda09df",
+    "name": "Regla para materiales DEC, JAV, WTK en FT",
+    "description": "Configuración específica para los materiales DEC, JAV y WTK cuando la unidad de medida es FT. Aplica 2 decimales para el formato.",
+    "isDefault": false,
+    "ruleset": {
+      "filters": {
+        "uom_include": [
+          "FT"
+        ],
+        "material_prefix": [
+          "DEC",
+          "JAV",
+          "WTK"
+        ]
+      },
+      "format": {
+        "decimals": 2
+      }
+    },
+    "updatedAt": "2026-02-25T01:50:43.444Z"
+  },
+  {
+    "_id": "69accc207e7286c3a5e64e55",
+    "name": "Extraer TODO",
+    "description": "Extraer todo y si esta undefined no lo traigas",
+    "ruleset": {
+      "filters": {
+        "uom_include": [],
+        "material_prefix": []
+      },
+      "format": {
+        "decimals": 2
+      }
+    },
+    "isDefault": false,
+    "prompt": "Extraer TODO",
+    "createdAt": "2026-03-08T01:08:48.231Z",
+    "file": "Extraer TODO.json",
+    "updatedAt": "2026-03-08T02:28:52.718Z"
+  }
+]

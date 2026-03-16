@@ -50,7 +50,8 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
     const allowedPrefixes = ruleset.filters?.material_prefix || [];
 
     // Nueva Regex que captura: [1]PartNumber, [2]Descripción, [3]Cantidad, [4]UOM
-    const regex = /\b([A-Z0-9.\-]{5,})\b\s*([\s\S]{0,150}?)\s*(\d+(?:\.\d+)?)\s*(FT|EA|MT)\b/gi;
+    // Se añade un ancla al final \s+[A-Z]\b para asegurar que capturamos la columna UOM y no datos de la descripción
+    const regex = /\b([A-Z0-9.\-]{5,})\b\s+([\s\S]+?)\s+(\d+(?:\.\d+)?)\s*(FT|EA|MT)\s+[A-Z]\b/gi;
 
     const rows = [];
     let match;

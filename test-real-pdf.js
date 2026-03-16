@@ -12,7 +12,7 @@ async function runRealTest() {
         console.log(`⚙️ Usando regla: ${ruleObj.name}`);
 
         // 2. Ruta al archivo PDF
-        const pdfPath = path.join(process.cwd(), "processed_pdfs", "archivo.pdf");
+        const pdfPath = path.join(process.cwd(), "processed_pdfs", "MAX-3-15-26.pdf");
 
         // 3. Ejecutamos el análisis (esto activará el guardado automático en DB que pusimos antes)
         console.log(`🧠 Analizando: ${pdfPath}`);
