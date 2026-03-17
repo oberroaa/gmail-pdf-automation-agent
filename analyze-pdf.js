@@ -148,8 +148,10 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
     try {
         const reportsColl = await getReportsCollection();
 
-        // Filtramos solo los items que están ACTIVOS
-        const activeItems = Object.values(grouped).filter(item => item.active !== false);
+        // Filtramos solo los items que están ACTIVOS y ordenamos por cantidad DESC
+        const activeItems = Object.values(grouped)
+            .filter(item => item.active !== false)
+            .sort((a, b) => b.total - a.total);
 
         if (activeItems.length > 0) {
             // Creamos el objeto del reporte
