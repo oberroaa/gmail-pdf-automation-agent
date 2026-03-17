@@ -62,46 +62,48 @@ export default function ReportsHistory({ onMove }: { onMove: (report: Report) =>
                     {reports.map((report) => (
                         <div key={report._id} className="bg-slate-800/40 rounded-2xl border border-slate-700/50 overflow-hidden transition-all hover:bg-slate-800/60">
                             <div
-                                className="p-4 flex items-center justify-between cursor-pointer"
+                                className="p-3 md:p-4 flex items-center justify-between cursor-pointer gap-2"
                                 onClick={() => toggleExpand(report._id)}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-indigo-500/10 rounded-xl">
+                                <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+                                    <div className="p-2 md:p-3 bg-indigo-500/10 rounded-xl flex-shrink-0">
                                         <FileText className="w-5 h-5 text-indigo-400" />
                                     </div>
-                                    <div>
-                                        <h3 className="text-white font-bold text-sm">{report.fileName}</h3>
-                                        <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                                            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(report.date).toLocaleString()}</span>
-                                            <span className="text-slate-600">|</span>
-                                            <span>{report.totalItems} materiales encontrados</span>
+                                    <div className="min-w-0 flex-1">
+                                        <h3 className="text-white font-bold text-sm truncate">{report.fileName}</h3>
+                                        <div className="flex items-center gap-2 text-[10px] md:text-xs text-slate-500 mt-0.5">
+                                            <span className="flex items-center gap-1 whitespace-nowrap"><Calendar className="w-3 h-3" /> {new Date(report.date).toLocaleDateString()}</span>
+                                            <span className="text-slate-700">|</span>
+                                            <span className="truncate">{report.totalItems} it.</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-emerald-500/20 mr-2 md:mr-0">
+
+                                <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
+                                    <span className="hidden lg:inline-block bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-emerald-500/20">
                                         Procesado
                                     </span>
 
-                                    {/* BOTÓN ELIMINAR */}
-                                    <button
-                                        onClick={(e) => handleDelete(report._id, e)}
-                                        className="p-1.5 md:p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent mr-2 md:mr-0 z-10"
-                                        title="Eliminar Reporte"
-                                    >
-                                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                                    </button>
-
-                                    {/* BOTÓN MOVER ITEM */}
-                                    <button
+                                    {/* BOTÓN MOVER (Móvil más compacto) */}
+                                    <button 
                                         onClick={(e) => { e.stopPropagation(); onMove(report); }}
-                                        className="p-1.5 md:p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-400/10 rounded-lg transition-colors border border-transparent mr-2 z-10"
-                                        title="Mover Items"
+                                        className="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-400/10 rounded-lg transition-all active:scale-90 border border-indigo-500/10 bg-indigo-500/5 flex-shrink-0"
                                     >
                                         <Truck className="w-4 h-4 md:w-5 md:h-5" />
                                     </button>
 
-                                    {expandedId === report._id ? <ChevronUp className="w-5 h-5 text-slate-500 hidden md:block" /> : <ChevronDown className="w-5 h-5 text-slate-500 hidden md:block" />}
+                                    {/* BOTÓN ELIMINAR */}
+                                    <button 
+                                        onClick={(e) => handleDelete(report._id, e)}
+                                        className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all active:scale-90 flex-shrink-0"
+                                    >
+                                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                    </button>
+
+                                    {/* FLECHA */}
+                                    <div className="p-1 text-slate-600 flex-shrink-0 border-l border-white/5 ml-1">
+                                        {expandedId === report._id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                    </div>
                                 </div>
                             </div>
 
