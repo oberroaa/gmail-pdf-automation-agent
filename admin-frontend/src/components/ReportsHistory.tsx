@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { getReports, deleteReport, type Report } from "../services/reportsApi";
-import { ClipboardList, Calendar, FileText, ChevronDown, ChevronUp, Loader2, AlertCircle, Trash2 } from "lucide-react";
+import { ClipboardList, Calendar, FileText, ChevronDown, ChevronUp, Loader2, AlertCircle, Trash2, Truck } from "lucide-react";
 
-export default function ReportsHistory() {
+export default function ReportsHistory({ onMove }: { onMove: (report: Report) => void }) {
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -82,14 +82,23 @@ export default function ReportsHistory() {
                                     <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-emerald-500/20 mr-2 md:mr-0">
                                         Procesado
                                     </span>
-                                    
+
                                     {/* BOTÓN ELIMINAR */}
-                                    <button 
+                                    <button
                                         onClick={(e) => handleDelete(report._id, e)}
                                         className="p-1.5 md:p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent mr-2 md:mr-0 z-10"
                                         title="Eliminar Reporte"
                                     >
                                         <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                    </button>
+
+                                    {/* BOTÓN MOVER ITEM */}
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); onMove(report); }}
+                                        className="p-1.5 md:p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-400/10 rounded-lg transition-colors border border-transparent mr-2 z-10"
+                                        title="Mover Items"
+                                    >
+                                        <Truck className="w-4 h-4 md:w-5 md:h-5" />
                                     </button>
 
                                     {expandedId === report._id ? <ChevronUp className="w-5 h-5 text-slate-500 hidden md:block" /> : <ChevronDown className="w-5 h-5 text-slate-500 hidden md:block" />}

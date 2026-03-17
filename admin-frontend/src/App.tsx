@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
 import ReportsHistory from "./components/ReportsHistory";
+import MovementsConsole from "./components/MovementsConsole"; // Importamos la nueva consola
 import {
   getRules,
   deleteRule,
@@ -14,6 +15,7 @@ import {
   updateRule,
   type Rule,
 } from "./services/rulesApi";
+import { type Report } from "./services/reportsApi"; // Importamos el tipo Report
 import ManualAnalyzer from './components/ManualAnalyzer';
 
 export default function App() {
@@ -24,10 +26,11 @@ export default function App() {
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  // Añadimos el nuevo estado al tipo de la pestaña activa
   const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf">("rules");
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Estado para el reporte seleccionado para movimientos
+  const [selectedReportForMove, setSelectedReportForMove] = useState<Report | null>(null);
 
   const fetchRules = async () => {
     try {
@@ -49,6 +52,7 @@ export default function App() {
   const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf") => {
     setActiveTab(tab);
     setIsMenuOpen(false);
+    setSelectedReportForMove(null); // Limpiamos selección al cambiar de pestaña
   };
 
   const showToast = (msg: string, type: "success" | "error" | "info" = "success") => {
@@ -187,22 +191,13 @@ export default function App() {
 
           <AnimatePresence mode="wait">
             {activeTab === "rules" ? (
-              <motion.div
-                key="rules"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                transition={{ duration: 0.2 }}
-              >
+              <motion.div key="rules" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10">
                   <div>
                     <h2 className="text-2xl md:text-3xl font-black text-white">Configuración IA</h2>
                     <p className="text-slate-500 text-xs md:text-sm mt-1">Gestiona las reglas de extracción y destinatarios.</p>
                   </div>
-                  <button
-                    onClick={() => setShowNewRule(true)}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5 w-full md:w-auto justify-center"
-                  >
+                  <button onClick={() => setShowNewRule(true)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5 w-full md:w-auto justify-center">
                     <Plus className="w-4 h-4" />
                     Nueva Regla
                   </button>
@@ -248,13 +243,7 @@ export default function App() {
               </motion.div>
 
             ) : activeTab === "items" ? (
-              <motion.div
-                key="items"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                transition={{ duration: 0.2 }}
-              >
+              <motion.div key="items" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <div className="mb-10">
                   <h2 className="text-2xl md:text-3xl font-black text-white">Inventario</h2>
                   <p className="text-slate-500 text-xs md:text-sm mt-1">Items configurados para identificación automática.</p>
@@ -263,28 +252,24 @@ export default function App() {
               </motion.div>
 
             ) : activeTab === "reports" ? (
-              <motion.div
-                key="reports"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                transition={{ duration: 0.2 }}
-              >
+              <motion.div key="reports" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <div className="mb-10">
                   <h2 className="text-2xl md:text-3xl font-black text-white">Historial de Reportes</h2>
                   <p className="text-slate-500 text-xs md:text-sm mt-1">Consulta los resultados de los análisis diarios.</p>
                 </div>
-                <ReportsHistory />
+                {/* LÓGICA DE NAVEGACIÓN ENTRE HISTORIAL Y CONSOLA */}
+                {selectedReportForMove ? (
+                  <MovementsConsole
+                    report={selectedReportForMove}
+                    onBack={() => setSelectedReportForMove(null)}
+                  />
+                ) : (
+                  <ReportsHistory onMove={(report) => setSelectedReportForMove(report)} />
+                )}
               </motion.div>
 
             ) : activeTab === "manual-pdf" ? (
-              <motion.div
-                key="manual-pdf"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                transition={{ duration: 0.2 }}
-              >
+              <motion.div key="manual-pdf" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <div className="mb-10">
                   <h2 className="text-2xl md:text-3xl font-black text-white">Analizador Manual de PDF</h2>
                   <p className="text-slate-500 text-xs md:text-sm mt-1">Sube un PDF para análisis inmediato.</p>
@@ -306,14 +291,7 @@ export default function App() {
           <NewRuleModal onClose={() => setShowNewRule(false)} onCreate={handleCreateRule} onError={(msg) => showToast(msg, "error")} />
         )}
         {toast && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, x: 20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.9, x: 20 }}
-            className={`fixed bottom-4 right-4 left-4 md:left-auto md:bottom-8 md:right-8 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl glass border-l-4 
-                ${toast.type === "success" ? "border-l-emerald-500" : toast.type === "error" ? "border-l-red-500" : "border-l-indigo-500"}
-            `}
-          >
+          <motion.div initial={{ opacity: 0, scale: 0.9, x: 20 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.9, x: 20 }} className={`fixed bottom-4 right-4 left-4 md:left-auto md:bottom-8 md:right-8 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl glass border-l-4 ${toast.type === "success" ? "border-l-emerald-500" : toast.type === "error" ? "border-l-red-500" : "border-l-indigo-500"}`}>
             <div className={`p-1.5 rounded-lg ${toast.type === "success" ? "bg-emerald-500/10 text-emerald-500" : toast.type === "error" ? "bg-red-500/10 text-red-500" : "bg-indigo-500/10 text-indigo-500"}`}>
               {toast.type === "success" ? <CheckCircleIcon className="w-4 h-4" /> : toast.type === "error" ? <AlertTriangle className="w-4 h-4" /> : <Brain className="w-4 h-4" />}
             </div>

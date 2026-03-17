@@ -66,3 +66,12 @@ export async function getReportsCollection() {
     const database = await connectDB();
     return database.collection("reports");
 }
+
+
+/**
+ * Helper para obtener la colección de movimientos (Digital Dashboard)
+ */
+export async function getMovementsCollection() {
+    const database = await connectDB();
+    return database.collection("movements");
+}

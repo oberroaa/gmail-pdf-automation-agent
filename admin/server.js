@@ -499,10 +499,10 @@ router.post("/upload-pdf", upload.single("pdfFile"), async (req, res) => {
     } catch (err) {
         console.error("[ADMIN][UPLOAD PDF]", err);
         if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-        res.status(500).json({ 
-            error: "Error al analizar el PDF", 
+        res.status(500).json({
+            error: "Error al analizar el PDF",
             details: err.message,
-            stack: process.env.NODE_ENV === "production" ? undefined : err.stack 
+            stack: process.env.NODE_ENV === "production" ? undefined : err.stack
         });
     }
 });
@@ -564,6 +564,55 @@ router.delete("/reports/:id", async (req, res) => {
     } catch (err) {
         console.error("[ADMIN][DELETE REPORT]", err);
         res.status(500).json({ error: "Error eliminando el reporte" });
+    }
+});
+
+// ================================
+// GESTIÓN DE MOVIMIENTOS (Opción A)
+// ================================
+
+// 1. Obtener los movimientos guardados de un reporte
+router.get("/movements/:reportId", async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        const collection = await getMovementsCollection();
+        const movement = await collection.findOne({ reportId });
+
+        if (!movement) {
+            return res.json({ found: false, data: null });
+        }
+        res.json({ found: true, data: movement });
+    } catch (err) {
+        console.error("[ADMIN][GET MOVEMENTS]", err);
+        res.status(500).json({ error: "Error al obtener movimientos" });
+    }
+});
+
+// 2. Guardar o Actualizar movimientos del reporte
+router.post("/movements", async (req, res) => {
+    try {
+        const { reportId, items, header } = req.body;
+        if (!reportId) return res.status(400).json({ error: "reportId es requerido" });
+
+        const collection = await getMovementsCollection();
+
+        // Usamos upsert: si existe lo actualiza, si no lo crea
+        await collection.updateOne(
+            { reportId },
+            {
+                $set: {
+                    items,
+                    header,
+                    updatedAt: new Date()
+                }
+            },
+            { upsert: true }
+        );
+
+        res.json({ success: true, message: "Movimientos guardados correctamente" });
+    } catch (err) {
+        console.error("[ADMIN][SAVE MOVEMENTS]", err);
+        res.status(500).json({ error: "Error al guardar movimientos" });
     }
 });
 
