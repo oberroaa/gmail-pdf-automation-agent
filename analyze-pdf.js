@@ -111,12 +111,20 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
             const existing = await itemsColl.findOne({ partNumber: r.partNumber });
 
             if (!existing) {
-                // ESCENARIO 1: El material es nuevo, lo creamos con cantidad 0
-                console.log(`🆕 Registrando nuevo material: ${r.partNumber} con balance inicial 0`);
+                // ESCENARIO 1: El material es nuevo, extraemos el balance (FT) de la descripción
+                let extractedFt = 0;
+                const ftMatch = (r.description || "").match(/(\d+)\s*FT/i);
+                if (ftMatch) {
+                    extractedFt = parseInt(ftMatch[1]);
+                    console.log(`🆕 Registrando nuevo material: ${r.partNumber} con balance extraído: ${extractedFt} FT`);
+                } else {
+                    console.log(`🆕 Registrando nuevo material: ${r.partNumber} sin FT detectado (Balance: 0)`);
+                }
+
                 await itemsColl.insertOne({
                     partNumber: r.partNumber,
                     description: r.description || "Sin descripción",
-                    qtyReq: 0, // 👈 Forzamos que empiece en 0 como pediste
+                    qtyReq: extractedFt,
                     uom: r.uom,
                     active: true,
                     createdAt: new Date()
