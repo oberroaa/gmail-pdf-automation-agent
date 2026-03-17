@@ -179,7 +179,7 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
     // ================================
     // OUTPUT HUMANO
     // ================================
-    let result = "RESULTADO FINAL AGRUPADO:\n\n";
+    let result = "RESULTADO FINAL AGRUPADO (Ordenado por Cantidad DESC):\n\n";
 
     if (!Object.keys(grouped).length) {
         result += "⚠️ No se encontraron datos con las reglas actuales.\n";
@@ -188,8 +188,10 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
 
     const decimals = ruleset.format?.decimals ?? 3;
 
-    for (const key of Object.keys(grouped)) {
-        const r = grouped[key];
+    // Convertimos a array y ordenamos por total DESC
+    const sortedResult = Object.values(grouped).sort((a, b) => b.total - a.total);
+
+    for (const r of sortedResult) {
         result += `* ${r.partNumber} → ${r.total.toFixed(decimals)} ${r.uom}\n`;
     }
 
