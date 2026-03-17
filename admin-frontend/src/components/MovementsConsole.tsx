@@ -170,7 +170,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                             <th className="p-2 text-center w-16">Total</th>
                             <th className="p-2 text-center border-x border-white/5 w-32">P | E | T</th>
                             <th className="p-2 w-28">Location</th>
-                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-72">Substitution</th>
+                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-64">Substitution</th>
                             <th className="p-2 text-center w-16">Acción</th>
                         </tr>
                     </thead>
@@ -225,7 +225,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                                 autoComplete="off" 
                                                 value={item.subQty} 
                                                 onChange={e => updateItemField(idx, 'subQty', e.target.value)} 
-                                                className="w-16 bg-slate-900/80 border border-white/10 rounded px-1.5 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                                className="w-20 bg-slate-900/80 border border-white/10 rounded px-1.5 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100" 
                                             />
                                             <input 
                                                 placeholder="L." 
@@ -240,7 +240,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                                 autoComplete="off" 
                                                 value={item.subTotal} 
                                                 onChange={e => updateItemField(idx, 'subTotal', e.target.value)} 
-                                                className="w-16 bg-slate-900/80 border border-indigo-500/30 rounded px-1.5 py-2 text-sm text-center text-indigo-300 font-bold outline-none placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                                className="w-24 bg-slate-900/80 border border-indigo-500/30 rounded px-1.5 py-2 text-sm text-center text-indigo-300 font-bold outline-none placeholder:opacity-0 sm:placeholder:opacity-100" 
                                             />
                                         </div>
                                     </td>
