@@ -87,7 +87,19 @@ export default function MovementsConsole({ report, onBack }: Props) {
 
     const toggleCheck = (idx: number, field: 'p' | 'e' | 't') => {
         const newItems = [...items];
-        newItems[idx][field] = !newItems[idx][field];
+        const isCurrentlyChecked = newItems[idx][field];
+        
+        // Si vamos a marcar uno, desmarcamos los otros (Mutuamente exclusivos)
+        if (!isCurrentlyChecked) {
+            newItems[idx].p = false;
+            newItems[idx].e = false;
+            newItems[idx].t = false;
+            newItems[idx][field] = true;
+        } else {
+            // Si ya estaba marcado, simplemente lo desmarcamos
+            newItems[idx][field] = false;
+        }
+        
         setItems(newItems);
     };
 
@@ -174,7 +186,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                     <td className="p-2 text-center font-black text-indigo-400 text-sm">{total}</td>
 
                                     {/* CHECKS P E T */}
-                                    <td className="p-2 border-x border-white/5">
+                                    <td className="p-2 border-x border-white/5" translate="no">
                                         <div className="flex justify-center gap-3">
                                             {(['p', 'e', 't'] as const).map((f) => (
                                                 <button
@@ -183,7 +195,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                                     className={`flex flex-col items-center gap-1 transition-all ${item[f] ? 'text-indigo-400' : 'text-slate-700 hover:text-slate-500'}`}
                                                 >
                                                     {item[f] ? <CheckSquare size={18} /> : <Square size={18} />}
-                                                    <span className="text-[8px] font-black uppercase">{f}</span>
+                                                    <span className="text-[10px] font-black uppercase">{f}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -201,11 +213,11 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                     </td>
 
                                     {/* SUSTITUCIÓN */}
-                                    <td className="p-2 bg-indigo-500/5 border-x border-white/10">
+                                    <td className="p-2 bg-indigo-500/5 border-x border-white/10" translate="no">
                                         <div className="flex gap-2 justify-center">
-                                            <input placeholder="Qty" value={item.subQty} onChange={e => updateItemField(idx, 'subQty', e.target.value)} className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" />
-                                            <input placeholder="L.Ft" value={item.subLength} onChange={e => updateItemField(idx, 'subLength', e.target.value)} className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" />
-                                            <input placeholder="Tot" value={item.subTotal} onChange={e => updateItemField(idx, 'subTotal', e.target.value)} className="w-20 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none" />
+                                            <input placeholder="Cant" autoComplete="off" value={item.subQty} onChange={e => updateItemField(idx, 'subQty', e.target.value)} className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" />
+                                            <input placeholder="Largo" autoComplete="off" value={item.subLength} onChange={e => updateItemField(idx, 'subLength', e.target.value)} className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" />
+                                            <input placeholder="Total" autoComplete="off" value={item.subTotal} onChange={e => updateItemField(idx, 'subTotal', e.target.value)} className="w-20 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none" />
                                         </div>
                                     </td>
 
