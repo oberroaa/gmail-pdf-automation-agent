@@ -89,11 +89,16 @@ export default function MovementsConsole({ report, onBack }: Props) {
         const newItems = [...items];
         const isCurrentlyChecked = newItems[idx][field];
         
-        // Si vamos a marcar uno, desmarcamos los otros (Mutuamente exclusivos)
         if (!isCurrentlyChecked) {
-            newItems[idx].p = false;
-            newItems[idx].e = false;
-            newItems[idx].t = false;
+            // Si vamos a marcar 'p', quitamos 'e' y 't'
+            if (field === 'p') {
+                newItems[idx].e = false;
+                newItems[idx].t = false;
+            } 
+            // Si vamos a marcar 'e' o 't', quitamos 'p'
+            else {
+                newItems[idx].p = false;
+            }
             newItems[idx][field] = true;
         } else {
             // Si ya estaba marcado, simplemente lo desmarcamos
