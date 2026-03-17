@@ -219,10 +219,29 @@ export default function MovementsConsole({ report, onBack }: Props) {
 
                                     {/* SUSTITUCIÓN */}
                                     <td className="p-2 bg-indigo-500/5 border-x border-white/10" translate="no">
-                                        <div className="flex gap-2 justify-center">
-                                            <input placeholder="Cant" autoComplete="off" value={item.subQty} onChange={e => updateItemField(idx, 'subQty', e.target.value)} className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" />
-                                            <input placeholder="Largo" autoComplete="off" value={item.subLength} onChange={e => updateItemField(idx, 'subLength', e.target.value)} className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" />
-                                            <input placeholder="Total" autoComplete="off" value={item.subTotal} onChange={e => updateItemField(idx, 'subTotal', e.target.value)} className="w-20 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none" />
+                                        <div className="flex gap-1.5 justify-center">
+                                            <input 
+                                                placeholder="Cant" 
+                                                autoComplete="off" 
+                                                value={item.subQty} 
+                                                onChange={e => updateItemField(idx, 'subQty', e.target.value)} 
+                                                className="w-16 bg-slate-900/80 border border-white/10 rounded px-1.5 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                            />
+                                            <input 
+                                                placeholder="L." 
+                                                autoComplete="off" 
+                                                value={item.subLength} 
+                                                onChange={e => updateItemField(idx, 'subLength', e.target.value)} 
+                                                className="w-10 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100 font-mono" 
+                                                maxLength={2}
+                                            />
+                                            <input 
+                                                placeholder="Tot" 
+                                                autoComplete="off" 
+                                                value={item.subTotal} 
+                                                onChange={e => updateItemField(idx, 'subTotal', e.target.value)} 
+                                                className="w-16 bg-slate-900/80 border border-indigo-500/30 rounded px-1.5 py-2 text-sm text-center text-indigo-300 font-bold outline-none placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                            />
                                         </div>
                                     </td>
 
