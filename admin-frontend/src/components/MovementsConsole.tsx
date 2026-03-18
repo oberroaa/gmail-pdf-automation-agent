@@ -168,9 +168,9 @@ export default function MovementsConsole({ report, onBack }: Props) {
                             <th className="p-2 text-center w-16">Qty</th>
                             <th className="p-2 text-center w-14">L. Ft</th>
                             <th className="p-2 text-center w-14">Total</th>
-                            <th className="p-2 text-center border-x border-white/5 w-36">P | E | T</th>
-                            <th className="p-2 w-36">Location</th>
-                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-80">Substitution</th>
+                            <th className="p-2 text-center border-x border-white/5 w-28">P | E | T</th>
+                            <th className="p-2 w-28">Location</th>
+                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-72">Substitution</th>
                             <th className="p-2 text-center w-12 text-[8px]">X</th>
                         </tr>
                     </thead>
@@ -192,8 +192,8 @@ export default function MovementsConsole({ report, onBack }: Props) {
 
                                     {/* CHECKS P E T */}
                                     {/* CHECKS P E T */}
-                                    <td className="p-1 px-3 border-x border-white/5" translate="no">
-                                        <div className="flex justify-center gap-3">
+                                    <td className="p-1 px-1 border-x border-white/5" translate="no">
+                                        <div className="flex justify-center gap-2">
                                             {(['p', 'e', 't'] as const).map((f) => (
                                                 <button
                                                     key={f}
@@ -208,26 +208,28 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                     </td>
 
                                     {/* LOCATION */}
-                                    <td className="p-1 px-3">
+                                    <td className="p-1 px-1">
                                         <input
                                             type="text"
                                             value={item.location}
                                             onChange={e => updateItemField(idx, 'location', e.target.value)}
-                                            className="bg-slate-900/80 border border-white/10 outline-none text-xs text-slate-300 w-32 px-2 py-1.5 rounded focus:border-indigo-500 transition-all font-mono"
+                                            className="bg-transparent border-b border-white/10 outline-none text-xs text-slate-300 w-24 px-1 py-1 focus:border-indigo-500 transition-all font-mono"
                                             placeholder="LOC..."
                                         />
                                     </td>
 
                                     {/* SUSTITUCIÓN */}
-                                    <td className="p-1 px-3 bg-indigo-500/5 border-x border-white/10" translate="no">
+                                    <td className="p-1 px-2 bg-indigo-500/5 border-x border-white/10" translate="no">
                                         <div className="flex gap-2 justify-center">
                                             <input 
+                                                placeholder="QTY"
                                                 autoComplete="off" 
                                                 value={item.subQty} 
                                                 onChange={e => updateItemField(idx, 'subQty', e.target.value)} 
-                                                className="w-24 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" 
+                                                className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" 
                                             />
                                             <input 
+                                                placeholder="FT"
                                                 autoComplete="off" 
                                                 value={item.subLength} 
                                                 onChange={e => updateItemField(idx, 'subLength', e.target.value)} 
@@ -235,10 +237,11 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                                 maxLength={2}
                                             />
                                             <input 
+                                                placeholder="Total"
                                                 autoComplete="off" 
                                                 value={item.subTotal} 
                                                 onChange={e => updateItemField(idx, 'subTotal', e.target.value)} 
-                                                className="w-28 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none" 
+                                                className="w-24 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none" 
                                             />
                                         </div>
                                     </td>
