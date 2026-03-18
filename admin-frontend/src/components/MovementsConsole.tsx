@@ -164,14 +164,14 @@ export default function MovementsConsole({ report, onBack }: Props) {
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                            <th className="p-2 px-3 w-32">Item</th>
+                            <th className="p-2 px-3 w-20">Item</th>
                             <th className="p-2 text-center w-16">Qty</th>
-                            <th className="p-2 text-center w-14">L. Ft</th>
+                            <th className="p-2 text-center w-14">Ft</th>
                             <th className="p-2 text-center w-14">Total</th>
-                            <th className="p-2 text-center border-x border-white/5 w-28">P | E | T</th>
-                            <th className="p-2 w-28">Location</th>
-                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-72">Substitution</th>
-                            <th className="p-2 text-center w-12 text-[8px]">X</th>
+                            <th className="p-2 text-center border-x border-white/5 w-20">P | E | T</th>
+                            <th className="p-2 w-20 text-center">Location</th>
+                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-20">Substitution</th>
+                            <th className="p-2 text-center w-8 text-[8px]">X</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -213,8 +213,8 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                             type="text"
                                             value={item.location}
                                             onChange={e => updateItemField(idx, 'location', e.target.value)}
-                                            className="bg-transparent border-b border-white/10 outline-none text-xs text-slate-300 w-10 px-1 py-1 focus:border-indigo-500 transition-all font-mono"
-                                            placeholder="LOC..."
+                                            className="bg-transparent border-b border-white/10 outline-none text-xs text-slate-300 w-20 px-1 py-1 focus:border-indigo-500 transition-all font-mono"
+                                            placeholder="T1-..."
                                         />
                                     </td>
 
@@ -246,9 +246,9 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                         </div>
                                     </td>
 
-                                    <td className="p-1 text-center">
-                                        <button onClick={() => removeItem(idx)} className="p-2 text-slate-700 hover:text-red-500 transition-colors" title="Eliminar">
-                                            <Trash2 size={18} />
+                                    <td className="p-0 text-center w-8">
+                                        <button onClick={() => removeItem(idx)} className="p-1 text-slate-700 hover:text-red-500 transition-colors" title="Eliminar">
+                                            <Trash2 size={16} />
                                         </button>
                                     </td>
                                 </tr>
