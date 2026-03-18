@@ -143,19 +143,19 @@ export default function MovementsConsole({ report, onBack }: Props) {
                 </button>
             </div>
 
-            {/* ENCABEZADO INTERACTIVO */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="glass p-4 rounded-2xl flex flex-col gap-1 border border-white/5">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Área de Trabajo</span>
-                    <input type="text" value={header.area} onChange={e => setHeader({ ...header, area: e.target.value })} className="bg-transparent border-b border-white/10 outline-none text-white font-bold p-1 text-sm focus:border-indigo-500 transition-colors" placeholder="Ej: ALMACÉN A" />
+            {/* ENCABEZADO INTERACTIVO - MÁS COMPACTO */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="glass p-2 px-3 rounded-xl flex flex-col border border-white/5">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Área de Trabajo</span>
+                    <input type="text" value={header.area} onChange={e => setHeader({ ...header, area: e.target.value })} className="bg-transparent border-b border-white/5 outline-none text-white font-bold p-0.5 text-xs focus:border-indigo-500 transition-colors" placeholder="ALMACÉN..." />
                 </div>
-                <div className="glass p-4 rounded-2xl flex flex-col gap-1 border border-white/5">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Escuadrón / Team</span>
-                    <input type="text" value={header.team} onChange={e => setHeader({ ...header, team: e.target.value })} className="bg-transparent border-b border-white/10 outline-none text-white font-bold p-1 text-sm focus:border-indigo-500 transition-colors" placeholder="Ej: TEAM ALPHA" />
+                <div className="glass p-2 px-3 rounded-xl flex flex-col border border-white/5">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Team / Escuadrón</span>
+                    <input type="text" value={header.team} onChange={e => setHeader({ ...header, team: e.target.value })} className="bg-transparent border-b border-white/5 outline-none text-white font-bold p-0.5 text-xs focus:border-indigo-500 transition-colors" placeholder="EQUIPO..." />
                 </div>
-                <div className="glass p-4 rounded-2xl flex flex-col gap-1 border border-white/5">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Fecha Movimiento</span>
-                    <input type="date" value={header.date} onChange={e => setHeader({ ...header, date: e.target.value })} className="bg-transparent border-b border-white/10 outline-none text-white font-bold p-1 text-sm focus:border-indigo-500 transition-colors" />
+                <div className="glass p-2 px-3 rounded-xl flex flex-col border border-white/5">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Fecha</span>
+                    <input type="date" value={header.date} onChange={e => setHeader({ ...header, date: e.target.value })} className="bg-transparent border-b border-white/5 outline-none text-white font-bold p-0.5 text-xs focus:border-indigo-500 transition-colors" />
                 </div>
             </div>
 
@@ -163,15 +163,15 @@ export default function MovementsConsole({ report, onBack }: Props) {
             <div className="glass rounded-3xl overflow-hidden overflow-x-auto border border-white/5">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            <th className="p-2 w-24">Item (Part #)</th>
-                            <th className="p-2 text-center w-16">Qty</th>
-                            <th className="p-2 text-center w-16">L. Ft</th>
-                            <th className="p-2 text-center w-16">Total</th>
-                            <th className="p-2 text-center border-x border-white/5 w-32">P | E | T</th>
-                            <th className="p-2 w-28">Location</th>
-                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-64">Substitution</th>
-                            <th className="p-2 text-center w-16">Acción</th>
+                        <tr className="bg-white/5 text-[9px] font-bold text-slate-400 uppercase tracking-tight">
+                            <th className="p-1 px-3 w-20">Item</th>
+                            <th className="p-1 text-center w-14">Qty</th>
+                            <th className="p-1 text-center w-12">L. Ft</th>
+                            <th className="p-1 text-center w-12">Total</th>
+                            <th className="p-1 text-center border-x border-white/5 w-24">P | E | T</th>
+                            <th className="p-1 w-20">Location</th>
+                            <th className="p-1 text-center bg-indigo-500/5 border-x border-white/10 w-56">Substitution</th>
+                            <th className="p-1 text-center w-10 text-[8px]">X</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -180,59 +180,59 @@ export default function MovementsConsole({ report, onBack }: Props) {
                             const lengthFt = (mat && mat.qtyReq > 0) ? mat.qtyReq : 12;
                             const total = Math.ceil(item.qty / lengthFt);
 
-                            return (
+                             return (
                                 <tr key={idx} className="hover:bg-white/5 transition-colors group">
-                                    <td className="p-2">
-                                        <div className="font-bold text-indigo-300 text-sm">{item.partNumber}</div>
+                                    <td className="p-1.5 px-3">
+                                        <div className="font-bold text-indigo-300 text-[13px]">{item.partNumber}</div>
                                     </td>
 
-                                    <td className="p-2 text-center font-mono text-white text-sm">{item.qty}</td>
-                                    <td className="p-2 text-center text-slate-500 text-xs italic">{lengthFt}</td>
-                                    <td className="p-2 text-center font-black text-indigo-400 text-sm">{total}</td>
+                                    <td className="p-1.5 text-center font-mono text-white text-[13px]">{item.qty}</td>
+                                    <td className="p-1.5 text-center text-slate-500 text-[10px] italic">{lengthFt}</td>
+                                    <td className="p-1.5 text-center font-black text-indigo-400 text-[13px]">{total}</td>
 
                                     {/* CHECKS P E T */}
-                                    <td className="p-2 border-x border-white/5" translate="no">
-                                        <div className="flex justify-center gap-3">
+                                    <td className="p-1.5 border-x border-white/5" translate="no">
+                                        <div className="flex justify-center gap-1.5">
                                             {(['p', 'e', 't'] as const).map((f) => (
                                                 <button
                                                     key={f}
                                                     onClick={() => toggleCheck(idx, f)}
-                                                    className={`flex flex-col items-center gap-1 transition-all ${item[f] ? 'text-indigo-400' : 'text-slate-700 hover:text-slate-500'}`}
+                                                    className={`transition-all ${item[f] ? 'text-indigo-400' : 'text-slate-700 hover:text-slate-500'}`}
+                                                    title={f.toUpperCase()}
                                                 >
-                                                    {item[f] ? <CheckSquare size={18} /> : <Square size={18} />}
-                                                    <span className="text-[10px] font-black uppercase">{f}</span>
+                                                    {item[f] ? <CheckSquare size={16} /> : <Square size={16} />}
                                                 </button>
                                             ))}
                                         </div>
                                     </td>
 
-                                    {/* LOCATION (Pequeño) */}
-                                    <td className="p-2">
+                                    {/* LOCATION */}
+                                    <td className="p-1.5">
                                         <input
                                             type="text"
                                             value={item.location}
                                             onChange={e => updateItemField(idx, 'location', e.target.value)}
-                                            className="bg-slate-900/80 border border-white/10 outline-none text-[10px] text-slate-300 w-24 px-2 py-1.5 rounded focus:border-indigo-500 transition-all font-mono"
+                                            className="bg-slate-900/80 border border-white/10 outline-none text-[10px] text-slate-300 w-20 px-1.5 py-1 rounded focus:border-indigo-500 transition-all font-mono"
                                             placeholder="LOC..."
                                         />
                                     </td>
 
                                     {/* SUSTITUCIÓN */}
-                                    <td className="p-2 bg-indigo-500/5 border-x border-white/10" translate="no">
-                                        <div className="flex gap-1.5 justify-center">
+                                    <td className="p-1.5 bg-indigo-500/5 border-x border-white/10" translate="no">
+                                        <div className="flex gap-1 justify-center">
                                             <input 
                                                 placeholder="Cant" 
                                                 autoComplete="off" 
                                                 value={item.subQty} 
                                                 onChange={e => updateItemField(idx, 'subQty', e.target.value)} 
-                                                className="w-20 bg-slate-900/80 border border-white/10 rounded px-1.5 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                                className="w-16 bg-slate-900/80 border border-white/10 rounded px-1 py-1.5 text-xs text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100" 
                                             />
                                             <input 
                                                 placeholder="L." 
                                                 autoComplete="off" 
                                                 value={item.subLength} 
                                                 onChange={e => updateItemField(idx, 'subLength', e.target.value)} 
-                                                className="w-10 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100 font-mono" 
+                                                className="w-8 bg-slate-900/80 border border-white/10 rounded px-1 py-1.5 text-xs text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100 font-mono" 
                                                 maxLength={2}
                                             />
                                             <input 
@@ -240,14 +240,14 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                                 autoComplete="off" 
                                                 value={item.subTotal} 
                                                 onChange={e => updateItemField(idx, 'subTotal', e.target.value)} 
-                                                className="w-24 bg-slate-900/80 border border-indigo-500/30 rounded px-1.5 py-2 text-sm text-center text-indigo-300 font-bold outline-none placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                                className="w-20 bg-slate-900/80 border border-indigo-500/30 rounded px-1 py-1.5 text-xs text-center text-indigo-300 font-bold outline-none placeholder:opacity-0 sm:placeholder:opacity-100" 
                                             />
                                         </div>
                                     </td>
 
-                                    <td className="p-2 text-center">
-                                        <button onClick={() => removeItem(idx)} className="p-2 text-slate-700 hover:text-red-500 transition-colors" title="Eliminar de la lista">
-                                            <Trash2 size={18} />
+                                    <td className="p-1.5 text-center">
+                                        <button onClick={() => removeItem(idx)} className="p-1.5 text-slate-700 hover:text-red-500 transition-colors" title="Eliminar">
+                                            <Trash2 size={16} />
                                         </button>
                                     </td>
                                 </tr>
