@@ -222,26 +222,23 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                     <td className="p-1 px-3 bg-indigo-500/5 border-x border-white/10" translate="no">
                                         <div className="flex gap-2 justify-center">
                                             <input 
-                                                placeholder="Cant" 
                                                 autoComplete="off" 
                                                 value={item.subQty} 
                                                 onChange={e => updateItemField(idx, 'subQty', e.target.value)} 
-                                                className="w-24 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                                className="w-24 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" 
                                             />
                                             <input 
-                                                placeholder="L." 
                                                 autoComplete="off" 
                                                 value={item.subLength} 
                                                 onChange={e => updateItemField(idx, 'subLength', e.target.value)} 
-                                                className="w-12 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100 font-mono" 
+                                                className="w-12 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 font-mono" 
                                                 maxLength={2}
                                             />
                                             <input 
-                                                placeholder="Tot" 
                                                 autoComplete="off" 
                                                 value={item.subTotal} 
                                                 onChange={e => updateItemField(idx, 'subTotal', e.target.value)} 
-                                                className="w-28 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                                className="w-28 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none" 
                                             />
                                         </div>
                                     </td>
