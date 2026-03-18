@@ -88,13 +88,13 @@ export default function MovementsConsole({ report, onBack }: Props) {
     const toggleCheck = (idx: number, field: 'p' | 'e' | 't') => {
         const newItems = [...items];
         const isCurrentlyChecked = newItems[idx][field];
-        
+
         if (!isCurrentlyChecked) {
             // Si vamos a marcar 'p', quitamos 'e' y 't'
             if (field === 'p') {
                 newItems[idx].e = false;
                 newItems[idx].t = false;
-            } 
+            }
             // Si vamos a marcar 'e' o 't', quitamos 'p'
             else {
                 newItems[idx].p = false;
@@ -104,7 +104,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
             // Si ya estaba marcado, simplemente lo desmarcamos
             newItems[idx][field] = false;
         }
-        
+
         setItems(newItems);
     };
 
@@ -180,7 +180,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                             const lengthFt = (mat && mat.qtyReq > 0) ? mat.qtyReq : 12;
                             const total = Math.ceil(item.qty / lengthFt);
 
-                             return (
+                            return (
                                 <tr key={idx} className="hover:bg-white/5 transition-colors group">
                                     <td className="p-1.5 px-3">
                                         <div className="font-bold text-indigo-300 text-[13px]">{item.partNumber}</div>
@@ -213,7 +213,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                             type="text"
                                             value={item.location}
                                             onChange={e => updateItemField(idx, 'location', e.target.value)}
-                                            className="bg-transparent border-b border-white/10 outline-none text-xs text-slate-300 w-24 px-1 py-1 focus:border-indigo-500 transition-all font-mono"
+                                            className="bg-transparent border-b border-white/10 outline-none text-xs text-slate-300 w-10 px-1 py-1 focus:border-indigo-500 transition-all font-mono"
                                             placeholder="LOC..."
                                         />
                                     </td>
@@ -221,27 +221,27 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                     {/* SUSTITUCIÓN */}
                                     <td className="p-1 px-2 bg-indigo-500/5 border-x border-white/10" translate="no">
                                         <div className="flex gap-2 justify-center">
-                                            <input 
+                                            <input
                                                 placeholder="QTY"
-                                                autoComplete="off" 
-                                                value={item.subQty} 
-                                                onChange={e => updateItemField(idx, 'subQty', e.target.value)} 
-                                                className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500" 
+                                                autoComplete="off"
+                                                value={item.subQty}
+                                                onChange={e => updateItemField(idx, 'subQty', e.target.value)}
+                                                className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500"
                                             />
-                                            <input 
+                                            <input
                                                 placeholder="FT"
-                                                autoComplete="off" 
-                                                value={item.subLength} 
-                                                onChange={e => updateItemField(idx, 'subLength', e.target.value)} 
-                                                className="w-12 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 font-mono" 
+                                                autoComplete="off"
+                                                value={item.subLength}
+                                                onChange={e => updateItemField(idx, 'subLength', e.target.value)}
+                                                className="w-12 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 font-mono"
                                                 maxLength={2}
                                             />
-                                            <input 
+                                            <input
                                                 placeholder="Total"
-                                                autoComplete="off" 
-                                                value={item.subTotal} 
-                                                onChange={e => updateItemField(idx, 'subTotal', e.target.value)} 
-                                                className="w-24 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none" 
+                                                autoComplete="off"
+                                                value={item.subTotal}
+                                                onChange={e => updateItemField(idx, 'subTotal', e.target.value)}
+                                                className="w-24 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none"
                                             />
                                         </div>
                                     </td>
