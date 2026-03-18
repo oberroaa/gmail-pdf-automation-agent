@@ -163,15 +163,15 @@ export default function MovementsConsole({ report, onBack }: Props) {
             <div className="glass rounded-3xl overflow-hidden overflow-x-auto border border-white/5">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-white/5 text-[9px] font-bold text-slate-400 uppercase tracking-tight">
-                            <th className="p-1 px-3 w-20">Item</th>
-                            <th className="p-1 text-center w-14">Qty</th>
-                            <th className="p-1 text-center w-12">L. Ft</th>
-                            <th className="p-1 text-center w-12">Total</th>
-                            <th className="p-1 text-center border-x border-white/5 w-24">P | E | T</th>
-                            <th className="p-1 w-20">Location</th>
-                            <th className="p-1 text-center bg-indigo-500/5 border-x border-white/10 w-56">Substitution</th>
-                            <th className="p-1 text-center w-10 text-[8px]">X</th>
+                        <tr className="bg-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                            <th className="p-2 px-3 w-32">Item</th>
+                            <th className="p-2 text-center w-16">Qty</th>
+                            <th className="p-2 text-center w-14">L. Ft</th>
+                            <th className="p-2 text-center w-14">Total</th>
+                            <th className="p-2 text-center border-x border-white/5 w-36">P | E | T</th>
+                            <th className="p-2 w-36">Location</th>
+                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-80">Substitution</th>
+                            <th className="p-2 text-center w-12 text-[8px]">X</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -191,8 +191,9 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                     <td className="p-1.5 text-center font-black text-indigo-400 text-[13px]">{total}</td>
 
                                     {/* CHECKS P E T */}
-                                    <td className="p-1.5 border-x border-white/5" translate="no">
-                                        <div className="flex justify-center gap-1.5">
+                                    {/* CHECKS P E T */}
+                                    <td className="p-1 px-3 border-x border-white/5" translate="no">
+                                        <div className="flex justify-center gap-3">
                                             {(['p', 'e', 't'] as const).map((f) => (
                                                 <button
                                                     key={f}
@@ -200,39 +201,39 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                                     className={`transition-all ${item[f] ? 'text-indigo-400' : 'text-slate-700 hover:text-slate-500'}`}
                                                     title={f.toUpperCase()}
                                                 >
-                                                    {item[f] ? <CheckSquare size={16} /> : <Square size={16} />}
+                                                    {item[f] ? <CheckSquare size={18} /> : <Square size={18} />}
                                                 </button>
                                             ))}
                                         </div>
                                     </td>
 
                                     {/* LOCATION */}
-                                    <td className="p-1.5">
+                                    <td className="p-1 px-3">
                                         <input
                                             type="text"
                                             value={item.location}
                                             onChange={e => updateItemField(idx, 'location', e.target.value)}
-                                            className="bg-slate-900/80 border border-white/10 outline-none text-[10px] text-slate-300 w-20 px-1.5 py-1 rounded focus:border-indigo-500 transition-all font-mono"
+                                            className="bg-slate-900/80 border border-white/10 outline-none text-xs text-slate-300 w-32 px-2 py-1.5 rounded focus:border-indigo-500 transition-all font-mono"
                                             placeholder="LOC..."
                                         />
                                     </td>
 
                                     {/* SUSTITUCIÓN */}
-                                    <td className="p-1.5 bg-indigo-500/5 border-x border-white/10" translate="no">
-                                        <div className="flex gap-1 justify-center">
+                                    <td className="p-1 px-3 bg-indigo-500/5 border-x border-white/10" translate="no">
+                                        <div className="flex gap-2 justify-center">
                                             <input 
                                                 placeholder="Cant" 
                                                 autoComplete="off" 
                                                 value={item.subQty} 
                                                 onChange={e => updateItemField(idx, 'subQty', e.target.value)} 
-                                                className="w-16 bg-slate-900/80 border border-white/10 rounded px-1 py-1.5 text-xs text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                                className="w-24 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100" 
                                             />
                                             <input 
                                                 placeholder="L." 
                                                 autoComplete="off" 
                                                 value={item.subLength} 
                                                 onChange={e => updateItemField(idx, 'subLength', e.target.value)} 
-                                                className="w-8 bg-slate-900/80 border border-white/10 rounded px-1 py-1.5 text-xs text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100 font-mono" 
+                                                className="w-12 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 placeholder:opacity-0 sm:placeholder:opacity-100 font-mono" 
                                                 maxLength={2}
                                             />
                                             <input 
@@ -240,14 +241,14 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                                 autoComplete="off" 
                                                 value={item.subTotal} 
                                                 onChange={e => updateItemField(idx, 'subTotal', e.target.value)} 
-                                                className="w-20 bg-slate-900/80 border border-indigo-500/30 rounded px-1 py-1.5 text-xs text-center text-indigo-300 font-bold outline-none placeholder:opacity-0 sm:placeholder:opacity-100" 
+                                                className="w-28 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none placeholder:opacity-0 sm:placeholder:opacity-100" 
                                             />
                                         </div>
                                     </td>
 
-                                    <td className="p-1.5 text-center">
-                                        <button onClick={() => removeItem(idx)} className="p-1.5 text-slate-700 hover:text-red-500 transition-colors" title="Eliminar">
-                                            <Trash2 size={16} />
+                                    <td className="p-1 text-center">
+                                        <button onClick={() => removeItem(idx)} className="p-2 text-slate-700 hover:text-red-500 transition-colors" title="Eliminar">
+                                            <Trash2 size={18} />
                                         </button>
                                     </td>
                                 </tr>
