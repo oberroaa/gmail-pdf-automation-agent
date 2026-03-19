@@ -72,18 +72,28 @@ export default function MovementsConsole({ report, onBack }: Props) {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await fetch(`${API_URL}/movements`, {
+            // 1. Guardamos la respuesta del servidor en 'res'
+            const res = await fetch(`${API_URL}/movements`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ reportId: report._id, items, header })
             });
+
+            // 2. ¡IMPORTANTE! Si la respuesta NO es OK, lanzamos un error
+            if (!res.ok) {
+                throw new Error("Error en el servidor");
+            }
+
+            // 3. Solo si todo salió bien, mostramos el mensaje de éxito
             alert("✅ Movimientos guardados correctamente");
         } catch (err) {
-            alert("❌ Error al guardar");
+            // 4. Si algo falló (arriba o en la red), venimos aquí
+            alert("❌ Error al guardar: " + (err instanceof Error ? err.message : "Desconocido"));
         } finally {
             setSaving(false);
         }
     };
+
 
     const toggleCheck = (idx: number, field: 'p' | 'e' | 't') => {
         const newItems = [...items];
@@ -190,7 +200,6 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                     <td className="p-1.5 text-center text-slate-500 text-[10px] italic">{lengthFt}</td>
                                     <td className="p-1.5 text-center font-black text-indigo-400 text-[13px]">{total}</td>
 
-                                    {/* CHECKS P E T */}
                                     {/* CHECKS P E T */}
                                     <td className="p-1 px-1 border-x border-white/5" translate="no">
                                         <div className="flex justify-center gap-2">

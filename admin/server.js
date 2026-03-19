@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection } from "../db.js";
+import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection, getMovementsCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
 import sendWhatsApp from "../whatsapp.js";
 import multer from "multer";
