@@ -26,6 +26,10 @@ export default function MovementsConsole({ report, onBack }: Props) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
+    const [newItemPN, setNewItemPN] = useState("");
+    const [newItemQty, setNewItemQty] = useState("");
+
+
     // Encabezado editable
     const [header, setHeader] = useState({
         area: "",
@@ -130,6 +134,31 @@ export default function MovementsConsole({ report, onBack }: Props) {
         }
     };
 
+    const addManualItem = () => {
+        if (!newItemPN || !newItemQty) {
+            alert("⚠️ Por favor ingresa el Part Number y la Cantidad");
+            return;
+        }
+
+        // Buscamos si el material existe en nuestra lista para traer descripción y UOM
+        const mat = materials.find(m => m.partNumber.toUpperCase() === newItemPN.toUpperCase());
+
+        const newItem: MovementItem = {
+            partNumber: newItemPN.toUpperCase(),
+            description: mat?.description || "Añadido manualmente",
+            qty: Number(newItemQty),
+            uom: mat?.uom || "EA",
+            p: false, e: false, t: false,
+            location: "",
+            subQty: "", subLength: "", subTotal: ""
+        };
+
+        setItems([newItem, ...items]); // Lo pone al inicio de la tabla
+        setNewItemPN(""); // Limpia los campos
+        setNewItemQty("");
+    };
+
+
     if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-indigo-500 w-10 h-10" /></div>;
 
     return (
@@ -167,6 +196,35 @@ export default function MovementsConsole({ report, onBack }: Props) {
                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Fecha</span>
                     <input type="date" value={header.date} onChange={e => setHeader({ ...header, date: e.target.value })} className="bg-transparent border-b border-white/5 outline-none text-white font-bold p-0.5 text-xs focus:border-indigo-500 transition-colors" />
                 </div>
+            </div>
+            {/* AGREGAR ITEM MANUAL */}
+            <div className="flex gap-2 items-center bg-indigo-500/10 p-3 rounded-2xl border border-indigo-500/20 mb-4 animate-in slide-in-from-top duration-700">
+                <div className="flex flex-col flex-1">
+                    <span className="text-[10px] text-indigo-400 font-bold uppercase ml-1">Nuevo Part Number</span>
+                    <input
+                        type="text"
+                        placeholder="Ej: JAC800..."
+                        value={newItemPN}
+                        onChange={e => setNewItemPN(e.target.value)}
+                        className="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+                <div className="flex flex-col w-24">
+                    <span className="text-[10px] text-indigo-400 font-bold uppercase ml-1">Qty</span>
+                    <input
+                        type="number"
+                        placeholder="0"
+                        value={newItemQty}
+                        onChange={e => setNewItemQty(e.target.value)}
+                        className="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none transition-all text-center"
+                    />
+                </div>
+                <button
+                    onClick={addManualItem}
+                    className="mt-4 bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-xl transition-all shadow-lg active:scale-95"
+                >
+                    <CheckSquare size={20} />
+                </button>
             </div>
 
             {/* TABLA DE MOVIMIENTOS */}
