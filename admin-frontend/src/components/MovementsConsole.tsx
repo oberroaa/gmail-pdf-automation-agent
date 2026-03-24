@@ -13,6 +13,7 @@ interface MovementItem extends ReportItem {
     subQty: string;
     subLength: string;
     subTotal: string;
+    isManual?: boolean;
 }
 
 interface Props {
@@ -150,7 +151,8 @@ export default function MovementsConsole({ report, onBack }: Props) {
             uom: mat?.uom || "EA",
             p: false, e: false, t: false,
             location: "",
-            subQty: "", subLength: "", subTotal: ""
+            subQty: "", subLength: "", subTotal: "",
+            isManual: true
         };
 
         setItems([newItem, ...items]); // Lo pone al inicio de la tabla
@@ -251,8 +253,16 @@ export default function MovementsConsole({ report, onBack }: Props) {
                             return (
                                 <tr key={idx} className="hover:bg-white/5 transition-colors group">
                                     <td className="p-1.5 px-3">
-                                        <div className="font-bold text-indigo-300 text-[13px]">{item.partNumber}</div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="font-bold text-indigo-300 text-[13px]">{item.partNumber}</div>
+                                            {item.isManual && (
+                                                <span className="bg-amber-500/20 text-amber-500 text-[8px] px-1.5 py-0.5 rounded-md uppercase font-black border border-amber-500/30">
+                                                    Manual
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
+
 
                                     <td className="p-1.5 text-center font-mono text-white text-[13px]">{item.qty}</td>
                                     <td className="p-1.5 text-center text-slate-500 text-[10px] italic">{lengthFt}</td>
