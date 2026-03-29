@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
@@ -17,6 +17,7 @@ import {
 } from "./services/rulesApi";
 import { type Report } from "./services/reportsApi"; // Importamos el tipo Report
 import ManualAnalyzer from './components/ManualAnalyzer';
+import CraneSafety from "./components/CraneSafety";
 
 export default function App() {
   const [rules, setRules] = useState<Rule[]>([]);
@@ -26,7 +27,7 @@ export default function App() {
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf">("rules");
+  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety">("rules");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Estado para el reporte seleccionado para movimientos
@@ -49,7 +50,7 @@ export default function App() {
     fetchRules();
   }, []);
 
-  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf") => {
+  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety") => {
     setActiveTab(tab);
     setIsMenuOpen(false);
     setSelectedReportForMove(null); // Limpiamos selección al cambiar de pestaña
@@ -107,7 +108,7 @@ export default function App() {
       {/* BOTÓN MENÚ MÓVIL */}
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="lg:hidden fixed top-4 right-4 z-[60] p-3 bg-indigo-600 rounded-xl shadow-lg text-white hover:bg-indigo-500 transition-colors"
+        className="lg:hidden fixed top-4 right-4 z-[60] p-3 bg-indigo-600 rounded-xl shadow-lg text-white hover:bg-indigo-500 transition-colors print:hidden"
       >
         {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
@@ -174,6 +175,14 @@ export default function App() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             Procesar PDF
+          </button>
+
+          <button
+            onClick={() => navigateTo("crane-safety")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'crane-safety' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <HardHat className="w-5 h-5" />
+            Manejo de Grúa
           </button>
         </nav>
 
@@ -275,6 +284,10 @@ export default function App() {
                   <p className="text-slate-500 text-xs md:text-sm mt-1">Sube un PDF para análisis inmediato.</p>
                 </div>
                 <ManualAnalyzer />
+              </motion.div>
+            ) : activeTab === "crane-safety" ? (
+              <motion.div key="crane-safety" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                <CraneSafety />
               </motion.div>
             ) : null}
           </AnimatePresence>
