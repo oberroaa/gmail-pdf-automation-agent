@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
@@ -18,7 +18,7 @@ import {
 import { type Report } from "./services/reportsApi"; // Importamos el tipo Report
 import ManualAnalyzer from './components/ManualAnalyzer';
 import CraneSafety from "./components/CraneSafety";
-
+import CanopyManager from "./components/Canopy"; // 👈 Añadido
 export default function App() {
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ export default function App() {
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety">("rules");
+  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy">("rules");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Estado para el reporte seleccionado para movimientos
@@ -50,7 +50,7 @@ export default function App() {
     fetchRules();
   }, []);
 
-  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety") => {
+  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy") => {
     setActiveTab(tab);
     setIsMenuOpen(false);
     setSelectedReportForMove(null); // Limpiamos selección al cambiar de pestaña
@@ -184,6 +184,14 @@ export default function App() {
             <HardHat className="w-5 h-5" />
             Manejo de Grúa
           </button>
+          <button
+            onClick={() => navigateTo("canopy")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <Wind className="w-5 h-5" />
+            Canopy
+          </button>
+
         </nav>
 
         <div className="mt-auto border-t border-white/5 pt-6 px-2">
@@ -289,7 +297,12 @@ export default function App() {
               <motion.div key="crane-safety" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <CraneSafety />
               </motion.div>
+            ) : activeTab === "canopy" ? (
+              <motion.div key="canopy" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                <CanopyManager />
+              </motion.div>
             ) : null}
+
           </AnimatePresence>
 
         </div>

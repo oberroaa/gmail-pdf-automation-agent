@@ -75,3 +75,11 @@ export async function getMovementsCollection() {
     const database = await connectDB();
     return database.collection("movements");
 }
+
+/**
+ * Helper para obtener la colección de Canopy
+ */
+export async function getCanopyCollection() {
+    const database = await connectDB();
+    return database.collection("canopy");
+}

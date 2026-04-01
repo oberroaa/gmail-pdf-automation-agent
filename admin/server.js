@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection, getMovementsCollection } from "../db.js";
+import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection, getMovementsCollection, getCanopyCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
 import sendWhatsApp from "../whatsapp.js";
 import multer from "multer";
@@ -447,6 +447,100 @@ router.post("/items/bulk-delete", async (req, res) => {
         res.status(500).json({ error: "Error en el borrado masivo" });
     }
 });
+
+// ================================
+// GESTIÓN DE CANOPY (Nomenclador)
+// ================================
+
+// 1. Obtener todos los canopies (con Paginación y Búsqueda)
+router.get("/canopy", async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || "";
+        const skip = (page - 1) * limit;
+
+        const collection = await getCanopyCollection();
+        const query = search
+            ? {
+                $or: [
+                    { item: { $regex: search, $options: "i" } },
+                    { profile: { $regex: search, $options: "i" } }
+                ]
+            }
+            : {};
+
+        const total = await collection.countDocuments(query);
+        const canopies = await collection.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+        res.json({ canopies, total, page, totalPages: Math.ceil(total / limit) });
+    } catch (err) {
+        console.error("[ADMIN][GET CANOPY]", err);
+        res.status(500).json({ error: "Error al obtener canopies" });
+    }
+});
+
+// 2. Guardar un nuevo canopy
+router.post("/canopy", async (req, res) => {
+    try {
+        const { item, profile, telas, total } = req.body;
+        const newCanopy = {
+            item: String(item),
+            profile: String(profile),
+            telas: Array.isArray(telas) ? telas : [], // Es un arreglo de strings
+            total: Math.round(Number(total) || 0),
+            createdAt: new Date()
+        };
+
+        const collection = await getCanopyCollection();
+        await collection.insertOne(newCanopy);
+        res.json({ success: true, canopy: newCanopy });
+    } catch (err) {
+        console.error("[ADMIN][SAVE CANOPY]", err);
+        res.status(500).json({ error: "Error al guardar el canopy" });
+    }
+});
+
+// 3. Editar un canopy
+router.put("/canopy/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { item, profile, telas, total } = req.body;
+        const { ObjectId } = await import("mongodb");
+
+        const updateData = { updatedAt: new Date() };
+        if (item !== undefined) updateData.item = String(item);
+        if (profile !== undefined) updateData.profile = String(profile);
+        if (telas !== undefined) updateData.telas = Array.isArray(telas) ? telas : [];
+        if (total !== undefined) updateData.total = Math.round(Number(total) || 0);
+
+        const collection = await getCanopyCollection();
+        await collection.updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("[ADMIN][UPDATE CANOPY]", err);
+        res.status(500).json({ error: "Error al actualizar" });
+    }
+});
+
+// 4. Eliminar un canopy
+router.delete("/canopy/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { ObjectId } = await import("mongodb");
+        const collection = await getCanopyCollection();
+        await collection.deleteOne({ _id: new ObjectId(id) });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("[ADMIN][DELETE CANOPY]", err);
+        res.status(500).json({ error: "Error al eliminar" });
+    }
+});
+
 
 // ================================
 // SUBIR Y ANALIZAR PDF (MANUAL)
