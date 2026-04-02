@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
@@ -18,7 +18,9 @@ import {
 import { type Report } from "./services/reportsApi"; // Importamos el tipo Report
 import ManualAnalyzer from './components/ManualAnalyzer';
 import CraneSafety from "./components/CraneSafety";
-import CanopyManager from "./components/Canopy"; // 👈 Añadido
+import CanopyManager from "./components/Canopy";
+import CanopyAnalyzer from "./components/CanopyAnalyzer";
+
 export default function App() {
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export default function App() {
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy">("rules");
+  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer">("rules");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Estado para el reporte seleccionado para movimientos
@@ -50,7 +52,7 @@ export default function App() {
     fetchRules();
   }, []);
 
-  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy") => {
+  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer") => {
     setActiveTab(tab);
     setIsMenuOpen(false);
     setSelectedReportForMove(null); // Limpiamos selección al cambiar de pestaña
@@ -191,6 +193,13 @@ export default function App() {
             <Wind className="w-5 h-5" />
             Canopy
           </button>
+          <button
+            onClick={() => navigateTo("canopy-analyzer")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy-analyzer' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <Search className="w-5 h-5" />
+            Analizador Canopy
+          </button>
 
         </nav>
 
@@ -300,6 +309,10 @@ export default function App() {
             ) : activeTab === "canopy" ? (
               <motion.div key="canopy" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <CanopyManager />
+              </motion.div>
+            ) : activeTab === "canopy-analyzer" ? (
+              <motion.div key="canopy-analyzer" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                <CanopyAnalyzer />
               </motion.div>
             ) : null}
 

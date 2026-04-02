@@ -55,3 +55,13 @@ export async function deleteCanopy(id: string): Promise<void> {
     });
     if (!res.ok) throw new Error("Error al eliminar");
 }
+
+// 5. Eliminar múltiples canopies
+export async function deleteCanopies(ids: string[]): Promise<void> {
+    const res = await fetch(`${API_URL}/canopy/bulk`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+    });
+    if (!res.ok) throw new Error("Error al eliminar múltiples canopies");
+}

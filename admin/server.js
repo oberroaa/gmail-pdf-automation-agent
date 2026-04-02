@@ -13,6 +13,7 @@ import sendWhatsApp from "../whatsapp.js";
 import multer from "multer";
 import analyzePdfWithRules from "../analyze-pdf.js";
 import fs from "fs";
+import analyzeCanopyPdf from "../analyze-canopy.js";
 
 // ================================
 // PATHS & ENV
@@ -527,7 +528,26 @@ router.put("/canopy/:id", async (req, res) => {
     }
 });
 
-// 4. Eliminar un canopy
+// 4. Eliminar múltiples canopies (Debe ir ANTES de /:id para evitar conflictos)
+router.delete("/canopy/bulk", async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids)) return res.status(400).json({ error: "IDs deben ser un array" });
+        
+        const { ObjectId } = await import("mongodb");
+        const collection = await getCanopyCollection();
+        
+        const objectIds = ids.map(id => new ObjectId(id));
+        await collection.deleteMany({ _id: { $in: objectIds } });
+        
+        res.json({ success: true, count: ids.length });
+    } catch (err) {
+        console.error("[ADMIN][BULK DELETE CANOPY]", err);
+        res.status(500).json({ error: "Error al eliminar múltiples" });
+    }
+});
+
+// 4.1. Eliminar un canopy
 router.delete("/canopy/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -541,6 +561,31 @@ router.delete("/canopy/:id", async (req, res) => {
     }
 });
 
+// 5. Analizar PDF de Canopy (Nuevo Motor Independiente)
+router.post("/upload-canopy", async (req, res) => {
+    // Usamos multer para procesar la subida
+    const uploadSingle = multer({ dest: "uploads/" }).single("pdf");
+    
+    uploadSingle(req, res, async (err) => {
+        if (err) return res.status(500).json({ error: "Error subiendo archivo" });
+        if (!req.file) return res.status(400).json({ error: "No se subió ningún archivo" });
+
+        try {
+            console.log(`📑 [CANOPY] Analizando PDF: ${req.file.originalname}`);
+            const report = await analyzeCanopyPdf(req.file.path);
+            
+            // Eliminar el archivo temporal
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            
+            res.json(report);
+        } catch (analiseErr) {
+            console.error("[ADMIN][UPLOAD CANOPY]", analiseErr);
+            res.status(500).json({ error: "Error analizando el PDF de Canopy" });
+        }
+    });
+});
 
 // ================================
 // SUBIR Y ANALIZAR PDF (MANUAL)

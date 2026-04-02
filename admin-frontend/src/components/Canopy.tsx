@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCanopies, saveCanopy, updateCanopy, deleteCanopy, type Canopy } from "../services/canopyApi";
+import { getCanopies, saveCanopy, updateCanopy, deleteCanopy, deleteCanopies, type Canopy } from "../services/canopyApi";
 import {
     Wind, Plus, Trash2, Loader2, Search, AlertCircle,
     ChevronLeft, ChevronRight, Pencil, Save, X, Layers
@@ -22,6 +22,9 @@ export default function CanopyManager() {
     const [formData, setFormData] = useState({ item: "", profile: "", telas: "", total: 0 });
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editFormData, setEditFormData] = useState<Partial<Canopy>>({ item: "", profile: "", telas: [], total: 0 });
+
+    // Selección masiva
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     const loadData = async () => {
         try {
@@ -75,11 +78,43 @@ export default function CanopyManager() {
         } catch (err) { alert("Error al actualizar"); }
     };
 
+    const handleBulkDelete = async () => {
+        if (selectedIds.length === 0) return;
+        if (!confirm(`¿Eliminar ${selectedIds.length} registros seleccionados?`)) return;
+        try {
+            await deleteCanopies(selectedIds);
+            setSelectedIds([]);
+            await loadData();
+        } catch (err) { alert("Error al eliminar múltiples"); }
+    };
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === canopies.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(canopies.map(c => c._id!));
+        }
+    };
+
     return (
         <div className="glass p-6 rounded-3xl mt-8">
-            <div className="flex items-center gap-3 mb-8">
-                <Wind className="w-5 h-5 text-sky-400" />
-                <h2 className="text-xl font-bold text-white">Nomenclador Canopy</h2>
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <Wind className="w-5 h-5 text-sky-400" />
+                    <h2 className="text-xl font-bold text-white">Nomenclador Canopy</h2>
+                </div>
+                {selectedIds.length > 0 && (
+                    <button
+                        onClick={handleBulkDelete}
+                        className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-red-500/20"
+                    >
+                        <Trash2 className="w-4 h-4" /> Eliminar seleccionados ({selectedIds.length})
+                    </button>
+                )}
             </div>
 
             <div className="relative mb-6">
@@ -91,18 +126,36 @@ export default function CanopyManager() {
                 />
             </div>
 
-            <form onSubmit={handleAdd} className="flex flex-col md:flex-row gap-3 mb-8 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
-                <input type="text" placeholder="Item" className="flex-[2] bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.item} onChange={e => setFormData({ ...formData, item: e.target.value })} required />
-                <input type="text" placeholder="Perfil" className="flex-[2] bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.profile} onChange={e => setFormData({ ...formData, profile: e.target.value })} required />
-                <input type="text" placeholder="Telas (A, B...)" className="flex-[2] bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.telas} onChange={e => setFormData({ ...formData, telas: e.target.value })} />
-                <input type="number" placeholder="Total" className="w-full md:w-20 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm text-center" value={formData.total} onChange={e => setFormData({ ...formData, total: Number(e.target.value) })} required />
-                <button type="submit" className="bg-sky-600 hover:bg-sky-500 text-white px-6 py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"><Plus className="w-4 h-4" /> Agregar</button>
+            <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-8 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
+                <div className="md:col-span-3">
+                    <input type="text" placeholder="Item" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.item} onChange={e => setFormData({ ...formData, item: e.target.value })} required />
+                </div>
+                <div className="md:col-span-3">
+                    <input type="text" placeholder="Perfil" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.profile} onChange={e => setFormData({ ...formData, profile: e.target.value })} required />
+                </div>
+                <div className="md:col-span-3">
+                    <input type="text" placeholder="Telas (A, B...)" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.telas} onChange={e => setFormData({ ...formData, telas: e.target.value })} />
+                </div>
+                <div className="md:col-span-1">
+                    <input type="number" placeholder="Total" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm text-center" value={formData.total} onChange={e => setFormData({ ...formData, total: Number(e.target.value) })} required />
+                </div>
+                <div className="md:col-span-2">
+                    <button type="submit" className="w-full bg-sky-600 hover:bg-sky-500 text-white py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"><Plus className="w-4 h-4" /> Agregar</button>
+                </div>
             </form>
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-separate border-spacing-y-2">
                     <thead>
                         <tr className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">
+                            <th className="px-4 py-2 w-10">
+                                <input
+                                    type="checkbox"
+                                    className="accent-sky-500 rounded"
+                                    checked={canopies.length > 0 && selectedIds.length === canopies.length}
+                                    onChange={toggleSelectAll}
+                                />
+                            </th>
                             <th className="px-4 py-2 w-1/4">Item</th>
                             <th className="px-4 py-2 w-1/4">Perfil</th>
                             <th className="px-4 py-2">Telas</th>
@@ -114,8 +167,16 @@ export default function CanopyManager() {
                         {loading ? (
                             <tr><td colSpan={5} className="text-center py-10"><Loader2 className="animate-spin mx-auto text-sky-500" /></td></tr>
                         ) : canopies.map(c => (
-                            <tr key={c._id} className="bg-slate-800/40 hover:bg-slate-800/60 transition-colors">
-                                <td className="px-4 py-3 rounded-l-xl text-white">
+                             <tr key={c._id} className={`bg-slate-800/40 hover:bg-slate-800/60 transition-colors ${selectedIds.includes(c._id!) ? 'ring-1 ring-sky-500/50 bg-sky-500/5' : ''}`}>
+                                <td className="px-4 py-3 rounded-l-xl">
+                                    <input
+                                        type="checkbox"
+                                        className="accent-sky-500 rounded"
+                                        checked={selectedIds.includes(c._id!)}
+                                        onChange={() => toggleSelect(c._id!)}
+                                    />
+                                </td>
+                                <td className="px-4 py-3 text-white">
                                     {editingId === c._id ? <input className="bg-slate-700 p-1 rounded w-full" value={editFormData.item} onChange={e => setEditFormData({ ...editFormData, item: e.target.value })} /> : c.item}
                                 </td>
                                 <td className="px-4 py-3 text-slate-300">
