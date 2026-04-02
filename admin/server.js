@@ -563,8 +563,8 @@ router.delete("/canopy/:id", async (req, res) => {
 
 // 5. Analizar PDF de Canopy (Nuevo Motor Independiente)
 router.post("/upload-canopy", async (req, res) => {
-    // Usamos multer para procesar la subida
-    const uploadSingle = multer({ dest: "uploads/" }).single("pdf");
+    // Usamos multer para procesar la subida (Vercel requiere /tmp)
+    const uploadSingle = multer({ dest: uploadDir }).single("pdf");
     
     uploadSingle(req, res, async (err) => {
         if (err) return res.status(500).json({ error: "Error subiendo archivo" });
