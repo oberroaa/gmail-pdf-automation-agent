@@ -105,7 +105,7 @@ export default function CanopyManager() {
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                     <Wind className="w-5 h-5 text-sky-400" />
-                    <h2 className="text-xl font-bold text-white">Nomenclador Canopy</h2>
+                    <h2 className="text-xl font-bold text-white" translate="no">Nomenclador Canopy</h2>
                 </div>
                 {selectedIds.length > 0 && (
                     <button

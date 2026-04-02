@@ -47,7 +47,7 @@ export default function CanopyAnalyzer() {
             {/* Cabecera */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                    <h2 className="text-3xl font-black text-white tracking-tight flex items-center gap-3" translate="no">
                         <Wind className="w-8 h-8 text-sky-400" />
                         Analizador de Canopy
                     </h2>

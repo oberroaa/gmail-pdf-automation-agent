@@ -189,6 +189,7 @@ export default function App() {
           <button
             onClick={() => navigateTo("canopy")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+            translate="no"
           >
             <Wind className="w-5 h-5" />
             Canopy
@@ -196,6 +197,7 @@ export default function App() {
           <button
             onClick={() => navigateTo("canopy-analyzer")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy-analyzer' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+            translate="no"
           >
             <Search className="w-5 h-5" />
             Analizador Canopy
