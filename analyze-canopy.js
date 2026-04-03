@@ -182,16 +182,14 @@ export default async function analyzeCanopyPdf(pdfPath) {
                     isNew: false
                 });
             } else {
-                const newRecord = {
-                    item: config.item,
-                    profile: config.profile,
-                    telas: config.telas,
-                    total: 0,
-                    createdAt: new Date(),
-                    autoCreated: true
-                };
-                const ins = await canopyColl.insertOne(newRecord);
-                results.push({ ...config, dbId: ins.insertedId, available: 0, status: "NUEVO MODELO", isNew: true });
+                // No guardamos en BD, solo reportamos como nuevo modelo para el reporte
+                results.push({ 
+                    ...config, 
+                    dbId: null, 
+                    available: 0, 
+                    status: "NUEVO MODELO", 
+                    isNew: true 
+                });
             }
         }
     } catch (e) {
