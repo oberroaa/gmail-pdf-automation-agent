@@ -19,9 +19,9 @@ export default function CanopyManager() {
     const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
 
     // Formulario
-    const [formData, setFormData] = useState({ item: "", profile: "", telas: "", total: 0 });
+    const [formData, setFormData] = useState({ item: "", alias: "", profile: "", telas: "", telas2: "", total: 0 });
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [editFormData, setEditFormData] = useState<Partial<Canopy>>({ item: "", profile: "", telas: [], total: 0 });
+    const [editFormData, setEditFormData] = useState<Partial<Canopy>>({ item: "", alias: "", profile: "", telas: [], telas2: [], total: 0 });
 
     // Selección masiva
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -54,9 +54,10 @@ export default function CanopyManager() {
         try {
             await saveCanopy({
                 ...formData,
-                telas: formData.telas.split(",").map(t => t.trim()).filter(t => t !== "")
+                telas: formData.telas.split(",").map(t => t.trim()).filter(t => t !== ""),
+                telas2: formData.telas2.split(",").map(t => t.trim()).filter(t => t !== "")
             });
-            setFormData({ item: "", profile: "", telas: "", total: 0 });
+            setFormData({ item: "", alias: "", profile: "", telas: "", telas2: "", total: 0 });
             await loadData();
         } catch (err) { alert("Error al guardar"); }
     };
@@ -127,20 +128,26 @@ export default function CanopyManager() {
             </div>
 
             <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-8 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
-                <div className="md:col-span-3">
+                <div className="md:col-span-2">
                     <input type="text" placeholder="Item" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.item} onChange={e => setFormData({ ...formData, item: e.target.value })} required />
                 </div>
-                <div className="md:col-span-3">
-                    <input type="text" placeholder="Perfil" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.profile} onChange={e => setFormData({ ...formData, profile: e.target.value })} required />
-                </div>
-                <div className="md:col-span-3">
-                    <input type="text" placeholder="Telas (A, B...)" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.telas} onChange={e => setFormData({ ...formData, telas: e.target.value })} />
-                </div>
-                <div className="md:col-span-1">
-                    <input type="number" placeholder="Total" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm text-center" value={formData.total} onChange={e => setFormData({ ...formData, total: Number(e.target.value) })} required />
+                <div className="md:col-span-2">
+                    <input type="text" placeholder="Alias (PDF)" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-sky-400" value={formData.alias} onChange={e => setFormData({ ...formData, alias: e.target.value })} />
                 </div>
                 <div className="md:col-span-2">
-                    <button type="submit" className="w-full bg-sky-600 hover:bg-sky-500 text-white py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"><Plus className="w-4 h-4" /> Agregar</button>
+                    <input type="text" placeholder="Perfil" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.profile} onChange={e => setFormData({ ...formData, profile: e.target.value })} required />
+                </div>
+                <div className="md:col-span-2">
+                    <input type="text" placeholder="Telas" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.telas} onChange={e => setFormData({ ...formData, telas: e.target.value })} />
+                </div>
+                <div className="md:col-span-2">
+                    <input type="text" placeholder="Alt. Telas (telas2)" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.telas2} onChange={e => setFormData({ ...formData, telas2: e.target.value })} />
+                </div>
+                <div className="md:col-span-1">
+                    <input type="number" placeholder="Stock" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm text-center" value={formData.total} onChange={e => setFormData({ ...formData, total: Number(e.target.value) })} required />
+                </div>
+                <div className="md:col-span-1">
+                    <button type="submit" title="Agregar" className="w-full h-full bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold flex items-center justify-center transition-all"><Plus className="w-5 h-5" /></button>
                 </div>
             </form>
 
@@ -156,9 +163,9 @@ export default function CanopyManager() {
                                     onChange={toggleSelectAll}
                                 />
                             </th>
-                            <th className="px-4 py-2 w-1/4">Item</th>
-                            <th className="px-4 py-2 w-1/4">Perfil</th>
-                            <th className="px-4 py-2">Telas</th>
+                            <th className="px-4 py-2">Item / Alias</th>
+                            <th className="px-4 py-2">Perfil</th>
+                            <th className="px-4 py-2">Telas (Principal e Alt.)</th>
                             <th className="px-4 py-2 text-center w-20">Total</th>
                             <th className="px-4 py-2 text-right w-24">Acciones</th>
                         </tr>
@@ -177,15 +184,39 @@ export default function CanopyManager() {
                                     />
                                 </td>
                                 <td className="px-4 py-3 text-white">
-                                    {editingId === c._id ? <input className="bg-slate-700 p-1 rounded w-full" value={editFormData.item} onChange={e => setEditFormData({ ...editFormData, item: e.target.value })} /> : c.item}
+                                    <div className="flex flex-col">
+                                        {editingId === c._id ? (
+                                            <div className="space-y-1">
+                                                <input className="bg-slate-700 p-1 rounded w-full text-xs" placeholder="Item" value={editFormData.item} onChange={e => setEditFormData({ ...editFormData, item: e.target.value })} />
+                                                <input className="bg-slate-700 p-1 rounded w-full text-[10px] text-sky-400" placeholder="Alias" value={editFormData.alias} onChange={e => setEditFormData({ ...editFormData, alias: e.target.value })} />
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <span className="font-bold">{c.item}</span>
+                                                {c.alias && <span className="text-[10px] text-sky-400 block">{c.alias}</span>}
+                                            </>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-4 py-3 text-slate-300">
                                     {editingId === c._id ? <input className="bg-slate-700 p-1 rounded w-full" value={editFormData.profile} onChange={e => setEditFormData({ ...editFormData, profile: e.target.value })} /> : c.profile}
                                 </td>
                                 <td className="px-4 py-3">
-                                    <div className="flex flex-wrap gap-1">
-                                        {editingId === c._id ? <input className="bg-slate-700 p-1 rounded w-full text-xs" value={editFormData.telas?.join(", ")} onChange={e => setEditFormData({ ...editFormData, telas: e.target.value.split(",").map(t => t.trim()) })} /> :
-                                            c.telas.map((t, idx) => <span key={idx} className="bg-sky-500/10 text-sky-400 text-[10px] px-2 py-0.5 rounded-full border border-sky-500/20 flex items-center gap-1"><Layers className="w-2 h-2" /> {t}</span>)}
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex flex-wrap gap-1">
+                                            {editingId === c._id ? (
+                                                <input className="bg-slate-700 p-1 rounded w-full text-xs" placeholder="Telas 1" value={editFormData.telas?.join(", ")} onChange={e => setEditFormData({ ...editFormData, telas: e.target.value.split(",").map(t => t.trim()) })} />
+                                            ) : (
+                                                c.telas.map((t, idx) => <span key={idx} className="bg-sky-500/10 text-sky-400 text-[10px] px-2 py-0.5 rounded-full border border-sky-500/20 flex items-center gap-1"><Layers className="w-2 h-2" /> {t}</span>)
+                                            )}
+                                        </div>
+                                        <div className="flex flex-wrap gap-1 border-t border-white/5 pt-1">
+                                            {editingId === c._id ? (
+                                                <input className="bg-slate-800 p-1 rounded w-full text-[10px]" placeholder="Telas 2" value={editFormData.telas2?.join(", ")} onChange={e => setEditFormData({ ...editFormData, telas2: e.target.value.split(",").map(t => t.trim()) })} />
+                                            ) : (
+                                                c.telas2?.map((t, idx) => <span key={idx} className="bg-amber-500/10 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1"><Layers className="w-2 h-2" /> {t}</span>)
+                                            )}
+                                        </div>
                                     </div>
                                 </td>
                                 <td className="px-4 py-3 text-center text-white font-bold">

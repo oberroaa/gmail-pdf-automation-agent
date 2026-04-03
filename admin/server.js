@@ -488,11 +488,13 @@ router.get("/canopy", async (req, res) => {
 // 2. Guardar un nuevo canopy
 router.post("/canopy", async (req, res) => {
     try {
-        const { item, profile, telas, total } = req.body;
+        const { item, alias, profile, telas, telas2, total } = req.body;
         const newCanopy = {
             item: String(item),
+            alias: String(alias || ""),
             profile: String(profile),
             telas: Array.isArray(telas) ? telas : [], // Es un arreglo de strings
+            telas2: Array.isArray(telas2) ? telas2 : [], // Segundo arreglo de telas
             total: Math.round(Number(total) || 0),
             createdAt: new Date()
         };
@@ -510,13 +512,15 @@ router.post("/canopy", async (req, res) => {
 router.put("/canopy/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { item, profile, telas, total } = req.body;
+        const { item, alias, profile, telas, telas2, total } = req.body;
         const { ObjectId } = await import("mongodb");
 
         const updateData = { updatedAt: new Date() };
         if (item !== undefined) updateData.item = String(item);
+        if (alias !== undefined) updateData.alias = String(alias);
         if (profile !== undefined) updateData.profile = String(profile);
         if (telas !== undefined) updateData.telas = Array.isArray(telas) ? telas : [];
+        if (telas2 !== undefined) updateData.telas2 = Array.isArray(telas2) ? telas2 : [];
         if (total !== undefined) updateData.total = Math.round(Number(total) || 0);
 
         const collection = await getCanopyCollection();

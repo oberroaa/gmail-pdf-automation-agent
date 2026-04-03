@@ -4,8 +4,10 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 export interface Canopy {
     _id?: string;
     item: string;
+    alias: string;
     profile: string;
     telas: string[]; // Arreglo de strings
+    telas2: string[]; // Arreglo secundario de telas
     total: number;
     createdAt?: string;
     updatedAt?: string;
