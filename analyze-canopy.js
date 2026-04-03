@@ -201,7 +201,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
             });
 
             if (existing) {
-                let status = "COMPLETO";
+                let status = "DISPONIBLE";
                 if (existing.total === 0) {
                     status = "SIN STOCK";
                 } else if (existing.total < config.required) {
@@ -230,8 +230,8 @@ export default async function analyzeCanopyPdf(pdfPath) {
         console.error("Error DB Canopy:", e);
     }
 
-    // --- ORDENAMIENTO: COMPLETO > PARCIAL > SIN STOCK > NO INVENTARIADO ---
-    const statusPriority = { "COMPLETO": 1, "PARCIAL": 2, "SIN STOCK": 3, "NO INVENTARIADO": 4 };
+    // --- ORDENAMIENTO: DISPONIBLE > PARCIAL > SIN STOCK > NO INVENTARIADO ---
+    const statusPriority = { "DISPONIBLE": 1, "PARCIAL": 2, "SIN STOCK": 3, "NO INVENTARIADO": 4 };
     results.sort((a, b) => (statusPriority[a.status] || 99) - (statusPriority[b.status] || 99));
 
     return { timestamp: new Date(), totalJobs: jobsFound.length, summary: results };

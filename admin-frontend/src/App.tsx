@@ -192,7 +192,7 @@ export default function App() {
             translate="no"
           >
             <Wind className="w-5 h-5" />
-            Canopy
+            Inventario Canopy
           </button>
           <button
             onClick={() => navigateTo("canopy-analyzer")}

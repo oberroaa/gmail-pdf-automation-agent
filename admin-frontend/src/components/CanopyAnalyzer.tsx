@@ -148,11 +148,11 @@ export default function CanopyAnalyzer() {
                                                     <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase">No Inventariado</span>
                                                 ) : (
                                                     <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase flex items-center gap-1 ${
-                                                        res.status === "COMPLETO" ? 'bg-emerald-500 text-black' : 
+                                                        res.status === "DISPONIBLE" ? 'bg-emerald-500 text-black' : 
                                                         res.status === "PARCIAL" ? 'bg-orange-500 text-white' : 
                                                         'bg-red-500 text-white'
                                                     }`}>
-                                                        {res.status !== "COMPLETO" && <AlertTriangle className="w-3 h-3" />}
+                                                        {res.status !== "DISPONIBLE" && <AlertTriangle className="w-3 h-3" />}
                                                         {res.status}
                                                     </span>
                                                 )}
