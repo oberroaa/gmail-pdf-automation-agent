@@ -146,6 +146,16 @@ export default function App() {
 
         <nav className="flex flex-col gap-2">
           <button
+            onClick={() => navigateTo("crane-safety")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'crane-safety' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <HardHat className="w-5 h-5" />
+            Manejo de Grúa
+          </button>
+
+          <div className="h-px bg-white/5 my-2" />
+
+          <button
             onClick={() => navigateTo("rules")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'rules' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
           >
@@ -179,13 +189,8 @@ export default function App() {
             Procesar PDF
           </button>
 
-          <button
-            onClick={() => navigateTo("crane-safety")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'crane-safety' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-          >
-            <HardHat className="w-5 h-5" />
-            Manejo de Grúa
-          </button>
+          <div className="h-px bg-white/5 my-2" />
+
           <button
             onClick={() => navigateTo("canopy")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
