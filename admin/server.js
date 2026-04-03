@@ -466,7 +466,10 @@ router.get("/canopy", async (req, res) => {
             ? {
                 $or: [
                     { item: { $regex: search, $options: "i" } },
-                    { profile: { $regex: search, $options: "i" } }
+                    { alias: { $regex: search, $options: "i" } },
+                    { profile: { $regex: search, $options: "i" } },
+                    { telas: { $regex: search, $options: "i" } },
+                    { telas2: { $regex: search, $options: "i" } }
                 ]
             }
             : {};

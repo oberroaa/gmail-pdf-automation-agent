@@ -145,7 +145,7 @@ export default function CanopyAnalyzer() {
                                                     <span className="text-lg font-black text-white">{res.item}</span>
                                                 </div>
                                                 {res.isNew ? (
-                                                    <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase">Nuevo Modelo</span>
+                                                    <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase">No Inventariado</span>
                                                 ) : (
                                                     <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase flex items-center gap-1 ${
                                                         res.status === "COMPLETO" ? 'bg-emerald-500 text-black' : 

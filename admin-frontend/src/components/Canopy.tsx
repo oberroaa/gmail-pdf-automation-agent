@@ -121,7 +121,7 @@ export default function CanopyManager() {
             <div className="relative mb-6">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
-                    type="text" placeholder="Buscar..."
+                    type="text" placeholder="Buscar por Item, Alias, Perfil o Tela..."
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-2xl pl-12 pr-4 py-3 text-white"
                     value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                 />

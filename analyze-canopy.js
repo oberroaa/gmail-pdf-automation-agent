@@ -158,12 +158,46 @@ export default async function analyzeCanopyPdf(pdfPath) {
     const results = [];
     try {
         const canopyColl = await getCanopyCollection();
+        // Cargamos todo el nomenclador en memoria para buscar por alias eficientemente
+        const allDbCanopies = await canopyColl.find({}).toArray();
+
         for (const key in consolidated) {
             const config = consolidated[key];
-            const existing = await canopyColl.findOne({
-                item: config.item,
-                profile: config.profile,
-                telas: { $all: config.telas, $size: config.telas.length }
+            
+            console.log(`[DEBUG] Buscando match para: ITEM: "${config.item}", PROFILE: "${config.profile}", TELAS: [${config.telas.join(", ")}]`);
+
+            // BUSCADA AVANZADA:
+            const existing = allDbCanopies.find(db => {
+                // 1. Match por Alias (el alias debe estar contenido en el Item del PDF)
+                const aliasMatch = db.alias && config.item.includes(db.alias);
+                
+                // Logging de depuración para ver por qué falla
+                if (config.item.includes("OM10") || (db.alias && db.alias.includes("OM10"))) {
+                    console.log(`[DEBUG-MATCH] Comparando PDF("${config.item}") con DB(Alias:"${db.alias}")`);
+                    console.log(` - AliasMatch: ${aliasMatch}`);
+                    console.log(` - ProfileMatch: ${config.profile === db.profile} ("${config.profile}" vs "${db.profile}")`);
+                }
+
+                // 2. Match por Perfil (Exacto)
+                const profileMatch = config.profile === db.profile;
+
+                // 3. Match por Telas (Principal o Alternativo)
+                const pdfTelas = config.telas; // Ya vienen ordenadas del PDF
+                
+                const matchTelas = (dbTelasArray) => {
+                    if (!dbTelasArray || pdfTelas.length !== dbTelasArray.length) return false;
+                    const sortedDb = [...dbTelasArray].sort();
+                    return pdfTelas.every((t, i) => t === sortedDb[i]);
+                };
+
+                const telasMatch = matchTelas(db.telas) || matchTelas(db.telas2);
+
+                if (aliasMatch && profileMatch && telasMatch) {
+                   console.log(`[DEBUG] ✅ MATCH ENCONTRADO en DB: ID=${db._id}, ALIAS="${db.alias}"`);
+                   return true;
+                }
+
+                return false;
             });
 
             if (existing) {
@@ -182,12 +216,12 @@ export default async function analyzeCanopyPdf(pdfPath) {
                     isNew: false
                 });
             } else {
-                // No guardamos en BD, solo reportamos como nuevo modelo para el reporte
+                // No guardamos en BD, solo reportamos como no inventariado para el reporte
                 results.push({ 
                     ...config, 
                     dbId: null, 
                     available: 0, 
-                    status: "NUEVO MODELO", 
+                    status: "NO INVENTARIADO", 
                     isNew: true 
                 });
             }
@@ -196,8 +230,8 @@ export default async function analyzeCanopyPdf(pdfPath) {
         console.error("Error DB Canopy:", e);
     }
 
-    // --- ORDENAMIENTO: COMPLETO > PARCIAL > SIN STOCK > NUEVO MODELO ---
-    const statusPriority = { "COMPLETO": 1, "PARCIAL": 2, "SIN STOCK": 3, "NUEVO MODELO": 4 };
+    // --- ORDENAMIENTO: COMPLETO > PARCIAL > SIN STOCK > NO INVENTARIADO ---
+    const statusPriority = { "COMPLETO": 1, "PARCIAL": 2, "SIN STOCK": 3, "NO INVENTARIADO": 4 };
     results.sort((a, b) => (statusPriority[a.status] || 99) - (statusPriority[b.status] || 99));
 
     return { timestamp: new Date(), totalJobs: jobsFound.length, summary: results };
