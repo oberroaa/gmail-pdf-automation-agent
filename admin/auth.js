@@ -18,13 +18,13 @@ export const protect = (req, res, next) => {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_secreto_super_seguro_123');
             req.user = decoded;
-            next();
+            return next();
         } catch (error) {
-            res.status(401).json({ error: 'No autorizado, token fallido' });
+            return res.status(401).json({ error: 'No autorizado, token fallido' });
         }
     }
     if (!token) {
-        res.status(401).json({ error: 'No autorizado, no hay token' });
+        return res.status(401).json({ error: 'No autorizado, no hay token' });
     }
 };
 

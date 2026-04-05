@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection, getMovementsCollection, getCanopyCollection } from "../db.js";
+import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection, getMovementsCollection, getCanopyCollection, getSafetyProtocolCollection, getUsersCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
 import sendWhatsApp from "../whatsapp.js";
 import multer from "multer";
@@ -17,7 +17,7 @@ import analyzeCanopyPdf from "../analyze-canopy.js";
 //Para autenticación
 import bcrypt from 'bcryptjs';
 import { generateToken, protect, authorize } from './auth.js';
-import { getUsersCollection } from '../db.js';
+
 
 // ================================
 // PATHS & ENV
@@ -183,7 +183,7 @@ router.delete("/users/:id", protect, authorize('ADMIN'), async (req, res) => {
         const { id } = req.params;
         const { ObjectId } = await import("mongodb");
         const collection = await getUsersCollection();
-        
+
         // No permitir que el admin se borre a sí mismo si fuera el caso (opcional pero recomendado)
         if (req.user.id === id) {
             return res.status(400).json({ error: "No puedes eliminar tu propia cuenta" });
@@ -773,18 +773,6 @@ router.post("/upload-pdf", protect, upload.single("pdfFile"), async (req, res) =
 });
 
 
-// ================================
-// MOUNT ROUTER
-// ================================
-// Importante: lo montamos en '/' y en '/api' para que funcione en local y en Vercel
-app.use("/api", router);
-app.use("/", router);
-
-// Error 404 handler para cualquier otra cosa
-app.use((req, res) => {
-    console.log(`[ADMIN-DB] 404 Not Found: ${req.method} ${req.originalUrl}`);
-    res.status(404).json({ error: "Ruta no encontrada" });
-});
 
 // ================================
 // HISTORIAL DE REPORTES
@@ -883,8 +871,54 @@ router.post("/movements", protect, authorize('ADMIN'), async (req, res) => {
 
 
 // ================================
-// EXPORT FOR VERCEL
+// PROTOCOLO DE SEGURIDAD (Manejo de Grúa)
 // ================================
+
+// 1. Obtener protocolo
+router.get("/safety-protocol", protect, async (req, res) => {
+    try {
+        const collection = await getSafetyProtocolCollection();
+        const protocol = await collection.findOne({});
+        res.json(protocol || null);
+    } catch (err) {
+        console.error("[ADMIN][GET SAFETY]", err);
+        res.status(500).json({ error: "Error al obtener el protocolo de seguridad" });
+    }
+});
+
+// 2. Actualizar o Crear protocolo (Solo ADMIN)
+router.put("/safety-protocol", protect, authorize('ADMIN'), async (req, res) => {
+    try {
+        const newProtocol = req.body;
+        const collection = await getSafetyProtocolCollection();
+        const { _id, ...dataToSave } = newProtocol;
+
+        await collection.replaceOne(
+            {}, 
+            { ...dataToSave, updatedAt: new Date() },
+            { upsert: true }
+        );
+
+        res.json({ success: true, message: "Protocolo actualizado correctamente" });
+    } catch (err) {
+        console.error("[ADMIN][UPDATE SAFETY]", err);
+        res.status(500).json({ error: "Error al actualizar el protocolo de seguridad" });
+    }
+});
+
+// ================================
+// MOUNT ROUTER
+// ================================
+// Importante: lo montamos en '/' y en '/api' para que funcione en local y en Vercel
+app.use("/api", router);
+app.use("/", router);
+
+// Error 404 handler para cualquier otra cosa - SIEMPRE AL FINAL
+app.use((req, res) => {
+    console.log(`[ADMIN-DB] 404 Not Found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ error: "Ruta no encontrada" });
+});
+
 export default app;
 
 if (process.env.NODE_ENV !== "production") {
