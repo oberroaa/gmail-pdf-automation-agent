@@ -27,23 +27,18 @@ import Login from "./components/Login";
 export default function App() {
   const { user, login: _login, logout, loading: authLoading } = useAuth();
 
-  if (authLoading) return <div className="min-h-screen bg-[#0a0c10] flex items-center justify-center font-black text-white tracking-widest">CARGANDO...</div>;
-
-  if (!user) return <Login />;
-
+  // --- HOOKS (Siempre al principio) ---
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" | "info" } | null>(null);
-
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
   const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users">("rules");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // Estado para el reporte seleccionado para movimientos
   const [selectedReportForMove, setSelectedReportForMove] = useState<Report | null>(null);
 
+  // --- FUNCIONES ---
   const fetchRules = async () => {
     try {
       setLoading(true);
@@ -58,8 +53,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchRules();
-  }, []);
+    if (user) {
+      fetchRules();
+    }
+  }, [user]);
 
   const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users") => {
     setActiveTab(tab);
@@ -112,6 +109,10 @@ export default function App() {
       showToast("❌ Error estableciendo default", "error");
     }
   };
+
+  // --- RENDERING GATES (Después de los hooks) ---
+  if (authLoading) return <div className="min-h-screen bg-[#0a0c10] flex items-center justify-center font-black text-white tracking-widest">CARGANDO...</div>;
+  if (!user) return <Login />;
 
   return (
     <div className="min-h-screen flex bg-[#0a0c10] text-slate-200 overflow-hidden font-sans relative">
