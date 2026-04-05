@@ -234,6 +234,106 @@ export default function UsersManager() {
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* SECCIÓN DE INFORMACIÓN DE PERMISOS (SOLO PARA EL ADMIN) */}
+            <div className="mt-16 pt-8 border-t border-white/5 space-y-6">
+                <div className="flex items-center gap-3 mb-4">
+                    <Shield className="w-6 h-6 text-indigo-400 opacity-50" />
+                    <h3 className="font-black text-white/50 tracking-tight underline decoration-indigo-500/30 underline-offset-8 uppercase text-xs">
+                        Guía de Roles y Permisos
+                    </h3>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* ADMIN */}
+                    <div className="glass p-6 rounded-3xl border-indigo-500/20 bg-indigo-500/5">
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_indigo]" />
+                            <h4 className="text-white font-black text-xs uppercase tracking-widest">Rol: ADMIN</h4>
+                        </div>
+                        <ul className="space-y-2">
+                            {['Control Total', 'Gestión de Usuarios', 'Edición de Inventario', 'Configuración de Reglas'].map(p => (
+                                <li key={p} className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> {p}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* MANAGER */}
+                    <div className="glass p-6 rounded-3xl border-white/5 opacity-80">
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="w-2 h-2 rounded-full bg-blue-500" />
+                            <h4 className="text-white font-black text-xs uppercase tracking-widest">Rol: MANAGER</h4>
+                        </div>
+                        <ul className="space-y-2">
+                            <li className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Ver Inventario y Reportes
+                            </li>
+                            <li className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Editar Reglas (IA)
+                            </li>
+                            <li className="flex items-center gap-2 text-xs font-bold text-slate-400 italic">
+                                <X className="w-3.5 h-3.5 text-red-500" /> Borrar Datos / Usuarios
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* OPERATOR */}
+                    <div className="glass p-6 rounded-3xl border-white/5 opacity-60">
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="w-2 h-2 rounded-full bg-slate-500" />
+                            <h4 className="text-white font-black text-xs uppercase tracking-widest">Rol: OPERATOR</h4>
+                        </div>
+                        <ul className="space-y-2">
+                            <li className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Subir y Procesar PDFs
+                            </li>
+                            <li className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Ver Inventario (Solo Vista)
+                            </li>
+                            <li className="flex items-center gap-2 text-xs font-bold text-slate-400 italic">
+                                <X className="w-3.5 h-3.5 text-red-500" /> NO puede editar nada
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <div className="glass p-6 rounded-3xl border-white/5">
+                        <h4 className="text-white font-bold text-xs uppercase mb-3 flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-indigo-400" />
+                            Seguridad de Datos
+                        </h4>
+                        <div className="space-y-2">
+                            <p className="text-xs text-slate-400 leading-relaxed">
+                                <strong className="text-slate-300">Encriptación:</strong> Las contraseñas se procesan con <code className="text-indigo-400 bg-indigo-500/10 px-1 rounded">bcrypt</code>. El sistema no almacena texto plano; nadie puede recuperar una clave olvidada.
+                            </p>
+                            <p className="text-xs text-slate-400 leading-relaxed">
+                                <strong className="text-slate-300">Sesión:</strong> El token de acceso (JWT) tiene una validez de <strong className="text-slate-300">30 días</strong>. Al expirar, el usuario deberá reautenticarse.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="glass p-6 rounded-3xl border-white/5">
+                        <h4 className="text-white font-bold text-xs uppercase mb-3 flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-emerald-400" />
+                            Buenas Prácticas
+                        </h4>
+                        <div className="space-y-2">
+                            <p className="text-xs text-slate-400 leading-relaxed">
+                                <strong className="text-slate-300">Mínimo Privilegio:</strong> Asigna el rol <code className="text-slate-300">OPERATOR</code> por defecto. Solo otorga <code className="text-indigo-400">ADMIN</code> a personal que necesite configurar el sistema.
+                            </p>
+                            <p className="text-xs text-slate-400 leading-relaxed">
+                                <strong className="text-slate-300">Auditoría:</strong> Todas las peticiones al backend son registradas. Esto permite ver quién procesó qué archivo y cuándo en los logs del sistema.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-slate-900/50 p-4 rounded-2xl border border-white/5 text-[11px] text-slate-400 font-medium italic text-center">
+                    * El sistema está diseñado bajo estándares de seguridad privada. No compartas tus credenciales de Administrador.
+                </div>
+            </div>
         </div>
     );
 }
