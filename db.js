@@ -83,3 +83,11 @@ export async function getCanopyCollection() {
     const database = await connectDB();
     return database.collection("canopy");
 }
+
+/**
+ * Helper para obtener la colección de usuarios
+ */
+export async function getUsersCollection() {
+    const database = await connectDB();
+    return database.collection("users");
+}

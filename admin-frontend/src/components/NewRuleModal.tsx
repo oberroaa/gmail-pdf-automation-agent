@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Sparkles, Brain, Save, RefreshCw, ChevronRight, FileJson, AlertCircle, Terminal, Settings } from "lucide-react";
+import { apiFetch } from "../services/apiFetch";
 
 interface Props {
     onClose: () => void;
@@ -15,8 +16,6 @@ export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
     const [previewRule, setPreviewRule] = useState<any | null>(null);
     const [previewOpen, setPreviewOpen] = useState(false);
 
-    const API_URL = "/api";
-
     const handleSubmit = async () => {
         if (!name.trim() || !prompt.trim()) {
             return;
@@ -25,9 +24,8 @@ export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
         setLoading(true);
 
         try {
-            const res = await fetch(`${API_URL}/rules/preview`, {
+            const res = await apiFetch("/rules/preview", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: prompt.trim() })
             });
 
@@ -51,9 +49,8 @@ export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
         setLoading(true);
 
         try {
-            const res = await fetch(`${API_URL}/rules/save`, {
+            const res = await apiFetch("/rules/save", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...previewRule,
                     name: name.trim(),
@@ -81,9 +78,8 @@ export default function NewRuleModal({ onClose, onCreate, onError }: Props) {
     const handleRegenerate = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/rules/preview`, {
+            const res = await apiFetch("/rules/preview", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: prompt.trim() })
             });
             const data = await res.json();

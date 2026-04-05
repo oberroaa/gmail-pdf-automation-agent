@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search, LogOut, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
@@ -20,8 +20,17 @@ import ManualAnalyzer from './components/ManualAnalyzer';
 import CraneSafety from "./components/CraneSafety";
 import CanopyManager from "./components/Canopy";
 import CanopyAnalyzer from "./components/CanopyAnalyzer";
+import UsersManager from "./components/UsersManager";
+import { useAuth } from "./context/AuthContext";
+import Login from "./components/Login";
 
 export default function App() {
+  const { user, login: _login, logout, loading: authLoading } = useAuth();
+
+  if (authLoading) return <div className="min-h-screen bg-[#0a0c10] flex items-center justify-center font-black text-white tracking-widest">CARGANDO...</div>;
+
+  if (!user) return <Login />;
+
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -29,7 +38,7 @@ export default function App() {
 
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer">("rules");
+  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users">("rules");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Estado para el reporte seleccionado para movimientos
@@ -52,7 +61,7 @@ export default function App() {
     fetchRules();
   }, []);
 
-  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer") => {
+  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users") => {
     setActiveTab(tab);
     setIsMenuOpen(false);
     setSelectedReportForMove(null); // Limpiamos selección al cambiar de pestaña
@@ -208,10 +217,45 @@ export default function App() {
             Analizador Canopy
           </button>
 
+          {user?.role === 'ADMIN' && (
+            <>
+              <div className="h-px bg-white/5 my-2" />
+              <button
+                onClick={() => navigateTo("users")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'users' ? 'bg-purple-600 text-white shadow-xl shadow-purple-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+              >
+                <Shield className="w-5 h-5" />
+                Gestionar Usuarios
+              </button>
+            </>
+          )}
+
         </nav>
 
-        <div className="mt-auto border-t border-white/5 pt-6 px-2">
-          <div className="flex items-center gap-2 text-emerald-500">
+        <div className="mt-auto border-t border-white/5 pt-6 px-2 space-y-4">
+          {user && (
+            <div className="flex items-center gap-3 px-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                <span className="text-xs font-black text-indigo-400">{user.name.charAt(0).toUpperCase()}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-white truncate">{user.name}</p>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">{user.role}</p>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              if (confirm("¿Cerrar sesión?")) logout();
+            }}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-all font-semibold text-sm group"
+          >
+            <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+            Cerrar Sesión
+          </button>
+
+          <div className="flex items-center gap-2 text-emerald-500 px-2">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
             <span className="text-[10px] font-bold uppercase tracking-widest">Servicio Online</span>
           </div>
@@ -320,6 +364,10 @@ export default function App() {
             ) : activeTab === "canopy-analyzer" ? (
               <motion.div key="canopy-analyzer" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <CanopyAnalyzer />
+              </motion.div>
+            ) : activeTab === "users" ? (
+              <motion.div key="users" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                <UsersManager />
               </motion.div>
             ) : null}
 

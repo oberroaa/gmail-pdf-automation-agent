@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { type Report, type ReportItem } from "../services/reportsApi";
 import { type Item, getItems } from "../services/itemsApi";
 import { ArrowLeft, Save, Trash2, CheckSquare, Square, RefreshCw, Loader2 } from "lucide-react";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+import { apiFetch } from "../services/apiFetch";
 
 interface MovementItem extends ReportItem {
     p: boolean; // Producción
@@ -47,7 +46,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                 setMaterials(matData.items);
 
                 // 2. Intentar cargar movimientos guardados de este reporte
-                const res = await fetch(`${API_URL}/movements/${report._id}`);
+                const res = await apiFetch(`/movements/${report._id}`);
                 const moveData = await res.json();
 
                 if (moveData.found) {
@@ -78,9 +77,8 @@ export default function MovementsConsole({ report, onBack }: Props) {
         setSaving(true);
         try {
             // 1. Guardamos la respuesta del servidor en 'res'
-            const res = await fetch(`${API_URL}/movements`, {
+            const res = await apiFetch(`/movements`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ reportId: report._id, items, header })
             });
 

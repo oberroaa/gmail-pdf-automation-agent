@@ -14,6 +14,10 @@ import multer from "multer";
 import analyzePdfWithRules from "../analyze-pdf.js";
 import fs from "fs";
 import analyzeCanopyPdf from "../analyze-canopy.js";
+//Para autenticación
+import bcrypt from 'bcryptjs';
+import { generateToken, protect, authorize } from './auth.js';
+import { getUsersCollection } from '../db.js';
 
 // ================================
 // PATHS & ENV
@@ -80,9 +84,124 @@ router.get("/health", (req, res) => {
 });
 
 // ================================
+// AUTH: LOGIN & SETUP
+// ================================
+
+// 1. LOGIN
+router.post("/auth/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const collection = await getUsersCollection();
+        const user = await collection.findOne({ email });
+
+        if (user && (await bcrypt.compare(password, user.password))) {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                token: generateToken(user),
+            });
+        } else {
+            res.status(401).json({ error: "Email o contraseña incorrectos" });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 2. RUTA TEMPORAL PARA CREAR EL PRIMER ADMIN (Úsala una vez y luego la borramos)
+// Consola-> Invoke-RestMethod -Uri "http://localhost:3001/api/auth/setup-admin" -Method Post
+router.post("/auth/setup-admin", async (req, res) => {
+    try {
+        const collection = await getUsersCollection();
+        const adminExists = await collection.findOne({ role: 'ADMIN' });
+
+        if (adminExists) return res.status(400).json({ error: "Ya existe un administrador" });
+
+        const hashedPassword = await bcrypt.hash("admin123", 10);
+        await collection.insertOne({
+            name: "Admin Principal",
+            email: "admin@tuuci.com",
+            password: hashedPassword,
+            role: "ADMIN",
+            createdAt: new Date()
+        });
+
+        res.json({ success: true, message: "Administrador creado: admin@tuuci.com / admin123" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ================================
+// GESTIÓN DE USUARIOS (ADMIN ONLY)
+// ================================
+
+// 1. Listar usuarios
+router.get("/users", protect, authorize('ADMIN'), async (req, res) => {
+    try {
+        const collection = await getUsersCollection();
+        const users = await collection.find({}, { projection: { password: 0 } }).toArray();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: "Error al obtener usuarios" });
+    }
+});
+
+// 2. Crear usuario
+router.post("/users", protect, authorize('ADMIN'), async (req, res) => {
+    try {
+        const { name, email, password, role } = req.body;
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({ error: "Todos los campos son requeridos" });
+        }
+
+        const collection = await getUsersCollection();
+        const existing = await collection.findOne({ email });
+        if (existing) return res.status(400).json({ error: "El email ya está registrado" });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = {
+            name,
+            email,
+            password: hashedPassword,
+            role: role.toUpperCase(),
+            createdAt: new Date()
+        };
+
+        await collection.insertOne(newUser);
+        res.json({ success: true, message: "Usuario creado correctamente" });
+    } catch (err) {
+        res.status(500).json({ error: "Error al crear usuario" });
+    }
+});
+
+// 3. Eliminar usuario
+router.delete("/users/:id", protect, authorize('ADMIN'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { ObjectId } = await import("mongodb");
+        const collection = await getUsersCollection();
+        
+        // No permitir que el admin se borre a sí mismo si fuera el caso (opcional pero recomendado)
+        if (req.user.id === id) {
+            return res.status(400).json({ error: "No puedes eliminar tu propia cuenta" });
+        }
+
+        await collection.deleteOne({ _id: new ObjectId(id) });
+        res.json({ success: true, message: "Usuario eliminado" });
+    } catch (err) {
+        res.status(500).json({ error: "Error al eliminar usuario" });
+    }
+});
+
+
+
+// ================================
 // LISTAR REGLAS (MongoDB)
 // ================================
-router.get("/rules", async (req, res) => {
+router.get("/rules", protect, async (req, res) => {
     try {
         const collection = await getRulesCollection();
         const rules = await collection.find({}).sort({ isDefault: -1, name: 1 }).toArray();
@@ -106,7 +225,7 @@ router.get("/rules", async (req, res) => {
 // ================================
 // EDITAR REGLA (MongoDB)
 // ================================
-router.put("/rules/:name", async (req, res) => {
+router.put("/rules/:name", protect, async (req, res) => {
     try {
         const originalName = req.params.name;
         const incoming = req.body;
@@ -137,7 +256,7 @@ router.put("/rules/:name", async (req, res) => {
 // ================================
 // ELIMINAR REGLA (MongoDB)
 // ================================
-router.delete("/rules/:file", async (req, res) => {
+router.delete("/rules/:file", protect, authorize('ADMIN'), async (req, res) => {
     const fileName = decodeURIComponent(req.params.file);
     const ruleName = fileName.replace(".json", "");
 
@@ -158,7 +277,7 @@ router.delete("/rules/:file", async (req, res) => {
 // ================================
 // MARCAR DEFAULT (MongoDB)
 // ================================
-router.post("/rules/:name/default", async (req, res) => {
+router.post("/rules/:name/default", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { name } = req.params;
         const collection = await getRulesCollection();
@@ -182,7 +301,7 @@ router.post("/rules/:name/default", async (req, res) => {
 // ================================
 // GUARDAR REGLA (MongoDB CREATE)
 // ================================
-router.post("/rules/save", async (req, res) => {
+router.post("/rules/save", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const ruleJSON = req.body;
         const name = ruleJSON.name;
@@ -215,7 +334,7 @@ router.post("/rules/save", async (req, res) => {
 // ================================
 // PREVIEW DE REGLA (Gemini IA)
 // ================================
-router.post('/rules/preview', async (req, res) => {
+router.post('/rules/preview', protect, async (req, res) => {
     try {
         const { prompt } = req.body;
         if (!prompt) return res.status(400).json({ error: 'Prompt requerido' });
@@ -232,7 +351,7 @@ router.post('/rules/preview', async (req, res) => {
 // ================================
 // OBTENER CONFIGURACIÓN (Emails)
 // ================================
-router.get("/settings", async (req, res) => {
+router.get("/settings", protect, async (req, res) => {
     try {
         const collection = await getEmailsCollection();
         //Buscamos todos los correos guardados
@@ -248,7 +367,7 @@ router.get("/settings", async (req, res) => {
 // ================================
 // GUARDAR NUEVO EMAIL
 // ================================
-router.post("/settings", async (req, res) => {
+router.post("/settings", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) return res.status(400).json({ error: 'Email requerido' });
@@ -277,7 +396,7 @@ router.post("/settings", async (req, res) => {
 // ================================
 // ELIMINAR EMAIL
 // ================================
-router.delete("/settings/:id", async (req, res) => {
+router.delete("/settings/:id", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { id } = req.params;
         const { ObjectId } = await import("mongodb"); // Necesario para buscar por ID
@@ -296,7 +415,7 @@ router.delete("/settings/:id", async (req, res) => {
 // ================================
 // TEST WHATSAPP
 // ================================
-router.post("/test-whatsapp", async (req, res) => {
+router.post("/test-whatsapp", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const testMsg = "🔔 Prueba manual desde el Panel Admin: Conexión OK.";
         await sendWhatsApp(testMsg);
@@ -312,7 +431,7 @@ router.post("/test-whatsapp", async (req, res) => {
 // ================================
 
 // 1. Obtener todos los items (con PAGINACIÓN y BÚSQUEDA)
-router.get("/items", async (req, res) => {
+router.get("/items", protect, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -354,7 +473,7 @@ router.get("/items", async (req, res) => {
 });
 
 // 2. Guardar un nuevo item
-router.post("/items", async (req, res) => {
+router.post("/items", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { partNumber, description, qtyReq, uom } = req.body;
 
@@ -378,7 +497,7 @@ router.post("/items", async (req, res) => {
 });
 
 // 3. Eliminar un item
-router.delete("/items/:id", async (req, res) => {
+router.delete("/items/:id", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { id } = req.params;
         const { ObjectId } = await import("mongodb");
@@ -392,7 +511,7 @@ router.delete("/items/:id", async (req, res) => {
 });
 
 // 4. Editar un item existente
-router.put("/items/:id", async (req, res) => {
+router.put("/items/:id", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { id } = req.params;
         const { partNumber, description, qtyReq, uom, active } = req.body;
@@ -431,7 +550,7 @@ router.put("/items/:id", async (req, res) => {
 });
 
 // 5. Eliminar MÚLTIPLES items
-router.post("/items/bulk-delete", async (req, res) => {
+router.post("/items/bulk-delete", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { ids } = req.body; // Recibimos array de IDs
         if (!Array.isArray(ids)) return res.status(400).json({ error: "Se requiere un array de IDs" });
@@ -454,7 +573,7 @@ router.post("/items/bulk-delete", async (req, res) => {
 // ================================
 
 // 1. Obtener todos los canopies (con Paginación y Búsqueda)
-router.get("/canopy", async (req, res) => {
+router.get("/canopy", protect, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -489,7 +608,7 @@ router.get("/canopy", async (req, res) => {
 });
 
 // 2. Guardar un nuevo canopy
-router.post("/canopy", async (req, res) => {
+router.post("/canopy", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { item, alias, profile, telas, telas2, total } = req.body;
         const newCanopy = {
@@ -512,7 +631,7 @@ router.post("/canopy", async (req, res) => {
 });
 
 // 3. Editar un canopy
-router.put("/canopy/:id", async (req, res) => {
+router.put("/canopy/:id", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { id } = req.params;
         const { item, alias, profile, telas, telas2, total } = req.body;
@@ -536,17 +655,17 @@ router.put("/canopy/:id", async (req, res) => {
 });
 
 // 4. Eliminar múltiples canopies (Debe ir ANTES de /:id para evitar conflictos)
-router.delete("/canopy/bulk", async (req, res) => {
+router.delete("/canopy/bulk", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { ids } = req.body;
         if (!Array.isArray(ids)) return res.status(400).json({ error: "IDs deben ser un array" });
-        
+
         const { ObjectId } = await import("mongodb");
         const collection = await getCanopyCollection();
-        
+
         const objectIds = ids.map(id => new ObjectId(id));
         await collection.deleteMany({ _id: { $in: objectIds } });
-        
+
         res.json({ success: true, count: ids.length });
     } catch (err) {
         console.error("[ADMIN][BULK DELETE CANOPY]", err);
@@ -555,7 +674,7 @@ router.delete("/canopy/bulk", async (req, res) => {
 });
 
 // 4.1. Eliminar un canopy
-router.delete("/canopy/:id", async (req, res) => {
+router.delete("/canopy/:id", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { id } = req.params;
         const { ObjectId } = await import("mongodb");
@@ -569,10 +688,10 @@ router.delete("/canopy/:id", async (req, res) => {
 });
 
 // 5. Analizar PDF de Canopy (Nuevo Motor Independiente)
-router.post("/upload-canopy", async (req, res) => {
+router.post("/upload-canopy", protect, async (req, res) => {
     // Usamos multer para procesar la subida (Vercel requiere /tmp)
     const uploadSingle = multer({ dest: uploadDir }).single("pdf");
-    
+
     uploadSingle(req, res, async (err) => {
         if (err) return res.status(500).json({ error: "Error subiendo archivo" });
         if (!req.file) return res.status(400).json({ error: "No se subió ningún archivo" });
@@ -580,12 +699,12 @@ router.post("/upload-canopy", async (req, res) => {
         try {
             console.log(`📑 [CANOPY] Analizando PDF: ${req.file.originalname}`);
             const report = await analyzeCanopyPdf(req.file.path);
-            
+
             // Eliminar el archivo temporal
             if (fs.existsSync(req.file.path)) {
                 fs.unlinkSync(req.file.path);
             }
-            
+
             res.json(report);
         } catch (analiseErr) {
             console.error("[ADMIN][UPLOAD CANOPY]", analiseErr);
@@ -597,7 +716,7 @@ router.post("/upload-canopy", async (req, res) => {
 // ================================
 // SUBIR Y ANALIZAR PDF (MANUAL)
 // ================================
-router.post("/upload-pdf", upload.single("pdfFile"), async (req, res) => {
+router.post("/upload-pdf", protect, upload.single("pdfFile"), async (req, res) => {
     console.log(`[ADMIN] Solicitud de subida recibida: ${req.file?.originalname || "Sin nombre"}`);
     try {
         if (!req.file) {
@@ -672,7 +791,7 @@ app.use((req, res) => {
 // ================================
 
 // Obtener todos los reportes (paginados)
-router.get("/reports", async (req, res) => {
+router.get("/reports", protect, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -695,7 +814,7 @@ router.get("/reports", async (req, res) => {
 });
 
 // Eliminar un reporte por ID
-router.delete("/reports/:id", async (req, res) => {
+router.delete("/reports/:id", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { id } = req.params;
         const { ObjectId } = await import("mongodb");
@@ -718,7 +837,7 @@ router.delete("/reports/:id", async (req, res) => {
 // ================================
 
 // 1. Obtener los movimientos guardados de un reporte
-router.get("/movements/:reportId", async (req, res) => {
+router.get("/movements/:reportId", protect, async (req, res) => {
     try {
         const { reportId } = req.params;
         const collection = await getMovementsCollection();
@@ -735,7 +854,7 @@ router.get("/movements/:reportId", async (req, res) => {
 });
 
 // 2. Guardar o Actualizar movimientos del reporte
-router.post("/movements", async (req, res) => {
+router.post("/movements", protect, authorize('ADMIN'), async (req, res) => {
     try {
         const { reportId, items, header } = req.body;
         if (!reportId) return res.status(400).json({ error: "reportId es requerido" });

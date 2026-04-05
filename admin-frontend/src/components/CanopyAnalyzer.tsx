@@ -4,8 +4,7 @@ import {
     Loader2, X, Wind, Layers, ArrowRight 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const API_CANOPY_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+import { apiFetch } from "../services/apiFetch";
 
 export default function CanopyAnalyzer() {
     const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -28,12 +27,12 @@ export default function CanopyAnalyzer() {
         formData.append("pdf", pdfFile);
 
         try {
-            const res = await fetch(`${API_CANOPY_URL}/upload-canopy`, {
+            const res = await apiFetch(`/upload-canopy`, {
                 method: "POST",
                 body: formData
             });
             const data = await res.json();
-            if (data.error) throw new Error(data.error);
+            if (!res.ok) throw new Error(data.error || "Error analizando el PDF");
             setResult(data);
         } catch (err: any) {
             alert("Error: " + err.message);

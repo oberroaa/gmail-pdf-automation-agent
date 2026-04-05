@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+import { apiFetch } from "./apiFetch";
 
 export interface ReportItem {
     partNumber: string;
@@ -25,14 +25,14 @@ export interface ReportsResponse {
 
 // Obtener el historial de reportes
 export async function getReports(page: number = 1, limit: number = 10): Promise<ReportsResponse> {
-    const res = await fetch(`${API_URL}/reports?page=${page}&limit=${limit}`);
+    const res = await apiFetch(`/reports?page=${page}&limit=${limit}`);
     if (!res.ok) throw new Error("Error obteniendo reportes");
     return res.json();
 }
 
 // Eliminar un reporte
 export async function deleteReport(id: string): Promise<{ success: boolean; message: string }> {
-    const res = await fetch(`${API_URL}/reports/${id}`, {
+    const res = await apiFetch(`/reports/${id}`, {
         method: "DELETE",
     });
     if (!res.ok) throw new Error("Error eliminando el reporte");

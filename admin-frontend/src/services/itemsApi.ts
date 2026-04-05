@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+import { apiFetch } from "./apiFetch";
 
 export interface Item {
     _id?: string;
@@ -20,16 +20,15 @@ export interface PaginatedResponse {
 
 // 1. Obtener todos los items (con paginación y búsqueda)
 export async function getItems(page: number = 1, limit: number = 10, search: string = ""): Promise<PaginatedResponse> {
-    const res = await fetch(`${API_URL}/items?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
+    const res = await apiFetch(`/items?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
     if (!res.ok) throw new Error("Error obteniendo items");
     return res.json();
 }
 
 // 2. Guardar un nuevo item
 export async function saveItem(item: Omit<Item, "_id" | "active" | "createdAt">): Promise<void> {
-    const res = await fetch(`${API_URL}/items`, {
+    const res = await apiFetch("/items", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(item),
     });
     if (!res.ok) {
@@ -40,9 +39,8 @@ export async function saveItem(item: Omit<Item, "_id" | "active" | "createdAt">)
 
 // 3. Actualizar un item
 export async function updateItem(id: string, item: Partial<Item>): Promise<void> {
-    const res = await fetch(`${API_URL}/items/${id}`, {
+    const res = await apiFetch(`/items/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(item),
     });
     if (!res.ok) throw new Error("Error al actualizar");
@@ -50,7 +48,7 @@ export async function updateItem(id: string, item: Partial<Item>): Promise<void>
 
 // 4. Eliminar un item
 export async function deleteItem(id: string): Promise<void> {
-    const res = await fetch(`${API_URL}/items/${id}`, {
+    const res = await apiFetch(`/items/${id}`, {
         method: "DELETE",
     });
     if (!res.ok) throw new Error("Error al eliminar");
@@ -58,9 +56,8 @@ export async function deleteItem(id: string): Promise<void> {
 
 // 5. Eliminar múltiples items
 export async function bulkDeleteItems(ids: string[]): Promise<void> {
-    const res = await fetch(`${API_URL}/items/bulk-delete`, {
+    const res = await apiFetch(`/items/bulk-delete`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
     });
     if (!res.ok) throw new Error("Error en el borrado masivo");

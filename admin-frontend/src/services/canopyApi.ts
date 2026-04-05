@@ -1,5 +1,4 @@
-// admin-frontend/src/services/canopyApi.ts
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+import { apiFetch } from "./apiFetch";
 
 export interface Canopy {
     _id?: string;
@@ -22,16 +21,15 @@ export interface PaginatedCanopyResponse {
 
 // 1. Obtener todos los canopies (con paginación y búsqueda)
 export async function getCanopies(page: number = 1, limit: number = 10, search: string = ""): Promise<PaginatedCanopyResponse> {
-    const res = await fetch(`${API_URL}/canopy?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
+    const res = await apiFetch(`/canopy?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
     if (!res.ok) throw new Error("Error obteniendo canopies");
     return res.json();
 }
 
 // 2. Guardar un nuevo canopy
 export async function saveCanopy(canopy: Omit<Canopy, "_id" | "createdAt">): Promise<void> {
-    const res = await fetch(`${API_URL}/canopy`, {
+    const res = await apiFetch("/canopy", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(canopy),
     });
     if (!res.ok) {
@@ -42,9 +40,8 @@ export async function saveCanopy(canopy: Omit<Canopy, "_id" | "createdAt">): Pro
 
 // 3. Actualizar un canopy
 export async function updateCanopy(id: string, canopy: Partial<Canopy>): Promise<void> {
-    const res = await fetch(`${API_URL}/canopy/${id}`, {
+    const res = await apiFetch(`/canopy/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(canopy),
     });
     if (!res.ok) throw new Error("Error al actualizar");
@@ -52,7 +49,7 @@ export async function updateCanopy(id: string, canopy: Partial<Canopy>): Promise
 
 // 4. Eliminar un canopy
 export async function deleteCanopy(id: string): Promise<void> {
-    const res = await fetch(`${API_URL}/canopy/${id}`, {
+    const res = await apiFetch(`/canopy/${id}`, {
         method: "DELETE",
     });
     if (!res.ok) throw new Error("Error al eliminar");
@@ -60,9 +57,8 @@ export async function deleteCanopy(id: string): Promise<void> {
 
 // 5. Eliminar múltiples canopies
 export async function deleteCanopies(ids: string[]): Promise<void> {
-    const res = await fetch(`${API_URL}/canopy/bulk`, {
+    const res = await apiFetch("/canopy/bulk", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
     });
     if (!res.ok) throw new Error("Error al eliminar múltiples canopies");

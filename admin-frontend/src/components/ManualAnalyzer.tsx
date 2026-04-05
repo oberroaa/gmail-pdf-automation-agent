@@ -1,8 +1,6 @@
-// admin-frontend/src/components/ManualAnalyzer.tsx
 import { useState, useRef, useEffect } from 'react';
 import { getRules, type Rule } from '../services/rulesApi';
-
-const API_DOCS_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+import { apiFetch } from '../services/apiFetch';
 
 export default function ManualAnalyzer() {
     const [file, setFile] = useState<File | null>(null);
@@ -59,7 +57,7 @@ export default function ManualAnalyzer() {
         formData.append("ruleName", selectedRule);
 
         try {
-            const res = await fetch(`${API_DOCS_URL}/upload-pdf`, {
+            const res = await apiFetch(`/upload-pdf`, {
                 method: "POST",
                 body: formData,
             });
@@ -75,7 +73,7 @@ export default function ManualAnalyzer() {
 
             setResult(data.result);
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || "Error al analizar");
         } finally {
             setLoading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";

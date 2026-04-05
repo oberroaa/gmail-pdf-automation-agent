@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+import { apiFetch } from "./apiFetch";
 
 export interface EmailSetting {
     _id?: string;
@@ -9,16 +9,15 @@ export interface EmailSetting {
 
 // Obtener todos los emails
 export async function getSettings(): Promise<EmailSetting[]> {
-    const res = await fetch(`${API_URL}/settings`);
+    const res = await apiFetch("/settings");
     if (!res.ok) throw new Error("Error obteniendo configuración");
     return res.json();
 }
 
 // Guardar un nuevo email
 export async function saveEmail(email: string): Promise<void> {
-    const res = await fetch(`${API_URL}/settings`, {
+    const res = await apiFetch("/settings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
     });
     if (!res.ok) {
@@ -29,7 +28,7 @@ export async function saveEmail(email: string): Promise<void> {
 
 //Eliminar email
 export async function deleteEmail(id: string): Promise<void> {
-    const res = await fetch(`${API_URL}/settings/${id}`, {
+    const res = await apiFetch(`/settings/${id}`, {
         method: "DELETE",
     });
     if (!res.ok) throw new Error("Error al eliminar");
