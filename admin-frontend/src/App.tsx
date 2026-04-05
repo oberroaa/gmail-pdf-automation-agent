@@ -207,7 +207,7 @@ export default function App() {
             translate="no"
           >
             <Wind className="w-5 h-5" />
-            Inventario Canopy
+            Canopy: Stock Actual
           </button>
           <button
             onClick={() => navigateTo("canopy-analyzer")}
@@ -215,7 +215,7 @@ export default function App() {
             translate="no"
           >
             <Search className="w-5 h-5" />
-            Analizador Canopy
+            Canopy: Analizar PDF
           </button>
 
           {user?.role === 'ADMIN' && (

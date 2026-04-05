@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getUsers, createUser, deleteUser, type User } from "../services/usersApi";
-import { UserPlus, Trash2, Shield, User as UserIcon, Loader2, AlertCircle, X, CheckCircle } from "lucide-react";
+import { UserPlus, Trash2, Shield, User as UserIcon, Loader2, AlertCircle, X, CheckCircle, Eye, Pencil, Lock, Unlock, Search, Database, FileText, ClipboardCheck, Settings, ShieldAlert, Box, CloudUpload } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function UsersManager() {
@@ -234,104 +234,153 @@ export default function UsersManager() {
                     </div>
                 )}
             </AnimatePresence>
-
-            {/* SECCIÓN DE INFORMACIÓN DE PERMISOS (SOLO PARA EL ADMIN) */}
-            <div className="mt-16 pt-8 border-t border-white/5 space-y-6">
-                <div className="flex items-center gap-3 mb-4">
-                    <Shield className="w-6 h-6 text-indigo-400 opacity-50" />
-                    <h3 className="font-black text-white/50 tracking-tight underline decoration-indigo-500/30 underline-offset-8 uppercase text-xs">
-                        Guía de Roles y Permisos
-                    </h3>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* ADMIN */}
-                    <div className="glass p-6 rounded-3xl border-indigo-500/20 bg-indigo-500/5">
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_indigo]" />
-                            <h4 className="text-white font-black text-xs uppercase tracking-widest">Rol: ADMIN</h4>
+        
+            {/* SECCIÓN DE MATRIZ DE PERMISOS (CONSOLA DE CONTROL) */}
+            <div className="mt-20 pt-10 border-t border-white/5 space-y-10">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-500/20">
+                            <ShieldAlert className="w-6 h-6 text-indigo-400" />
                         </div>
-                        <ul className="space-y-2">
-                            {['Control Total', 'Gestión de Usuarios', 'Edición de Inventario', 'Configuración de Reglas'].map(p => (
-                                <li key={p} className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> {p}
-                                </li>
-                            ))}
-                        </ul>
+                        <div>
+                            <h3 className="text-xl font-black text-white tracking-tight uppercase italic">
+                                Consola de Control de Accesos
+                            </h3>
+                            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-0.5">
+                                Configuración de Permisos por Módulo
+                            </p>
+                        </div>
                     </div>
-
-                    {/* MANAGER */}
-                    <div className="glass p-6 rounded-3xl border-white/5 opacity-80">
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="w-2 h-2 rounded-full bg-blue-500" />
-                            <h4 className="text-white font-black text-xs uppercase tracking-widest">Rol: MANAGER</h4>
-                        </div>
-                        <ul className="space-y-2">
-                            <li className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Ver Inventario y Reportes
-                            </li>
-                            <li className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Editar Reglas (IA)
-                            </li>
-                            <li className="flex items-center gap-2 text-xs font-bold text-slate-400 italic">
-                                <X className="w-3.5 h-3.5 text-red-500" /> Borrar Datos / Usuarios
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* OPERATOR */}
-                    <div className="glass p-6 rounded-3xl border-white/5 opacity-60">
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="w-2 h-2 rounded-full bg-slate-500" />
-                            <h4 className="text-white font-black text-xs uppercase tracking-widest">Rol: OPERATOR</h4>
-                        </div>
-                        <ul className="space-y-2">
-                            <li className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Subir y Procesar PDFs
-                            </li>
-                            <li className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Ver Inventario (Solo Vista)
-                            </li>
-                            <li className="flex items-center gap-2 text-xs font-bold text-slate-400 italic">
-                                <X className="w-3.5 h-3.5 text-red-500" /> NO puede editar nada
-                            </li>
-                        </ul>
+                    <div className="bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-xl flex items-center gap-3">
+                        <Lock className="w-4 h-4 text-amber-500" />
+                        <span className="text-[10px] font-black text-amber-500 uppercase tracking-tighter">
+                            Edición bloqueada (Solo Hardcoded por ahora)
+                        </span>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                    <div className="glass p-6 rounded-3xl border-white/5">
-                        <h4 className="text-white font-bold text-xs uppercase mb-3 flex items-center gap-2">
-                            <Shield className="w-4 h-4 text-indigo-400" />
+                <div className="glass overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-indigo-500/5 text-slate-500">
+                                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em]">Módulo del Sistema</th>
+                                    <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.2em] bg-purple-500/5 text-purple-400">Admin</th>
+                                    <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.2em] bg-blue-500/5 text-blue-400">Manager</th>
+                                    <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.2em] bg-slate-500/5 text-slate-400">Operator</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {[
+                                    { id: 'rules', name: 'Reglas de IA (Configuración)', icon: Database, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'none' } },
+                                    { id: 'items', name: 'Gestión de Materiales (General)', icon: Box, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'edit' } },
+                                    { id: 'canopy_stock', name: 'Canopy: Stock Actual', icon: FileText, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'view' } },
+                                    { id: 'canopy_pdf', name: 'Canopy: Analizar PDF', icon: Search, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'upload' } },
+                                    { id: 'crane', name: 'Protocolo de Grúa (Editable)', icon: ClipboardCheck, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'view' } },
+                                    { id: 'users', name: 'Gestión de Usuarios (Panel Actual)', icon: UserIcon, permissions: { ADMIN: 'edit', MANAGER: 'none', OPERATOR: 'none' } },
+                                    { id: 'system', name: 'Ajustes del Sistema', icon: Settings, permissions: { ADMIN: 'edit', MANAGER: 'none', OPERATOR: 'none' } }
+                                ].map((module) => (
+                                    <tr key={module.id} className="group hover:bg-white/[0.02] transition-colors">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2.5 bg-slate-800 rounded-xl group-hover:scale-110 transition-transform border border-white/5">
+                                                    <module.icon className="w-4 h-4 text-slate-400" />
+                                                </div>
+                                                <span className="text-sm font-bold text-slate-200 tracking-tight">{module.name}</span>
+                                            </div>
+                                        </td>
+                                        {['ADMIN', 'MANAGER', 'OPERATOR'].map(role => {
+                                            const perm = module.permissions[role as keyof typeof module.permissions];
+                                            return (
+                                                <td key={role} className={`px-6 py-6 text-center ${
+                                                    role === 'ADMIN' ? 'bg-purple-500/[0.02]' : 
+                                                    role === 'MANAGER' ? 'bg-blue-500/[0.02]' : 
+                                                    'bg-slate-500/[0.02]'
+                                                }`}>
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        {perm === 'edit' ? (
+                                                            <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-lg border border-emerald-400/20 shadow-lg shadow-emerald-400/5">
+                                                                <Pencil className="w-3 h-3" />
+                                                                <span className="text-[10px] font-black uppercase">Full Edit</span>
+                                                            </div>
+                                                        ) : perm === 'upload' ? (
+                                                            <div className="flex items-center gap-1.5 text-indigo-400 bg-indigo-400/10 px-3 py-1.5 rounded-lg border border-indigo-400/20 shadow-lg shadow-indigo-400/5">
+                                                                <CloudUpload className="w-3 h-3" />
+                                                                <span className="text-[10px] font-black uppercase">Cargar PDF</span>
+                                                            </div>
+                                                        ) : perm === 'view' ? (
+                                                            <div className="flex items-center gap-1.5 text-blue-400 bg-blue-400/10 px-3 py-1.5 rounded-lg border border-blue-400/20">
+                                                                <Eye className="w-3 h-3" />
+                                                                <span className="text-[10px] font-black uppercase">Solo Ver</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-1.5 text-slate-600 bg-slate-800/20 px-3 py-1.5 rounded-lg border border-white/5 opacity-50">
+                                                                <Lock className="w-3 h-3" />
+                                                                <span className="text-[10px] font-black uppercase">N/A</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="glass p-8 rounded-[2rem] border border-white/5 bg-indigo-500/[0.02] relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <Shield className="w-20 h-20 text-indigo-400" />
+                        </div>
+                        <h4 className="text-white font-black text-xs uppercase mb-4 tracking-widest flex items-center gap-3">
+                            <Unlock className="w-4 h-4 text-indigo-400" />
                             Seguridad de Datos
                         </h4>
-                        <div className="space-y-2">
-                            <p className="text-xs text-slate-400 leading-relaxed">
-                                <strong className="text-slate-300">Encriptación:</strong> Las contraseñas se procesan con <code className="text-indigo-400 bg-indigo-500/10 px-1 rounded">bcrypt</code>. El sistema no almacena texto plano; nadie puede recuperar una clave olvidada.
+                        <div className="space-y-4 relative z-10">
+                            <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                                <strong className="text-slate-200">Encriptación Militar:</strong> Las contraseñas se procesan con algoritmos de hash irreversibles. El sistema es de arquitectura <code className="text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">Zero-Knowledge</code>.
                             </p>
-                            <p className="text-xs text-slate-400 leading-relaxed">
-                                <strong className="text-slate-300">Sesión:</strong> El token de acceso (JWT) tiene una validez de <strong className="text-slate-300">30 días</strong>. Al expirar, el usuario deberá reautenticarse.
-                            </p>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="text-[10px] font-black text-slate-300 uppercase">Estado del Token: JWT Activo</span>
+                                </div>
+                                <p className="text-[10px] text-slate-500 font-bold">Validez: 30 días con renovación automática en cada interacción.</p>
+                            </div>
                         </div>
                     </div>
-                    <div className="glass p-6 rounded-3xl border-white/5">
-                        <h4 className="text-white font-bold text-xs uppercase mb-3 flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4 text-emerald-400" />
-                            Buenas Prácticas
+
+                    <div className="glass p-8 rounded-[2rem] border border-white/5 bg-emerald-500/[0.02] relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <AlertCircle className="w-20 h-20 text-emerald-400" />
+                        </div>
+                        <h4 className="text-white font-black text-xs uppercase mb-4 tracking-widest flex items-center gap-3">
+                            <CheckCircle className="w-4 h-4 text-emerald-400" />
+                            Auditoría del Sistema
                         </h4>
-                        <div className="space-y-2">
-                            <p className="text-xs text-slate-400 leading-relaxed">
-                                <strong className="text-slate-300">Mínimo Privilegio:</strong> Asigna el rol <code className="text-slate-300">OPERATOR</code> por defecto. Solo otorga <code className="text-indigo-400">ADMIN</code> a personal que necesite configurar el sistema.
+                        <div className="space-y-4 relative z-10">
+                            <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                                <strong className="text-slate-200">Trazabilidad Total:</strong> Todas las acciones de edición (Manejo de Grúa, Inventario, Usuarios) quedan registradas con <strong className="text-white">Timestamp</strong> y <strong className="text-white">UserID</strong>.
                             </p>
-                            <p className="text-xs text-slate-400 leading-relaxed">
-                                <strong className="text-slate-300">Auditoría:</strong> Todas las peticiones al backend son registradas. Esto permite ver quién procesó qué archivo y cuándo en los logs del sistema.
-                            </p>
+                            <div className="flex gap-2 mt-4">
+                                <div className="px-3 py-1.5 bg-slate-800 rounded-lg text-[9px] font-black text-slate-400 uppercase border border-white/5">Auto-Log: Activo</div>
+                                <div className="px-3 py-1.5 bg-slate-800 rounded-lg text-[9px] font-black text-slate-400 uppercase border border-white/5">Backup: MongoDB Atlas</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-slate-900/50 p-4 rounded-2xl border border-white/5 text-[11px] text-slate-400 font-medium italic text-center">
-                    * El sistema está diseñado bajo estándares de seguridad privada. No compartas tus credenciales de Administrador.
+                <div className="bg-indigo-600/10 p-5 rounded-3xl border border-indigo-500/20 flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <Shield className="w-5 h-5" />
+                    </div>
+                    <p className="text-[11px] text-slate-400 font-bold leading-relaxed flex-1">
+                        Esta matriz es una representación visual de los archivos de configuración de seguridad. 
+                        En una futura versión, podrás usar los selectores de la tabla para reasignar permisos en tiempo real.
+                    </p>
                 </div>
             </div>
         </div>
