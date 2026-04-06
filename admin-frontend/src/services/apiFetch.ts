@@ -1,4 +1,4 @@
-const API_URL = "/api";
+const API_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     const savedUser = localStorage.getItem('tuuci_user');
