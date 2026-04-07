@@ -55,6 +55,10 @@ export default function App() {
   useEffect(() => {
     if (user) {
       fetchRules();
+      // Si el usuario es OPERADOR, lo mandamos a Manejo de Grúa por defecto
+      if (user.role === 'OPERATOR' && activeTab === 'rules') {
+        setActiveTab('crane-safety');
+      }
     }
   }, [user]);
 
@@ -165,21 +169,25 @@ export default function App() {
 
           <div className="h-px bg-white/5 my-2" />
 
-          <button
-            onClick={() => navigateTo("rules")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'rules' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            Reglas & IA
-          </button>
+          {user?.role !== 'OPERATOR' && (
+            <>
+              <button
+                onClick={() => navigateTo("rules")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'rules' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                Reglas & IA
+              </button>
 
-          <button
-            onClick={() => navigateTo("items")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'items' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-          >
-            <Box className="w-5 h-5" />
-            Materiales
-          </button>
+              <button
+                onClick={() => navigateTo("items")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'items' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+              >
+                <Box className="w-5 h-5" />
+                Materiales
+              </button>
+            </>
+          )}
 
           <button
             onClick={() => navigateTo("reports")}
@@ -201,14 +209,16 @@ export default function App() {
 
           <div className="h-px bg-white/5 my-2" />
 
-          <button
-            onClick={() => navigateTo("canopy")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-            translate="no"
-          >
-            <Wind className="w-5 h-5" />
-            Canopy: Stock Actual
-          </button>
+          {user?.role !== 'OPERATOR' && (
+            <button
+              onClick={() => navigateTo("canopy")}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+              translate="no"
+            >
+              <Wind className="w-5 h-5" />
+              Canopy: Stock Actual
+            </button>
+          )}
           <button
             onClick={() => navigateTo("canopy-analyzer")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy-analyzer' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
