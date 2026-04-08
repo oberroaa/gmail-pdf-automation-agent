@@ -483,6 +483,7 @@ router.post("/items", protect, authorize('ADMIN'), async (req, res) => {
             description: String(description),
             qtyReq: Math.round(Number(qtyReq) || 0), // 👈 Convierte a entero
             uom: String(uom),
+            pool: Boolean(req.body.pool || false), // 👈 Nueva variable
             active: true,             // Activo por defecto
             createdAt: new Date()
         };
@@ -525,6 +526,7 @@ router.put("/items/:id", protect, authorize('ADMIN'), async (req, res) => {
         if (description !== undefined) updateData.description = String(description);
         if (uom !== undefined) updateData.uom = String(uom);
         if (active !== undefined) updateData.active = Boolean(active);
+        if (req.body.pool !== undefined) updateData.pool = Boolean(req.body.pool); // 👈 Nueva variable
 
         // 3. Para la cantidad, aseguramos que sea entero solo si se envió una cantidad
         if (qtyReq !== undefined) {

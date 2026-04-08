@@ -25,7 +25,8 @@ export default function ItemsManager() {
         partNumber: "",
         description: "",
         qtyReq: 0,
-        uom: "EA"
+        uom: "EA",
+        pool: false
     });
     // Estados para edición
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -68,7 +69,7 @@ export default function ItemsManager() {
         if (!formData.partNumber || !formData.description) return;
         try {
             await saveItem(formData);
-            setFormData({ partNumber: "", description: "", qtyReq: 0, uom: "EA" });
+            setFormData({ partNumber: "", description: "", qtyReq: 0, uom: "EA", pool: false });
             await loadItems();
         } catch (err) {
             alert("Error al guardar el item");
@@ -175,7 +176,7 @@ export default function ItemsManager() {
             </div>
 
             {/* Formulario de Agregar */}
-            <form onSubmit={handleAddItem} className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
+            <form onSubmit={handleAddItem} className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-8 bg-slate-800/30 p-4 rounded-2xl border border-slate-700/50">
                 <input
                     type="text"
                     placeholder="Part Number"
@@ -208,6 +209,22 @@ export default function ItemsManager() {
                     onChange={e => setFormData({ ...formData, uom: e.target.value })}
                     required
                 />
+
+                {/* Switch para POOL */}
+                <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-2 hover:bg-slate-800 transition-colors group">
+                    <span className="text-xs font-bold text-slate-400 group-hover:text-slate-300">POOL:</span>
+                    <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, pool: !formData.pool })}
+                        className={`relative w-10 h-5 rounded-full transition-colors duration-200 outline-none focus:ring-2 focus:ring-indigo-500/50 ${formData.pool ? 'bg-indigo-600' : 'bg-slate-700'}`}
+                    >
+                        <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ${formData.pool ? 'translate-x-5' : ''}`} />
+                    </button>
+                    <span className={`text-[10px] font-black uppercase ${formData.pool ? 'text-indigo-400' : 'text-slate-500'}`}>
+                        {formData.pool ? 'SI' : 'NO'}
+                    </span>
+                </div>
+
                 <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all">
                     <Plus className="w-4 h-4" /> Agregar
                 </button>
@@ -229,6 +246,7 @@ export default function ItemsManager() {
                             <th className="px-4 py-2">Description</th>
                             <th className="px-4 py-2 text-center">Qty</th>
                             <th className="px-4 py-2 text-center">UOM</th>
+                            <th className="px-4 py-2 text-center italic text-indigo-400">POOL?</th>
                             <th className="px-4 py-2 text-center">Estado</th>
                             <th className="px-4 py-2 text-right">Acciones</th>
                         </tr>
@@ -277,6 +295,22 @@ export default function ItemsManager() {
                                 <td className="px-4 py-3 border-y border-slate-700/50 text-center text-slate-400 text-xs">
                                     {item.uom}
                                 </td>
+                                
+                                <td className="px-4 py-3 border-y border-slate-700/50 text-center">
+                                    {editingId === item._id ? (
+                                        <button 
+                                            onClick={() => setEditFormData({ ...editFormData, pool: !editFormData.pool })}
+                                            className={`relative w-8 h-4 rounded-full transition-colors duration-200 mx-auto ${editFormData.pool ? 'bg-indigo-600' : 'bg-slate-700'}`}
+                                        >
+                                            <div className={`absolute top-1 left-1 w-2 h-2 bg-white rounded-full transition-transform duration-200 ${editFormData.pool ? 'translate-x-4' : ''}`} />
+                                        </button>
+                                    ) : (
+                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${item.pool ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'bg-slate-700/20 text-slate-500 border border-slate-700/30'}`}>
+                                            {item.pool ? 'POOL' : '-'}
+                                        </span>
+                                    )}
+                                </td>
+
                                 <td className="px-4 py-3 border-y border-slate-700/50 text-center">
                                     <button onClick={() => toggleActive(item)}>
                                         {item.active ?
