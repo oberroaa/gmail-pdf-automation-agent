@@ -5,7 +5,6 @@ export interface ReportItem {
     description: string;
     qty: number;
     uom: string;
-    orderQty?: number;
 }
 
 export interface Report {

@@ -49,56 +49,24 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
     const allowedUoms = ruleset.filters?.uom_include || [];
     const allowedPrefixes = ruleset.filters?.material_prefix || [];
 
-    // Patrones para escaneo stateful
-    const headerRegex = /Qty\s*(?:To\s*Build|Ordered)\s*[:]?\s*([\d\s.]+)/gi;
     const itemRegex = /\b([A-Z0-9.\-]{5,})\b\s+([\s\S]+?)\s+(\d+(?:\.\d+)?)\s*(FT|EA|MT)\s+[A-Z]\b/gi;
 
     const rows = [];
-    let currentJobQty = 0;
+    let match;
+    while ((match = itemRegex.exec(pdfText)) !== null) {
+        const partNumber = match[1];
+        const description = match[2].replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+        const qty = parseFloat(match[3]);
+        const uom = match[4];
 
-    // Buscamos TODOS los marcadores (headers e items) y los ordenamos por su posición en el texto
-    const markers = [];
-    
-    let hMatch;
-    while ((hMatch = headerRegex.exec(pdfText)) !== null) {
-        markers.push({ type: 'header', pos: hMatch.index, value: hMatch[1] });
-    }
-    
-    let iMatch;
-    while ((iMatch = itemRegex.exec(pdfText)) !== null) {
-        markers.push({ 
-            type: 'item', 
-            pos: iMatch.index, 
-            partNumber: iMatch[1],
-            description: iMatch[2],
-            qty: Number(iMatch[3]),
-            uom: iMatch[4]
-        });
-    }
-
-    // Ordenamos por posición para procesar secuencialmente
-    markers.sort((a, b) => a.pos - b.pos);
-
-    for (const m of markers) {
-        if (m.type === 'header') {
-            const cleanQty = m.value.replace(/\s+/g, "");
-            currentJobQty = parseFloat(cleanQty) || 0;
-        } else if (m.type === 'item') {
-            // 🔹 Filtros
-            if (allowedUoms.length && !allowedUoms.includes(m.uom)) continue;
-            if (allowedPrefixes.length) {
-                const ok = allowedPrefixes.some(prefix => m.partNumber.startsWith(prefix));
-                if (!ok) continue;
-            }
-
-            rows.push({ 
-                partNumber: m.partNumber, 
-                description: m.description.replace(/\n/g, " ").replace(/\s+/g, " ").trim(), 
-                qty: m.qty, 
-                uom: m.uom,
-                orderQty: currentJobQty
-            });
+        // 🔹 Filtros
+        if (allowedUoms.length && !allowedUoms.includes(uom)) continue;
+        if (allowedPrefixes.length) {
+            const ok = allowedPrefixes.some(prefix => partNumber.startsWith(prefix));
+            if (!ok) continue;
         }
+
+        rows.push({ partNumber, description, qty, uom });
     }
 
     // ================================
@@ -113,12 +81,10 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
             partNumber: r.partNumber,
             description: r.description,
             uom: r.uom,
-            total: 0,
-            totalOrderQty: 0
+            total: 0
         };
 
         grouped[key].total += r.qty;
-        grouped[key].totalOrderQty += r.orderQty;
     }
 
     // Redondear totales a 2 decimales para evitar números como 550.4630000000001
@@ -198,8 +164,7 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
                     partNumber: item.partNumber,
                     description: item.description,
                     qty: item.total,
-                    uom: item.uom,
-                    orderQty: item.totalOrderQty
+                    uom: item.uom
                 })),
                 totalItems: activeItems.length,
                 status: "Procesado"
