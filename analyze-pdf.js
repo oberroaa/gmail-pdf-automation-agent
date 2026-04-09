@@ -26,10 +26,10 @@ console.log("📑 PDF.js v3 inicializado (Modo Ruta Local)");
  */
 export default async function analyzePdfWithRules(pdfPath, ruleset, displayName = null) {
     const data = new Uint8Array(fs.readFileSync(pdfPath));
-    const pdf = await pdfjsLib.getDocument({ 
-        data, 
+    const pdf = await pdfjsLib.getDocument({
+        data,
         disableWorker: true, // 👈 Versión 3 lo respeta en CJS
-        verbosity: 0 
+        verbosity: 0
     }).promise;
 
     let pdfText = "";
@@ -49,30 +49,56 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
     const allowedUoms = ruleset.filters?.uom_include || [];
     const allowedPrefixes = ruleset.filters?.material_prefix || [];
 
-    // Nueva Regex que captura: [1]PartNumber, [2]Descripción, [3]Cantidad, [4]UOM
-    // Se añade un ancla al final \s+[A-Z]\b para asegurar que capturamos la columna UOM y no datos de la descripción
-    const regex = /\b([A-Z0-9.\-]{5,})\b\s+([\s\S]+?)\s+(\d+(?:\.\d+)?)\s*(FT|EA|MT)\s+[A-Z]\b/gi;
+    // Patrones para escaneo stateful
+    const headerRegex = /Qty\s*(?:To\s*Build|Ordered)\s*[:]?\s*([\d\s.]+)/gi;
+    const itemRegex = /\b([A-Z0-9.\-]{5,})\b\s+([\s\S]+?)\s+(\d+(?:\.\d+)?)\s*(FT|EA|MT)\s+[A-Z]\b/gi;
 
     const rows = [];
-    let match;
+    let currentJobQty = 0;
 
-    while ((match = regex.exec(pdfText)) !== null) {
-        const partNumber = match[1];
-        // Limpiamos la descripción de saltos de línea y espacios extra
-        const description = match[2].replace(/\n/g, " ").replace(/\s+/g, " ").trim();
-        const qty = Number(match[3]);
-        const uom = match[4];
+    // Buscamos TODOS los marcadores (headers e items) y los ordenamos por su posición en el texto
+    const markers = [];
+    
+    let hMatch;
+    while ((hMatch = headerRegex.exec(pdfText)) !== null) {
+        markers.push({ type: 'header', pos: hMatch.index, value: hMatch[1] });
+    }
+    
+    let iMatch;
+    while ((iMatch = itemRegex.exec(pdfText)) !== null) {
+        markers.push({ 
+            type: 'item', 
+            pos: iMatch.index, 
+            partNumber: iMatch[1],
+            description: iMatch[2],
+            qty: Number(iMatch[3]),
+            uom: iMatch[4]
+        });
+    }
 
-        // 🔹 Filtro UOM
-        if (allowedUoms.length && !allowedUoms.includes(uom)) continue;
+    // Ordenamos por posición para procesar secuencialmente
+    markers.sort((a, b) => a.pos - b.pos);
 
-        // 🔹 Filtro prefijo material
-        if (allowedPrefixes.length) {
-            const ok = allowedPrefixes.some(prefix => partNumber.startsWith(prefix));
-            if (!ok) continue;
+    for (const m of markers) {
+        if (m.type === 'header') {
+            const cleanQty = m.value.replace(/\s+/g, "");
+            currentJobQty = parseFloat(cleanQty) || 0;
+        } else if (m.type === 'item') {
+            // 🔹 Filtros
+            if (allowedUoms.length && !allowedUoms.includes(m.uom)) continue;
+            if (allowedPrefixes.length) {
+                const ok = allowedPrefixes.some(prefix => m.partNumber.startsWith(prefix));
+                if (!ok) continue;
+            }
+
+            rows.push({ 
+                partNumber: m.partNumber, 
+                description: m.description.replace(/\n/g, " ").replace(/\s+/g, " ").trim(), 
+                qty: m.qty, 
+                uom: m.uom,
+                orderQty: currentJobQty
+            });
         }
-
-        rows.push({ partNumber, description, qty, uom });
     }
 
     // ================================
@@ -87,10 +113,12 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
             partNumber: r.partNumber,
             description: r.description,
             uom: r.uom,
-            total: 0
+            total: 0,
+            totalOrderQty: 0
         };
 
         grouped[key].total += r.qty;
+        grouped[key].totalOrderQty += r.orderQty;
     }
 
     // Redondear totales a 2 decimales para evitar números como 550.4630000000001
@@ -170,7 +198,8 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
                     partNumber: item.partNumber,
                     description: item.description,
                     qty: item.total,
-                    uom: item.uom
+                    uom: item.uom,
+                    orderQty: item.totalOrderQty
                 })),
                 totalItems: activeItems.length,
                 status: "Procesado"

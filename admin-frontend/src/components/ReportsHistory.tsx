@@ -85,7 +85,7 @@ export default function ReportsHistory({ onMove }: { onMove: (report: Report) =>
                                     </span>
 
                                     {/* BOTÓN MOVER (Móvil más compacto) */}
-                                    <button 
+                                    <button
                                         onClick={(e) => { e.stopPropagation(); onMove(report); }}
                                         className="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-400/10 rounded-lg transition-all active:scale-90 border border-indigo-500/10 bg-indigo-500/5 flex-shrink-0"
                                     >
@@ -93,7 +93,7 @@ export default function ReportsHistory({ onMove }: { onMove: (report: Report) =>
                                     </button>
 
                                     {/* BOTÓN ELIMINAR */}
-                                    <button 
+                                    <button
                                         onClick={(e) => handleDelete(report._id, e)}
                                         className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all active:scale-90 flex-shrink-0"
                                     >
@@ -115,6 +115,7 @@ export default function ReportsHistory({ onMove }: { onMove: (report: Report) =>
                                                 <tr className="text-slate-500 font-bold uppercase tracking-widest border-b border-slate-700/50">
                                                     <th className="pb-2 min-w-[120px]">Part Number</th>
                                                     <th className="pb-2 min-w-[200px]">Descripción</th>
+
                                                     <th className="pb-2 text-center w-20">Qty</th>
                                                     <th className="pb-2 text-center w-20" translate="no">UOM</th>
                                                 </tr>
@@ -124,6 +125,7 @@ export default function ReportsHistory({ onMove }: { onMove: (report: Report) =>
                                                     <tr key={idx} className="border-b border-slate-700/20 last:border-0 hover:bg-white/5">
                                                         <td className="py-2 font-mono text-indigo-300 whitespace-nowrap">{item.partNumber}</td>
                                                         <td className="py-2 pr-4 text-[10px] leading-tight text-slate-400">{item.description}</td>
+
                                                         <td className="py-2 text-center font-bold text-white whitespace-nowrap">{item.qty.toFixed(2)}</td>
                                                         <td className="py-2 text-center text-slate-500 font-medium whitespace-nowrap" translate="no">{item.uom}</td>
                                                     </tr>

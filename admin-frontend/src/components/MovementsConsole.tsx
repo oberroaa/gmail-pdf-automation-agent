@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { type Report, type ReportItem } from "../services/reportsApi";
 import { type Item, getItems } from "../services/itemsApi";
-import { ArrowLeft, Save, Trash2, CheckSquare, Square, RefreshCw, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, CheckSquare, Square, RefreshCw, Loader2, AlertTriangle } from "lucide-react";
 import { apiFetch } from "../services/apiFetch";
 
 interface MovementItem extends ReportItem {
@@ -264,7 +264,16 @@ export default function MovementsConsole({ report, onBack }: Props) {
 
                                     <td className="p-1.5 text-center font-mono text-white text-[13px]">{item.qty}</td>
                                     <td className="p-1.5 text-center text-slate-500 text-[10px] italic">{lengthFt}</td>
-                                    <td className="p-1.5 text-center font-black text-indigo-400 text-[13px]">{total}</td>
+                                    <td className="p-1.5 text-center font-black text-indigo-400 text-[13px]">
+                                        <div className="flex items-center justify-center gap-1">
+                                            {total}
+                                            {mat?.pool && total < (item.orderQty || 0) && (
+                                                <span title={`Error: Se esperaban ${item.orderQty} unidades según la orden.`}>
+                                                    <AlertTriangle className="w-4 h-4 text-amber-500" />
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
 
                                     {/* CHECKS P E T */}
                                     <td className="p-1 px-1 border-x border-white/5" translate="no">
