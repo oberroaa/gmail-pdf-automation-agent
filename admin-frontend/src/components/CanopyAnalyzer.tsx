@@ -162,6 +162,19 @@ export default function CanopyAnalyzer() {
                                                 <span className="text-sm text-slate-300 font-medium">{res.profile}</span>
                                             </div>
 
+                                            {res.jobs && res.jobs.length > 0 && (
+                                                <div className="mb-4">
+                                                    <span className="text-[10px] uppercase font-black text-slate-500 tracking-tighter block mb-1">Job(s) Asignado(s)</span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {res.jobs.map((job: string, i: number) => (
+                                                            <span key={i} className="bg-indigo-500/10 text-indigo-300 text-[10px] font-bold px-2 py-1 rounded-lg border border-indigo-500/20">
+                                                                {job}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             <div className="mb-6">
                                                 <span className="text-[10px] uppercase font-black text-slate-500 tracking-tighter block mb-2">Telas (Yardas)</span>
                                                 <div className="flex flex-wrap gap-2">
