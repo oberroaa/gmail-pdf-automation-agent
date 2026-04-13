@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { getReports, deleteReport, type Report } from "../services/reportsApi";
 import { ClipboardList, Calendar, FileText, ChevronDown, ChevronUp, Loader2, AlertCircle, Trash2, Truck } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function ReportsHistory({ onMove }: { onMove: (report: Report) => void }) {
+    const { user } = useAuth();
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -85,20 +87,24 @@ export default function ReportsHistory({ onMove }: { onMove: (report: Report) =>
                                     </span>
 
                                     {/* BOTÓN MOVER (Móvil más compacto) */}
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); onMove(report); }}
-                                        className="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-400/10 rounded-lg transition-all active:scale-90 border border-indigo-500/10 bg-indigo-500/5 flex-shrink-0"
-                                    >
-                                        <Truck className="w-4 h-4 md:w-5 md:h-5" />
-                                    </button>
+                                    {user?.role !== 'CONSULTOR' && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onMove(report); }}
+                                            className="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-400/10 rounded-lg transition-all active:scale-90 border border-indigo-500/10 bg-indigo-500/5 flex-shrink-0"
+                                        >
+                                            <Truck className="w-4 h-4 md:w-5 md:h-5" />
+                                        </button>
+                                    )}
 
                                     {/* BOTÓN ELIMINAR */}
-                                    <button
-                                        onClick={(e) => handleDelete(report._id, e)}
-                                        className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all active:scale-90 flex-shrink-0"
-                                    >
-                                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                                    </button>
+                                    {user?.role !== 'CONSULTOR' && (
+                                        <button
+                                            onClick={(e) => handleDelete(report._id, e)}
+                                            className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all active:scale-90 flex-shrink-0"
+                                        >
+                                            <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                        </button>
+                                    )}
 
                                     {/* FLECHA */}
                                     <div className="p-1 text-slate-600 flex-shrink-0 border-l border-white/5 ml-1">

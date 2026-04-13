@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getUsers, createUser, deleteUser, type User } from "../services/usersApi";
-import { UserPlus, Trash2, Shield, User as UserIcon, Loader2, AlertCircle, X, CheckCircle, Eye, Pencil, Lock, Unlock, Search, Database, FileText, ClipboardCheck, Settings, ShieldAlert, Box, CloudUpload } from "lucide-react";
+import { UserPlus, Trash2, Shield, User as UserIcon, Loader2, AlertCircle, X, CheckCircle, Eye, Pencil, Lock, Unlock, Search, Database, FileText, ClipboardCheck, Settings, ShieldAlert, Box, CloudUpload, ClipboardList } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function UsersManager() {
@@ -14,7 +14,7 @@ export default function UsersManager() {
         name: "",
         email: "",
         password: "",
-        role: "OPERATOR"
+        role: "CONSULTOR"
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -42,7 +42,7 @@ export default function UsersManager() {
             await createUser(formData);
             await fetchUsers();
             setShowModal(false);
-            setFormData({ name: "", email: "", password: "", role: "OPERATOR" });
+            setFormData({ name: "", email: "", password: "", role: "CONSULTOR" });
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -196,7 +196,7 @@ export default function UsersManager() {
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Rol de Acceso</label>
                                         <div className="grid grid-cols-3 gap-3">
-                                            {['ADMIN', 'MANAGER', 'OPERATOR'].map((r) => (
+                                            {['ADMIN', 'MANAGER', 'CONSULTOR'].map((r) => (
                                                 <button
                                                     key={r}
                                                     type="button"
@@ -267,18 +267,20 @@ export default function UsersManager() {
                                     <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em]">Módulo del Sistema</th>
                                     <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.2em] bg-purple-500/5 text-purple-400">Admin</th>
                                     <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.2em] bg-blue-500/5 text-blue-400">Manager</th>
-                                    <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.2em] bg-slate-500/5 text-slate-400">Operator</th>
+                                    <th className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-[0.2em] bg-slate-500/5 text-slate-400">Consultor</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {[
-                                    { id: 'rules', name: 'Reglas de IA (Configuración)', icon: Database, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'none' } },
-                                    { id: 'items', name: 'Gestión de Materiales (General)', icon: Box, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'edit' } },
-                                    { id: 'canopy_stock', name: 'Canopy: Stock Actual', icon: FileText, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'view' } },
-                                    { id: 'canopy_pdf', name: 'Canopy: Analizar PDF', icon: Search, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'upload' } },
-                                    { id: 'crane', name: 'Protocolo de Grúa (Editable)', icon: ClipboardCheck, permissions: { ADMIN: 'edit', MANAGER: 'view', OPERATOR: 'view' } },
-                                    { id: 'users', name: 'Gestión de Usuarios (Panel Actual)', icon: UserIcon, permissions: { ADMIN: 'edit', MANAGER: 'none', OPERATOR: 'none' } },
-                                    { id: 'system', name: 'Ajustes del Sistema', icon: Settings, permissions: { ADMIN: 'edit', MANAGER: 'none', OPERATOR: 'none' } }
+                                    { id: 'rules', name: 'Reglas de IA (Configuración)', icon: Database, permissions: { ADMIN: 'edit', MANAGER: 'view', CONSULTOR: 'none' } },
+                                    { id: 'items', name: 'Gestión de Materiales (General)', icon: Box, permissions: { ADMIN: 'edit', MANAGER: 'view', CONSULTOR: 'none' } },
+                                    { id: 'manual_pdf', name: 'Analizador PDF (Materiales)', icon: CloudUpload, permissions: { ADMIN: 'edit', MANAGER: 'view', CONSULTOR: 'upload' } },
+                                    { id: 'reports', name: 'Historial de Análisis (Reportes)', icon: ClipboardList, permissions: { ADMIN: 'edit', MANAGER: 'view', CONSULTOR: 'view' } },
+                                    { id: 'canopy_stock', name: 'Canopy: Stock Actual', icon: FileText, permissions: { ADMIN: 'edit', MANAGER: 'view', CONSULTOR: 'none' } },
+                                    { id: 'canopy_pdf', name: 'Canopy: Analizar PDF', icon: Search, permissions: { ADMIN: 'edit', MANAGER: 'view', CONSULTOR: 'upload' } },
+                                    { id: 'crane', name: 'Protocolo de Grúa (Editable)', icon: ClipboardCheck, permissions: { ADMIN: 'edit', MANAGER: 'view', CONSULTOR: 'view' } },
+                                    { id: 'users', name: 'Gestión de Usuarios (Panel Actual)', icon: UserIcon, permissions: { ADMIN: 'edit', MANAGER: 'none', CONSULTOR: 'none' } },
+                                    { id: 'system', name: 'Ajustes del Sistema', icon: Settings, permissions: { ADMIN: 'edit', MANAGER: 'none', CONSULTOR: 'none' } }
                                 ].map((module) => (
                                     <tr key={module.id} className="group hover:bg-white/[0.02] transition-colors">
                                         <td className="px-8 py-6">
@@ -289,7 +291,7 @@ export default function UsersManager() {
                                                 <span className="text-sm font-bold text-slate-200 tracking-tight">{module.name}</span>
                                             </div>
                                         </td>
-                                        {['ADMIN', 'MANAGER', 'OPERATOR'].map(role => {
+                                        {['ADMIN', 'MANAGER', 'CONSULTOR'].map(role => {
                                             const perm = module.permissions[role as keyof typeof module.permissions];
                                             return (
                                                 <td key={role} className={`px-6 py-6 text-center ${

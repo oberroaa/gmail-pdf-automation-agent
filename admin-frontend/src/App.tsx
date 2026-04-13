@@ -55,8 +55,8 @@ export default function App() {
   useEffect(() => {
     if (user) {
       fetchRules();
-      // Si el usuario es OPERADOR, lo mandamos a Manejo de Grúa por defecto
-      if (user.role === 'OPERATOR' && activeTab === 'rules') {
+      // Si el usuario es CONSULTOR, lo mandamos a Manejo de Grúa por defecto
+      if (user.role === 'CONSULTOR' && activeTab === 'rules') {
         setActiveTab('crane-safety');
       }
     }
@@ -169,7 +169,7 @@ export default function App() {
 
           <div className="h-px bg-white/5 my-2" />
 
-          {user?.role !== 'OPERATOR' && (
+          {user?.role !== 'CONSULTOR' && (
             <>
               <button
                 onClick={() => navigateTo("rules")}
@@ -209,7 +209,7 @@ export default function App() {
 
           <div className="h-px bg-white/5 my-2" />
 
-          {user?.role !== 'OPERATOR' && (
+          {user?.role !== 'CONSULTOR' && (
             <button
               onClick={() => navigateTo("canopy")}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
