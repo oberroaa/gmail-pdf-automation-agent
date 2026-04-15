@@ -55,8 +55,8 @@ export default function App() {
   useEffect(() => {
     if (user) {
       fetchRules();
-      // Si el usuario es CONSULTOR, lo mandamos a Manejo de Grúa por defecto
-      if (user.role === 'CONSULTOR' && activeTab === 'rules') {
+      // Si el usuario es CONSULTOR o SUPERVISOR, lo mandamos a Manejo de Grúa por defecto
+      if ((user.role === 'CONSULTOR' || user.role === 'SUPERVISOR') && activeTab === 'rules') {
         setActiveTab('crane-safety');
       }
     }
@@ -169,7 +169,7 @@ export default function App() {
 
           <div className="h-px bg-white/5 my-2" />
 
-          {user?.role !== 'CONSULTOR' && (
+          {user?.role !== 'CONSULTOR' && user?.role !== 'SUPERVISOR' && (
             <>
               <button
                 onClick={() => navigateTo("rules")}

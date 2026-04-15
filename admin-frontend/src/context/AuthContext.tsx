@@ -4,7 +4,7 @@ interface User {
     _id: string;
     name: string;
     email: string;
-    role: string;
+    role: "ADMIN" | "MANAGER" | "SUPERVISOR" | "CONSULTOR";
     token: string;
 }
 

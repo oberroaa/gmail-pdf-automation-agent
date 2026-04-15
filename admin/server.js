@@ -610,7 +610,7 @@ router.get("/canopy", protect, async (req, res) => {
 });
 
 // 2. Guardar un nuevo canopy
-router.post("/canopy", protect, authorize('ADMIN'), async (req, res) => {
+router.post("/canopy", protect, authorize('ADMIN', 'SUPERVISOR'), async (req, res) => {
     try {
         const { item, alias, profile, telas, telas2, total } = req.body;
         const newCanopy = {
@@ -633,7 +633,7 @@ router.post("/canopy", protect, authorize('ADMIN'), async (req, res) => {
 });
 
 // 3. Editar un canopy
-router.put("/canopy/:id", protect, authorize('ADMIN'), async (req, res) => {
+router.put("/canopy/:id", protect, authorize('ADMIN', 'SUPERVISOR'), async (req, res) => {
     try {
         const { id } = req.params;
         const { item, alias, profile, telas, telas2, total } = req.body;
@@ -657,7 +657,7 @@ router.put("/canopy/:id", protect, authorize('ADMIN'), async (req, res) => {
 });
 
 // 4. Eliminar múltiples canopies (Debe ir ANTES de /:id para evitar conflictos)
-router.delete("/canopy/bulk", protect, authorize('ADMIN'), async (req, res) => {
+router.delete("/canopy/bulk", protect, authorize('ADMIN', 'SUPERVISOR'), async (req, res) => {
     try {
         const { ids } = req.body;
         if (!Array.isArray(ids)) return res.status(400).json({ error: "IDs deben ser un array" });
@@ -676,7 +676,7 @@ router.delete("/canopy/bulk", protect, authorize('ADMIN'), async (req, res) => {
 });
 
 // 4.1. Eliminar un canopy
-router.delete("/canopy/:id", protect, authorize('ADMIN'), async (req, res) => {
+router.delete("/canopy/:id", protect, authorize('ADMIN', 'SUPERVISOR'), async (req, res) => {
     try {
         const { id } = req.params;
         const { ObjectId } = await import("mongodb");
