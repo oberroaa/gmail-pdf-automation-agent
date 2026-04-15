@@ -114,6 +114,9 @@ export default function CanopyAnalyzer() {
                 </div>
 
                 <div className="flex items-center gap-2 bg-white/5 p-1 rounded-2xl border border-white/10">
+                    <div className="pl-3 pr-1">
+                        <Languages className="w-4 h-4 text-indigo-400/50" />
+                    </div>
                     <button 
                         onClick={() => setLang("es")}
                         className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${lang === 'es' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-white'}`}
