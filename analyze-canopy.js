@@ -95,28 +95,35 @@ export default async function analyzeCanopyPdf(pdfPath) {
             const labelX = profileLabel.x;
             const labelY = profileLabel.y;
             
-            // 1. Encontrar el límite Y inferior (la primera etiqueta de la siguiente fila)
-            // Las etiquetas en esta tabla están alineadas a la izquierda estrictamente
-            // Col 1 empieza en X~90-120. Col 3 empieza en X~340-360.
+            // 1. Encontrar el límite Y inferior (la primera etiqueta de la siguiente fila o una nueva sección)
+            // Agregamos Pack Notes y Job Material Listing como límites de sección
+            const sectionBoundaries = items.filter(it => 
+                (it.str.includes("Pack Notes") || it.str.includes("Job Material Listing") || it.str.includes("Job Paperwork Designator")) && 
+                it.y < labelY - 2
+            );
+
             const nextLabels = items.filter(it => 
                 ((it.x >= 80 && it.x <= 150) || (it.x >= 330 && it.x <= 390)) && 
                 it.y < labelY - 5
             );
             
-            // El piso de la celda es la Y más alta de las etiquetas que están debajo de la actual
-            const bottomBoundaryY = nextLabels.length > 0 ? Math.max(...nextLabels.map(it => it.y)) : labelY - 35;
+            const allPotentialBoundaries = [...sectionBoundaries, ...nextLabels];
+            
+            // El piso de la celda es la Y más alta de las etiquetas/secciones que están debajo de la actual
+            const bottomBoundaryY = allPotentialBoundaries.length > 0 ? Math.max(...allPotentialBoundaries.map(it => it.y)) : labelY - 35;
 
             // 2. Filtrar items que estén en el rango de nuestra celda correspondiente
             const valueItems = items.filter(it => 
                 it.x > labelX + 50 &&           // A la derecha de la etiqueta
                 it.x < labelX + 220 &&          // Límite más estricto para no pisar la siguiente columna
                 it.y <= labelY + 2 &&           // Misma línea o inferior
-                it.y > bottomBoundaryY          // PERO estrictamente por encima de la siguiente fila
+                it.y > bottomBoundaryY &&       // PERO estrictamente por encima de la siguiente fila
+                !it.str.includes("Pack Notes")  // Limpieza explícita por seguridad
             );
 
             // 3. Ordenar (arriba a abajo, izquierda a derecha) y concatenar
             const sortedItems = valueItems.sort((a,b) => (b.y === a.y) ? a.x - b.x : b.y - a.y);
-            profile = sortedItems.map(i => i.str).join(" ").replace(/\s+/g, " ").trim();
+            profile = sortedItems.map(i => i.str).join(" ").replace(/\s+/g, " ").replace(/Pack Notes/g, "").trim();
         }
 
         if (jobId && item && profile) {
