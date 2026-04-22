@@ -6,31 +6,38 @@ Esta versión ha sido modernizada para funcionar en una infraestructura **Cloud 
 
 ---
 
-## 🏗️ Arquitectura del Sistema
+El proyecto está dividido en tres componentes principales:
 
-El proyecto está dividido en tres componentes principales que trabajan de forma sincronizada:
+1.  **Agente (GitHub Actions)**: Se ejecuta de forma programada para descargar y analizar PDFs.
+2.  **Base de Datos (MongoDB Atlas)**: Almacena reglas, items, inventario de Canopy y reportes.
+3.  **Panel de Administración (Vercel)**: Interfaz para gestionar reglas, usuarios y visualizar el inventario en tiempo real.
 
-1.  **Agente (GitHub Actions)**: 
-    *   Se ejecuta de forma programada (CRON).
-    *   Descarga PDFs de Gmail, los analiza y envía notificaciones.
-    *   Consulta las reglas de análisis en tiempo real desde MongoDB.
-2.  **Base de Datos (MongoDB Atlas)**:
-    *   Almacena de forma centralizada todas las reglas de análisis y configuraciones.
-    *   Permite que los cambios realizados en el panel de administración se reflejen instantáneamente en el agente.
-3.  **Panel de Administración (Vercel)**:
-    *   **Frontend**: Interfaz moderna desarrollada con React + Vite.
-    *   **Backend (API)**: Funciones serverless que gestionan el CRUD de reglas en MongoDB.
-    *   Incluye generación de reglas asistida por IA (Gemini).
+---
+
+## 🛠️ Módulos de Análisis
+
+El sistema opera bajo dos filosofías de extracción distintas según el tipo de documento:
+
+### 1. Material Handling (Asistido por IA)
+*   **Propósito**: Análisis de pedidos generales y materiales de stock.
+*   **Tecnología**: Usa **Google Gemini** para generar reglas de extracción (JSON) basadas en lenguaje natural.
+*   **Funcionamiento**: El usuario define qué materiales buscar, y la IA configura los filtros de unidades (UOM) y prefijos. La extracción final se ejecuta mediante un motor de reglas flexible.
+
+### 2. Canopy (Motor de Precisión Programático)
+*   **Propósito**: Análisis de PDFs de producción de Canopy para verificación de stock de telas.
+*   **Tecnología**: **No utiliza IA para la extracción.** Utiliza un motor basado en coordenadas exactas y lógica de grilla.
+*   **Razón**: Debido a la rigidez y criticidad de los datos de Canopy (especialmente el *Canopy Profile*), se utiliza extracción por coordenadas para garantizar un **0% de error** por interpretación (alucinación), algo vital para el manejo de inventario físico.
+
+---
 
 ---
 
 ## 🚀 Funcionalidades Principales
 
-*   **Análisis Inteligente**: Extracción selectiva de datos de PDFs basada en prefijos de material, unidades de medida (UOM) y reglas personalizadas.
-*   **WhatsApp Meta API**: Notificaciones robustas por WhatsApp gestionando la ventana de 24h (Templates + Free-form text).
-*   **IA-Powered Admin**: Generador de reglas mediante lenguaje natural utilizando Google Gemini.
-*   **Horario Laboral**: El agente respeta horarios específicos (7 AM - 3 PM) para no saturar de notificaciones fuera de tiempo.
-*   **Cloud Ready**: Despliegue optimizado para Vercel y GitHub Actions con persistencia en MongoDB Atlas.
+*   **Análisis Dual**: Sistema híbrido que combina IA para flexibilidad en materiales y código determinista para precisión en Canopy.
+*   **WhatsApp Meta API**: Notificaciones robustas gestionando la ventana de 24h.
+*   **IA-Powered Rules**: Generador de reglas mediante lenguaje natural para el módulo de materiales.
+*   **Gestión de Stock Canopy**: Control en tiempo real de yardas disponibles vs requeridas en PDF.
 
 ---
 
