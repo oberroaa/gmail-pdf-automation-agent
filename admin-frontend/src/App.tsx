@@ -22,6 +22,7 @@ import CanopyManager from "./components/Canopy";
 import CanopyAnalyzer from "./components/CanopyAnalyzer";
 import UsersManager from "./components/UsersManager";
 import { useAuth } from "./context/AuthContext";
+import ProjectOverview from "./components/ProjectOverview";
 import Login from "./components/Login";
 
 export default function App() {
@@ -34,7 +35,7 @@ export default function App() {
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" | "info" } | null>(null);
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users">("rules");
+  const [activeTab, setActiveTab] = useState<"overview" | "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users">("overview");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedReportForMove, setSelectedReportForMove] = useState<Report | null>(null);
   const [isMaterialHandlerOpen, setIsMaterialHandlerOpen] = useState(true);
@@ -64,7 +65,7 @@ export default function App() {
     }
   }, [user]);
 
-  const navigateTo = (tab: "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users") => {
+  const navigateTo = (tab: "overview" | "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users") => {
     setActiveTab(tab);
     setIsMenuOpen(false);
     setSelectedReportForMove(null); // Limpiamos selección al cambiar de pestaña
@@ -161,6 +162,14 @@ export default function App() {
         </div>
 
         <nav className="flex flex-col gap-2">
+          <button
+            onClick={() => navigateTo("overview")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm mb-2 ${activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            Vista General
+          </button>
+
           <button 
             onClick={() => setIsMaterialHandlerOpen(!isMaterialHandlerOpen)}
             className="flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-all group"
@@ -316,7 +325,11 @@ export default function App() {
         <div className="max-w-6xl mx-auto p-4 md:p-8 pt-16 md:pt-10">
 
           <AnimatePresence mode="wait">
-            {activeTab === "rules" ? (
+            {activeTab === "overview" ? (
+              <motion.div key="overview" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                <ProjectOverview />
+              </motion.div>
+            ) : activeTab === "rules" ? (
               <motion.div key="rules" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10">
                   <div>
