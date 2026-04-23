@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search, LogOut, Shield } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search, LogOut, Shield, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
@@ -37,6 +37,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<"rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users">("rules");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedReportForMove, setSelectedReportForMove] = useState<Report | null>(null);
+  const [isMaterialHandlerOpen, setIsMaterialHandlerOpen] = useState(true);
+  const [isCanopyOpen, setIsCanopyOpen] = useState(true);
 
   // --- FUNCIONES ---
   const fetchRules = async () => {
@@ -159,74 +161,110 @@ export default function App() {
         </div>
 
         <nav className="flex flex-col gap-2">
-          <button
-            onClick={() => navigateTo("crane-safety")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'crane-safety' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          <button 
+            onClick={() => setIsMaterialHandlerOpen(!isMaterialHandlerOpen)}
+            className="flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-all group"
           >
-            <HardHat className="w-5 h-5" />
-            Manejo de Grúa
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-300 transition-colors">Material Handler</span>
+            <ChevronDown className={`w-3 h-3 text-slate-500 group-hover:text-slate-300 transition-transform duration-300 ${isMaterialHandlerOpen ? '' : '-rotate-90'}`} />
           </button>
+
+          <AnimatePresence>
+            {isMaterialHandlerOpen && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="flex flex-col gap-1 overflow-hidden"
+              >
+                <button
+                  onClick={() => navigateTo("crane-safety")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'crane-safety' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+                >
+                  <HardHat className="w-5 h-5" />
+                  Manejo de Grúa
+                </button>
+
+                {user?.role !== 'CONSULTOR' && user?.role !== 'SUPERVISOR' && (
+                  <>
+                    <button
+                      onClick={() => navigateTo("rules")}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'rules' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+                    >
+                      <LayoutDashboard className="w-5 h-5" />
+                      Reglas & IA
+                    </button>
+
+                    <button
+                      onClick={() => navigateTo("items")}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'items' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+                    >
+                      <Box className="w-5 h-5" />
+                      Materiales
+                    </button>
+                  </>
+                )}
+
+                <button
+                  onClick={() => navigateTo("reports")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'reports' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+                >
+                  <ClipboardList className="w-5 h-5" />
+                  Historial
+                </button>
+
+                <button
+                  onClick={() => navigateTo("manual-pdf")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'manual-pdf' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+                >
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Procesar PDF
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="h-px bg-white/5 my-2" />
 
-          {user?.role !== 'CONSULTOR' && user?.role !== 'SUPERVISOR' && (
-            <>
-              <button
-                onClick={() => navigateTo("rules")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'rules' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+          <button 
+            onClick={() => setIsCanopyOpen(!isCanopyOpen)}
+            className="flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-all group"
+          >
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-300 transition-colors">Canopy</span>
+            <ChevronDown className={`w-3 h-3 text-slate-500 group-hover:text-slate-300 transition-transform duration-300 ${isCanopyOpen ? '' : '-rotate-90'}`} />
+          </button>
+
+          <AnimatePresence>
+            {isCanopyOpen && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="flex flex-col gap-1 overflow-hidden"
               >
-                <LayoutDashboard className="w-5 h-5" />
-                Reglas & IA
-              </button>
-
-              <button
-                onClick={() => navigateTo("items")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'items' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-              >
-                <Box className="w-5 h-5" />
-                Materiales
-              </button>
-            </>
-          )}
-
-          <button
-            onClick={() => navigateTo("reports")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'reports' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-          >
-            <ClipboardList className="w-5 h-5" />
-            Historial
-          </button>
-
-          <button
-            onClick={() => navigateTo("manual-pdf")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'manual-pdf' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-          >
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            Procesar PDF
-          </button>
-
-          <div className="h-px bg-white/5 my-2" />
-
-          {user?.role !== 'CONSULTOR' && (
-            <button
-              onClick={() => navigateTo("canopy")}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-              translate="no"
-            >
-              <Wind className="w-5 h-5" />
-              Canopy: Stock Actual
-            </button>
-          )}
-          <button
-            onClick={() => navigateTo("canopy-analyzer")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy-analyzer' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
-            translate="no"
-          >
-            <Search className="w-5 h-5" />
-            Canopy: Analizar PDF
-          </button>
+                {user?.role !== 'CONSULTOR' && (
+                  <button
+                    onClick={() => navigateTo("canopy")}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+                    translate="no"
+                  >
+                    <Wind className="w-5 h-5" />
+                    Stock Actual
+                  </button>
+                )}
+                <button
+                  onClick={() => navigateTo("canopy-analyzer")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy-analyzer' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+                  translate="no"
+                >
+                  <Search className="w-5 h-5" />
+                  Analizar PDF
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {user?.role === 'ADMIN' && (
             <>

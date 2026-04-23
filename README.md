@@ -14,19 +14,19 @@ El proyecto está dividido en tres componentes principales:
 
 ---
 
-## 🛠️ Módulos de Análisis
+## 🛠️ Módulos Principales
 
-El sistema opera bajo dos filosofías de extracción distintas según el tipo de documento:
+El sistema se organiza en dos módulos principales para el procesamiento de documentos:
 
-### 1. Material Handling (Asistido por IA)
-*   **Propósito**: Análisis de pedidos generales y materiales de stock.
-*   **Tecnología**: Usa **Google Gemini** para generar reglas de extracción (JSON) basadas en lenguaje natural.
-*   **Funcionamiento**: El usuario define qué materiales buscar, y la IA configura los filtros de unidades (UOM) y prefijos. La extracción final se ejecuta mediante un motor de reglas flexible.
+### 1. Material Handler (Gestión de Materiales)
+*   **Alcance**: Incluye el **Manejo de Grúa** (protocolos de seguridad), la configuración de reglas de IA, el catálogo de materiales (items), el historial de análisis y la herramienta de procesamiento manual.
+*   **IA (Google Gemini)**: Utilizada para la generación dinámica de reglas de extracción basadas en lenguaje natural.
+*   **Propósito**: Automatizar la identificación de materiales generales y pedidos de stock.
 
-### 2. Canopy (Motor de Precisión Programático)
-*   **Propósito**: Análisis de PDFs de producción de Canopy para verificación de stock de telas.
-*   **Tecnología**: **No utiliza IA para la extracción.** Utiliza un motor basado en coordenadas exactas y lógica de grilla.
-*   **Razón**: Debido a la rigidez y criticidad de los datos de Canopy (especialmente el *Canopy Profile*), se utiliza extracción por coordenadas para garantizar un **0% de error** por interpretación (alucinación), algo vital para el manejo de inventario físico.
+### 2. Canopy (Análisis de Producción)
+*   **Alcance**: Gestión del inventario de yardas de tela y análisis de PDFs de producción específicos.
+*   **Motor de Precisión**: Utiliza un motor determinista (sin IA) basado en coordenadas exactas para garantizar un 0% de error en la extracción del *Canopy Profile* y materiales asociados.
+*   **Propósito**: Control crítico del stock de telas vs requerimientos de producción.
 
 ---
 
