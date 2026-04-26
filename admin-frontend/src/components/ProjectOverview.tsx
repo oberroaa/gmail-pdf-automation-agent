@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { 
-    Brain, Box, Wind, HardHat, ShieldCheck, 
-    Zap, Database, BarChart3, 
+import {
+    Brain, Box, Wind, HardHat, ShieldCheck,
+    Zap, Database, BarChart3,
     Search, LayoutDashboard, ClipboardList, Settings2,
-    Cpu, Code2, Globe, Server, Terminal, Languages
+    Cpu, Code2, Globe, Server, Terminal, Languages,
+    Mail, ExternalLink
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -46,7 +47,15 @@ const OVERVIEW_CONTENT = {
                 details: "Módulo determinista de alta fidelidad. A diferencia de la IA, este motor 'mide' el PDF píxel a píxel para extraer datos de producción críticos con un 0% de error de interpretación. Es la herramienta vital para el cruce de yardas de tela requeridas vs. disponibles en el inventario real.",
                 features: ["Precisión Píxel-a-Píxel", "Inventario en tiempo real", "Analizador de producción", "Cruce de requerimientos"]
             }
-        ]
+        ],
+        developer: {
+            title: "Desarrollador del Proyecto",
+            name: "Otoniel Berroa",
+            roles: ["Ingeniero Informático", "Desarrollo de Software", "Administrador de Sistemas"],
+            email: "oberroaa@gmail.com",
+            portfolio: "https://otoniel-portfolio.vercel.app/",
+            desc: "Arquitecto y desarrollador principal de este ecosistema de automatización, enfocado en optimizar procesos industriales mediante tecnología de vanguardia."
+        }
     },
     en: {
         badge: "Tuuci Intelligent System v2.0",
@@ -86,12 +95,20 @@ const OVERVIEW_CONTENT = {
                 details: "High-fidelity deterministic module. Unlike AI, this engine 'measures' the PDF pixel by pixel to extract critical production data with 0% interpretation error. It's the vital tool for cross-referencing required vs. available fabric yardage in real inventory.",
                 features: ["Pixel-by-Pixel Precision", "Real-time inventory", "Production analyzer", "Requirement cross-check"]
             }
-        ]
+        ],
+        developer: {
+            title: "Project Developer",
+            name: "Otoniel Berroa",
+            roles: ["Computer Engineer", "Software Development", "Systems Administrator"],
+            email: "oberroaa@gmail.com",
+            portfolio: "https://otoniel-portfolio.vercel.app/",
+            desc: "Architect and lead developer of this automation ecosystem, focused on optimizing industrial processes through cutting-edge technology."
+        }
     }
 } as const;
 
 export default function ProjectOverview() {
-    const [lang, setLang] = useState<'es' | 'en'>('es');
+    const [lang, setLang] = useState<'es' | 'en'>('en');
     const t = OVERVIEW_CONTENT[lang];
 
     const techStack = [
@@ -155,7 +172,7 @@ export default function ProjectOverview() {
             <header className="relative py-16 px-10 rounded-[3rem] overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/25 via-slate-950 to-[#0a0c10] -z-10" />
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] -z-10" />
-                
+
                 <div className="absolute top-8 right-10 z-20">
                     <button
                         onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
@@ -166,7 +183,7 @@ export default function ProjectOverview() {
                     </button>
                 </div>
 
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-8"
@@ -175,12 +192,12 @@ export default function ProjectOverview() {
                         <ShieldCheck className="w-4 h-4 text-indigo-400" />
                         <span className="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-400">{t.badge}</span>
                     </div>
-                    
+
                     <h1 className="text-6xl font-black text-white leading-[1.1] tracking-tight">
                         {t.title_top} <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-sky-400 to-emerald-400">{t.title_span}</span>
                     </h1>
-                    
+
                     <p className="text-slate-400 text-xl max-w-3xl leading-relaxed font-medium">
                         {t.hero_desc.split(/(\*\*.*?\*\*)/g).map((part: string, i: number) => (
                             part.startsWith("**") && part.endsWith("**") ? <span key={i} className="text-white">{part.slice(2, -2)}</span> : part
@@ -189,8 +206,62 @@ export default function ProjectOverview() {
                 </motion.div>
             </header>
 
+            {/* Modules Grid - Detailed Summaries */}
+            <div className="space-y-8">
+                <div className="flex items-center gap-4 px-4">
+                    <Settings2 className="w-6 h-6 text-sky-400" />
+                    <h3 className="text-2xl font-black text-white tracking-tight">{t.modules_title}</h3>
+                    <div className="h-px bg-white/10 flex-1" />
+                </div>
+
+                <motion.div
+                    variants={container}
+                    initial="hidden"
+                    animate="show"
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-10"
+                >
+                    {modules.map((mod, idx) => (
+                        <motion.div
+                            key={idx}
+                            variants={item}
+                            className={`glass p-10 rounded-[3rem] border ${mod.borderColor} relative group overflow-hidden`}
+                        >
+                            <div className={`absolute inset-0 bg-gradient-to-br ${mod.color} opacity-0 group-hover:opacity-100 transition-all duration-700`} />
+
+                            <div className="relative space-y-8">
+                                <div className="flex items-center justify-between">
+                                    <div className="w-16 h-16 bg-slate-950 rounded-[1.5rem] flex items-center justify-center border border-white/10 shadow-2xl">
+                                        {mod.icon}
+                                    </div>
+                                    <div className="bg-white/5 px-4 py-1 rounded-full border border-white/5">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.active_badge}</span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h3 className="text-3xl font-black text-white">{mod.title}</h3>
+                                    <p className="text-slate-300 font-semibold text-sm leading-relaxed">{mod.description}</p>
+                                    <p className="text-slate-500 text-sm leading-relaxed">{mod.details}</p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/5">
+                                    {mod.features.map((feat, i) => (
+                                        <div key={i} className="flex items-center gap-3 text-slate-400">
+                                            <div className="p-2 bg-white/5 rounded-xl text-indigo-400">
+                                                {feat.icon}
+                                            </div>
+                                            <span className="text-[11px] font-bold uppercase tracking-tight">{feat.text}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </motion.div>
+            </div>
+
             {/* Tech Stack - Improved Visuals */}
-            <motion.section 
+            <motion.section
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -218,62 +289,8 @@ export default function ProjectOverview() {
                 </div>
             </motion.section>
 
-            {/* Modules Grid - Detailed Summaries */}
-            <div className="space-y-8">
-                <div className="flex items-center gap-4 px-4">
-                    <Settings2 className="w-6 h-6 text-sky-400" />
-                    <h3 className="text-2xl font-black text-white tracking-tight">{t.modules_title}</h3>
-                    <div className="h-px bg-white/10 flex-1" />
-                </div>
-
-                <motion.div 
-                    variants={container}
-                    initial="hidden"
-                    animate="show"
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-10"
-                >
-                    {modules.map((mod, idx) => (
-                        <motion.div 
-                            key={idx}
-                            variants={item}
-                            className={`glass p-10 rounded-[3rem] border ${mod.borderColor} relative group overflow-hidden`}
-                        >
-                            <div className={`absolute inset-0 bg-gradient-to-br ${mod.color} opacity-0 group-hover:opacity-100 transition-all duration-700`} />
-                            
-                            <div className="relative space-y-8">
-                                <div className="flex items-center justify-between">
-                                    <div className="w-16 h-16 bg-slate-950 rounded-[1.5rem] flex items-center justify-center border border-white/10 shadow-2xl">
-                                        {mod.icon}
-                                    </div>
-                                    <div className="bg-white/5 px-4 py-1 rounded-full border border-white/5">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.active_badge}</span>
-                                    </div>
-                                </div>
-                                
-                                <div className="space-y-4">
-                                    <h3 className="text-3xl font-black text-white">{mod.title}</h3>
-                                    <p className="text-slate-300 font-semibold text-sm leading-relaxed">{mod.description}</p>
-                                    <p className="text-slate-500 text-sm leading-relaxed">{mod.details}</p>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/5">
-                                    {mod.features.map((feat, i) => (
-                                        <div key={i} className="flex items-center gap-3 text-slate-400">
-                                            <div className="p-2 bg-white/5 rounded-xl text-indigo-400">
-                                                {feat.icon}
-                                            </div>
-                                            <span className="text-[11px] font-bold uppercase tracking-tight">{feat.text}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
-            </div>
-
             {/* Security Section */}
-            <motion.section 
+            <motion.section
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
@@ -295,8 +312,77 @@ export default function ProjectOverview() {
                 </div>
             </motion.section>
 
+            {/* Developer Profile Section */}
+            <motion.section
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="glass p-8 md:p-12 rounded-[3rem] border border-indigo-500/10 bg-gradient-to-br from-indigo-500/[0.05] to-transparent relative overflow-hidden"
+            >
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 rounded-full blur-3xl -z-10" />
+
+                <div className="flex flex-col md:flex-row items-center gap-10">
+                    <div className="relative shrink-0">
+                        <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500 to-sky-400 rounded-[2.5rem] opacity-20 blur-xl animate-pulse" />
+                        <img
+                            src="/profile.jpg"
+                            alt={t.developer.name}
+                            className="w-48 h-48 md:w-56 md:h-56 object-cover rounded-[2.5rem] border-2 border-white/10 relative z-10 shadow-2xl"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = "https://ui-avatars.com/api/?name=Otoniel&background=6366f1&color=fff&size=256";
+                            }}
+                        />
+                    </div>
+
+                    <div className="flex-1 text-center md:text-left space-y-6">
+                        <div className="space-y-2">
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-400 px-4 py-1.5 bg-indigo-500/10 rounded-full border border-indigo-500/20">
+                                {t.developer.title}
+                            </span>
+                            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tight pt-2">{t.developer.name}</h3>
+                        </div>
+
+                        <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                            {t.developer.roles.map((role, i) => (
+                                <div key={i} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
+                                    {i === 0 ? <Code2 className="w-4 h-4 text-sky-400" /> : i === 1 ? <Terminal className="w-4 h-4 text-indigo-400" /> : <Server className="w-4 h-4 text-emerald-400" />}
+                                    <span className="text-sm font-bold text-slate-300">{role}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
+                            <a 
+                                href={`mailto:${t.developer.email}`}
+                                className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors group"
+                            >
+                                <div className="p-2 bg-white/5 rounded-lg group-hover:bg-indigo-500/10 transition-colors">
+                                    <Mail className="w-4 h-4" />
+                                </div>
+                                <span className="text-sm font-medium">{t.developer.email}</span>
+                            </a>
+                            <a 
+                                href={t.developer.portfolio}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors group"
+                            >
+                                <div className="p-2 bg-white/5 rounded-lg group-hover:bg-sky-500/10 transition-colors">
+                                    <ExternalLink className="w-4 h-4" />
+                                </div>
+                                <span className="text-sm font-medium">Portfolio / GitHub</span>
+                            </a>
+                        </div>
+
+                        <p className="text-slate-400 text-lg leading-relaxed font-medium max-w-2xl">
+                            {t.developer.desc}
+                        </p>
+                    </div>
+                </div>
+            </motion.section>
+
             {/* Info Cards */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
