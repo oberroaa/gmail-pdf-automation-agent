@@ -90,41 +90,51 @@ export default async function analyzeCanopyPdf(pdfPath) {
         }
 
         // 2. Extraer Configuration Details con Lógica de Grilla Exacta (Multi-línea)
-        const profileLabel = items.find(i => i.str.includes("Canopy Profile"));
-        if (profileLabel) {
-            const labelX = profileLabel.x;
-            const labelY = profileLabel.y;
+        const extractValue = (labelStr) => {
+            const label = items.find(i => i.str.includes(labelStr));
+            if (!label) return null;
+
+            const labelX = label.x;
+            const labelY = label.y;
             
-            // 1. Encontrar el límite Y inferior (la primera etiqueta de la siguiente fila o una nueva sección)
-            // Agregamos Pack Notes y Job Material Listing como límites de sección
-            const sectionBoundaries = items.filter(it => 
-                (it.str.includes("Pack Notes") || it.str.includes("Job Material Listing") || it.str.includes("Job Paperwork Designator")) && 
+            // Si la etiqueta está en la columna izquierda (< 250), el límite derecho es el inicio de la columna derecha (~330)
+            // Si está en la columna derecha, el límite es el final del área de la tabla (~580)
+            const rightLimit = (labelX < 250) ? 320 : 580;
+
+            // Límites de sección y otras etiquetas para saber dónde termina la "celda"
+            const boundaries = items.filter(it => 
+                (
+                    ((it.x >= 80 && it.x <= 150) || (it.x >= 330 && it.x <= 390)) || 
+                    it.str.includes("Pack Notes") || 
+                    it.str.includes("Job Material Listing") || 
+                    it.str.includes("Job Paperwork Designator")
+                ) && 
                 it.y < labelY - 2
             );
-
-            const nextLabels = items.filter(it => 
-                ((it.x >= 80 && it.x <= 150) || (it.x >= 330 && it.x <= 390)) && 
-                it.y < labelY - 5
-            );
             
-            const allPotentialBoundaries = [...sectionBoundaries, ...nextLabels];
-            
-            // El piso de la celda es la Y más alta de las etiquetas/secciones que están debajo de la actual
-            const bottomBoundaryY = allPotentialBoundaries.length > 0 ? Math.max(...allPotentialBoundaries.map(it => it.y)) : labelY - 35;
+            const bottomBoundaryY = boundaries.length > 0 ? Math.max(...boundaries.map(it => it.y)) : labelY - 35;
 
-            // 2. Filtrar items que estén en el rango de nuestra celda correspondiente
             const valueItems = items.filter(it => 
-                it.x > labelX + 50 &&           // A la derecha de la etiqueta
-                it.x < labelX + 220 &&          // Límite más estricto para no pisar la siguiente columna
-                it.y <= labelY + 2 &&           // Misma línea o inferior
-                it.y > bottomBoundaryY &&       // PERO estrictamente por encima de la siguiente fila
-                !it.str.includes("Pack Notes")  // Limpieza explícita por seguridad
+                it.x > labelX + 40 && 
+                it.x < rightLimit &&
+                it.y <= labelY + 2 && 
+                it.y > bottomBoundaryY
             );
 
-            // 3. Ordenar (arriba a abajo, izquierda a derecha) y concatenar
             const sortedItems = valueItems.sort((a,b) => (b.y === a.y) ? a.x - b.x : b.y - a.y);
-            profile = sortedItems.map(i => i.str).join(" ").replace(/\s+/g, " ").replace(/Pack Notes/g, "").trim();
-        }
+            return sortedItems.map(i => i.str).join(" ").replace(/\s+/g, " ").trim();
+        };
+
+        profile = extractValue("Canopy Profile");
+        const tilt = extractValue("Tilt");
+        const scissor = extractValue("Scissor Assembly");
+
+        // Detección de configuraciones especiales (con fallback por si no hay etiqueta)
+        const hasTilt = (tilt && tilt.toLowerCase().includes("includes tilt")) || 
+                        items.some(it => it.str.includes("Includes Tilt"));
+        
+        const hasDoubleScissor = (scissor && scissor.toLowerCase().includes("double scissor")) || 
+                                 items.some(it => it.str.includes("Double Scissor"));
 
         if (jobId && item && profile) {
             jobsFound.push({
@@ -132,7 +142,11 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 item,
                 profile,
                 telas: [...new Set(telas)].sort(),
-                qtyToBuild
+                qtyToBuild,
+                specialConfig: hasTilt || hasDoubleScissor ? {
+                    tilt: hasTilt ? tilt : null,
+                    scissor: hasDoubleScissor ? scissor : null
+                } : null
             });
         }
     }
@@ -140,9 +154,19 @@ export default async function analyzeCanopyPdf(pdfPath) {
     // --- AGRUPACIÓN Y CRUCE CON DB ---
     const consolidated = {};
     for (const job of jobsFound) {
-        const configKey = `${job.item}|${job.profile}|${job.telas.join(",")}`;
+        // Incluimos specialConfig en la llave de consolidación para que no se mezclen con canopies normales
+        const specialSuffix = job.specialConfig ? `|SPECIAL:${JSON.stringify(job.specialConfig)}` : "";
+        const configKey = `${job.item}|${job.profile}|${job.telas.join(",")}${specialSuffix}`;
+        
         if (!consolidated[configKey]) {
-            consolidated[configKey] = { item: job.item, profile: job.profile, telas: job.telas, required: 0, jobs: [] };
+            consolidated[configKey] = { 
+                item: job.item, 
+                profile: job.profile, 
+                telas: job.telas, 
+                required: 0, 
+                jobs: [],
+                specialConfig: job.specialConfig 
+            };
         }
         consolidated[configKey].required += job.qtyToBuild;
         consolidated[configKey].jobs.push(job.jobId);
@@ -155,7 +179,9 @@ export default async function analyzeCanopyPdf(pdfPath) {
 
         for (const key in consolidated) {
             const config = consolidated[key];
-            const existing = allDbCanopies.find(db => {
+            
+            // Si tiene configuración especial (Tilt o Double Scissor), NO buscamos match en DB estándar
+            const existing = config.specialConfig ? null : allDbCanopies.find(db => {
                 const aliasMatch = db.alias && config.item.includes(db.alias);
                 const profileMatch = config.profile === db.profile;
                 const pdfTelas = config.telas;
@@ -177,7 +203,14 @@ export default async function analyzeCanopyPdf(pdfPath) {
 
                 results.push({ ...config, dbId: existing._id, available: existing.total || 0, status, isNew: false });
             } else {
-                results.push({ ...config, dbId: null, available: 0, status: "NO INVENTARIADO", isNew: true });
+                let status = "NO INVENTARIADO";
+                if (config.specialConfig) {
+                    const reasons = [];
+                    if (config.specialConfig.tilt) reasons.push("INCLUDES TILT");
+                    if (config.specialConfig.scissor) reasons.push("DOUBLE SCISSOR");
+                    status = `REVISIÓN: ${reasons.join(" + ")}`;
+                }
+                results.push({ ...config, dbId: null, available: 0, status, isNew: true });
             }
         }
     } catch (e) { console.error("Error DB Canopy:", e); }
