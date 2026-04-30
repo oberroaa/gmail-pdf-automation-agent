@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search, LogOut, Shield, ChevronDown } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search, LogOut, Shield, ChevronDown, History } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
@@ -20,6 +20,7 @@ import ManualAnalyzer from './components/ManualAnalyzer';
 import CraneSafety from "./components/CraneSafety";
 import CanopyManager from "./components/Canopy";
 import CanopyAnalyzer from "./components/CanopyAnalyzer";
+import CanopyHistory from "./components/CanopyHistory";
 import UsersManager from "./components/UsersManager";
 import { useAuth } from "./context/AuthContext";
 import ProjectOverview from "./components/ProjectOverview";
@@ -35,7 +36,7 @@ export default function App() {
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" | "info" } | null>(null);
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [showNewRule, setShowNewRule] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "canopy-history" | "users">("overview");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedReportForMove, setSelectedReportForMove] = useState<Report | null>(null);
   const [isMaterialHandlerOpen, setIsMaterialHandlerOpen] = useState(true);
@@ -65,7 +66,7 @@ export default function App() {
     }
   }, [user]);
 
-  const navigateTo = (tab: "overview" | "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "users") => {
+  const navigateTo = (tab: "overview" | "rules" | "items" | "reports" | "manual-pdf" | "crane-safety" | "canopy" | "canopy-analyzer" | "canopy-history" | "users") => {
     setActiveTab(tab);
     setIsMenuOpen(false);
     setSelectedReportForMove(null); // Limpiamos selección al cambiar de pestaña
@@ -271,6 +272,14 @@ export default function App() {
                   <Search className="w-5 h-5" />
                   Analizar PDF
                 </button>
+                <button
+                  onClick={() => navigateTo("canopy-history")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'canopy-history' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
+                  translate="no"
+                >
+                  <History className="w-5 h-5" />
+                  Historial Jobs
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -426,6 +435,10 @@ export default function App() {
             ) : activeTab === "canopy-analyzer" ? (
               <motion.div key="canopy-analyzer" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                 <CanopyAnalyzer />
+              </motion.div>
+            ) : activeTab === "canopy-history" ? (
+              <motion.div key="canopy-history" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                <CanopyHistory />
               </motion.div>
             ) : activeTab === "users" ? (
               <motion.div key="users" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>

@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 const pdfjsLib = require("pdfjs-dist/build/pdf.js");
 
 import "./setup-pdf.js";
-import { getCanopyCollection } from "./db.js";
+import { getCanopyCollection, getCanopyHistoryCollection } from "./db.js";
 
 // Configuración de Worker
 try {
@@ -126,27 +126,16 @@ export default async function analyzeCanopyPdf(pdfPath) {
         };
 
         profile = extractValue("Canopy Profile");
-        const tilt = extractValue("Tilt");
-        const scissor = extractValue("Scissor Assembly");
-
-        // Detección de configuraciones especiales (con fallback por si no hay etiqueta)
-        const hasTilt = (tilt && tilt.toLowerCase().includes("includes tilt")) || 
-                        items.some(it => it.str.includes("Includes Tilt"));
-        
-        const hasDoubleScissor = (scissor && scissor.toLowerCase().includes("double scissor")) || 
-                                 items.some(it => it.str.includes("Double Scissor"));
+        const scissor = extractValue("Scissor Assembly") || "";
 
         if (jobId && item && profile) {
             jobsFound.push({
                 jobId,
                 item,
                 profile,
+                scissor,
                 telas: [...new Set(telas)].sort(),
-                qtyToBuild,
-                specialConfig: hasTilt || hasDoubleScissor ? {
-                    tilt: hasTilt ? tilt : null,
-                    scissor: hasDoubleScissor ? scissor : null
-                } : null
+                qtyToBuild
             });
         }
     }
@@ -154,18 +143,16 @@ export default async function analyzeCanopyPdf(pdfPath) {
     // --- AGRUPACIÓN Y CRUCE CON DB ---
     const consolidated = {};
     for (const job of jobsFound) {
-        // Incluimos specialConfig en la llave de consolidación para que no se mezclen con canopies normales
-        const specialSuffix = job.specialConfig ? `|SPECIAL:${JSON.stringify(job.specialConfig)}` : "";
-        const configKey = `${job.item}|${job.profile}|${job.telas.join(",")}${specialSuffix}`;
+        const configKey = `${job.item}|${job.profile}|${job.scissor}|${job.telas.join(",")}`;
         
         if (!consolidated[configKey]) {
             consolidated[configKey] = { 
                 item: job.item, 
                 profile: job.profile, 
+                scissor: job.scissor,
                 telas: job.telas, 
                 required: 0, 
-                jobs: [],
-                specialConfig: job.specialConfig 
+                jobs: []
             };
         }
         consolidated[configKey].required += job.qtyToBuild;
@@ -179,11 +166,10 @@ export default async function analyzeCanopyPdf(pdfPath) {
 
         for (const key in consolidated) {
             const config = consolidated[key];
-            
-            // Si tiene configuración especial (Tilt o Double Scissor), NO buscamos match en DB estándar
-            const existing = config.specialConfig ? null : allDbCanopies.find(db => {
+            const existing = allDbCanopies.find(db => {
                 const aliasMatch = db.alias && config.item.includes(db.alias);
                 const profileMatch = config.profile === db.profile;
+                const scissorMatch = !db.scissor || (config.scissor || "") === db.scissor;
                 const pdfTelas = config.telas;
                 
                 const matchTelas = (dbTelasArray) => {
@@ -193,7 +179,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 };
 
                 const telasMatch = matchTelas(db.telas) || matchTelas(db.telas2);
-                return aliasMatch && profileMatch && telasMatch;
+                return aliasMatch && profileMatch && scissorMatch && telasMatch;
             });
 
             if (existing) {
@@ -203,20 +189,45 @@ export default async function analyzeCanopyPdf(pdfPath) {
 
                 results.push({ ...config, dbId: existing._id, available: existing.total || 0, status, isNew: false });
             } else {
-                let status = "NO INVENTARIADO";
-                if (config.specialConfig) {
-                    const reasons = [];
-                    if (config.specialConfig.tilt) reasons.push("INCLUDES TILT");
-                    if (config.specialConfig.scissor) reasons.push("DOUBLE SCISSOR");
-                    status = `REVISIÓN: ${reasons.join(" + ")}`;
-                }
-                results.push({ ...config, dbId: null, available: 0, status, isNew: true });
+                results.push({ ...config, dbId: null, available: 0, status: "NO INVENTARIADO", isNew: true });
             }
         }
     } catch (e) { console.error("Error DB Canopy:", e); }
 
     const statusPriority = { "DISPONIBLE": 1, "PARCIAL": 2, "SIN STOCK": 3, "NO INVENTARIADO": 4 };
     results.sort((a, b) => (statusPriority[a.status] || 99) - (statusPriority[b.status] || 99));
+
+    // --- GUARDADO EN HISTORIAL (SIN DUPLICADOS) ---
+    try {
+        const historyColl = await getCanopyHistoryCollection();
+        const timestamp = new Date();
+        
+        for (const job of jobsFound) {
+            // Buscamos si ya existe este Job ID para no duplicar
+            const existing = await historyColl.findOne({ jobId: job.jobId });
+            if (!existing) {
+                // Buscamos el estatus correspondiente en los resultados procesados
+                const result = results.find(r => 
+                    r.item === job.item && 
+                    r.profile === job.profile && 
+                    JSON.stringify(r.telas) === JSON.stringify(job.telas)
+                );
+
+                await historyColl.insertOne({
+                    jobId: job.jobId,
+                    item: job.item,
+                    profile: job.profile,
+                    telas: job.telas,
+                    qty: job.qtyToBuild,
+                    status: result ? result.status : "DESCONOCIDO",
+                    analyzedAt: timestamp,
+                    pdfSource: pdfPath.split(/[\\/]/).pop()
+                });
+            }
+        }
+    } catch (e) {
+        console.error("Error guardando historial Canopy:", e);
+    }
 
     return { timestamp: new Date(), totalJobs: jobsFound.length, summary: results };
 }

@@ -19,9 +19,9 @@ export default function CanopyManager() {
     const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
 
     // Formulario
-    const [formData, setFormData] = useState({ item: "", alias: "", profile: "", telas: "", telas2: "", total: 0 });
+    const [formData, setFormData] = useState({ item: "", alias: "", profile: "", scissor: "", telas: "", telas2: "", total: 0 });
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [editFormData, setEditFormData] = useState<Partial<Canopy>>({ item: "", alias: "", profile: "", telas: [], telas2: [], total: 0 });
+    const [editFormData, setEditFormData] = useState<Partial<Canopy>>({ item: "", alias: "", profile: "", scissor: "", telas: [], telas2: [], total: 0 });
 
     // Selección masiva
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -57,7 +57,7 @@ export default function CanopyManager() {
                 telas: formData.telas.split(",").map(t => t.trim()).filter(t => t !== ""),
                 telas2: formData.telas2.split(",").map(t => t.trim()).filter(t => t !== "")
             });
-            setFormData({ item: "", alias: "", profile: "", telas: "", telas2: "", total: 0 });
+            setFormData({ item: "", alias: "", profile: "", scissor: "", telas: "", telas2: "", total: 0 });
             await loadData();
         } catch (err) { alert("Error al guardar"); }
     };
@@ -141,6 +141,9 @@ export default function CanopyManager() {
                     <input type="text" placeholder="Telas" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.telas} onChange={e => setFormData({ ...formData, telas: e.target.value })} />
                 </div>
                 <div className="md:col-span-2">
+                    <input type="text" placeholder="Scissor Assembly" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.scissor} onChange={e => setFormData({ ...formData, scissor: e.target.value })} />
+                </div>
+                <div className="md:col-span-2">
                     <input type="text" placeholder="Alt. Telas (telas2)" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm" value={formData.telas2} onChange={e => setFormData({ ...formData, telas2: e.target.value })} />
                 </div>
                 <div className="md:col-span-1">
@@ -165,6 +168,7 @@ export default function CanopyManager() {
                             </th>
                             <th className="px-4 py-2">Item / Alias</th>
                             <th className="px-4 py-2">Perfil</th>
+                            <th className="px-4 py-2">Scissor</th>
                             <th className="px-4 py-2">Telas (Principal e Alt.)</th>
                             <th className="px-4 py-2 text-center w-20">Total</th>
                             <th className="px-4 py-2 text-right w-24">Acciones</th>
@@ -200,6 +204,9 @@ export default function CanopyManager() {
                                 </td>
                                 <td className="px-4 py-3 text-slate-300">
                                     {editingId === c._id ? <input className="bg-slate-700 p-1 rounded w-full" value={editFormData.profile} onChange={e => setEditFormData({ ...editFormData, profile: e.target.value })} /> : c.profile}
+                                </td>
+                                <td className="px-4 py-3 text-slate-400 text-xs italic">
+                                    {editingId === c._id ? <input className="bg-slate-700 p-1 rounded w-full" value={editFormData.scissor} onChange={e => setEditFormData({ ...editFormData, scissor: e.target.value })} /> : c.scissor}
                                 </td>
                                 <td className="px-4 py-3">
                                     <div className="flex flex-col gap-2">

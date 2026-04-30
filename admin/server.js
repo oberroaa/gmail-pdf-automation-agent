@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
-import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection, getMovementsCollection, getCanopyCollection, getSafetyProtocolCollection, getUsersCollection } from "../db.js";
+import { getRulesCollection, getEmailsCollection, getItemsCollection, getReportsCollection, getMovementsCollection, getCanopyCollection, getCanopyHistoryCollection, getSafetyProtocolCollection, getUsersCollection } from "../db.js";
 import { generateRuleJSON } from "./ai/gemini.js";
 import sendWhatsApp from "../whatsapp.js";
 import multer from "multer";
@@ -590,7 +590,8 @@ router.get("/canopy", protect, async (req, res) => {
                     { alias: { $regex: search, $options: "i" } },
                     { profile: { $regex: search, $options: "i" } },
                     { telas: { $regex: search, $options: "i" } },
-                    { telas2: { $regex: search, $options: "i" } }
+                    { telas2: { $regex: search, $options: "i" } },
+                    { scissor: { $regex: search, $options: "i" } }
                 ]
             }
             : {};
@@ -619,6 +620,7 @@ router.post("/canopy", protect, authorize('ADMIN', 'SUPERVISOR'), async (req, re
             profile: String(profile),
             telas: Array.isArray(telas) ? telas : [], // Es un arreglo de strings
             telas2: Array.isArray(telas2) ? telas2 : [], // Segundo arreglo de telas
+            scissor: String(req.body.scissor || ""),
             total: Math.round(Number(total) || 0),
             createdAt: new Date()
         };
@@ -645,6 +647,7 @@ router.put("/canopy/:id", protect, authorize('ADMIN', 'SUPERVISOR'), async (req,
         if (profile !== undefined) updateData.profile = String(profile);
         if (telas !== undefined) updateData.telas = Array.isArray(telas) ? telas : [];
         if (telas2 !== undefined) updateData.telas2 = Array.isArray(telas2) ? telas2 : [];
+        if (req.body.scissor !== undefined) updateData.scissor = String(req.body.scissor);
         if (total !== undefined) updateData.total = Math.round(Number(total) || 0);
 
         const collection = await getCanopyCollection();
@@ -686,6 +689,79 @@ router.delete("/canopy/:id", protect, authorize('ADMIN', 'SUPERVISOR'), async (r
     } catch (err) {
         console.error("[ADMIN][DELETE CANOPY]", err);
         res.status(500).json({ error: "Error al eliminar" });
+    }
+});
+
+// 4.2. Obtener Historial de Análisis de Canopy
+router.get("/canopy-history", protect, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const search = req.query.search || "";
+        const skip = (page - 1) * limit;
+
+        const collection = await getCanopyHistoryCollection();
+        
+        const query = search ? {
+            $or: [
+                { jobId: { $regex: search, $options: "i" } },
+                { item: { $regex: search, $options: "i" } },
+                { profile: { $regex: search, $options: "i" } },
+                { pdfSource: { $regex: search, $options: "i" } }
+            ]
+        } : {};
+
+        const total = await collection.countDocuments(query);
+        const totalAvailable = await collection.countDocuments({ ...query, status: { $regex: /^DISPONIBLE$/i } });
+        const history = await collection.find(query)
+            .sort({ status: 1, analyzedAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+        res.json({
+            history,
+            total,
+            totalAvailable,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
+    } catch (err) {
+        console.error("[ADMIN][GET CANOPY HISTORY]", err);
+        res.status(500).json({ error: "Error al obtener el historial de Canopy" });
+    }
+});
+
+// 4.3. Eliminar un registro del historial de Canopy
+router.delete("/canopy-history/:id", protect, authorize('ADMIN'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { ObjectId } = await import("mongodb");
+        const collection = await getCanopyHistoryCollection();
+        await collection.deleteOne({ _id: new ObjectId(id) });
+        res.json({ success: true });
+    } catch (err) {
+        console.error("[ADMIN][DELETE CANOPY HISTORY]", err);
+        res.status(500).json({ error: "Error al eliminar el registro" });
+    }
+});
+
+// 4.4. Eliminar múltiples registros del historial de Canopy (Bulk Delete)
+router.post("/canopy-history/bulk-delete", protect, authorize('ADMIN'), async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids)) return res.status(400).json({ error: "IDs deben ser un array" });
+
+        const { ObjectId } = await import("mongodb");
+        const collection = await getCanopyHistoryCollection();
+
+        const objectIds = ids.map(id => new ObjectId(id));
+        await collection.deleteMany({ _id: { $in: objectIds } });
+
+        res.json({ success: true, count: ids.length });
+    } catch (err) {
+        console.error("[ADMIN][BULK DELETE CANOPY HISTORY]", err);
+        res.status(500).json({ error: "Error al eliminar múltiples registros" });
     }
 });
 

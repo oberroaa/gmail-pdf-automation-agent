@@ -7,6 +7,7 @@ export interface Canopy {
     profile: string;
     telas: string[]; // Arreglo de strings
     telas2: string[]; // Arreglo secundario de telas
+    scissor?: string;
     total: number;
     createdAt?: string;
     updatedAt?: string;

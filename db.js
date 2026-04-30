@@ -85,6 +85,14 @@ export async function getCanopyCollection() {
 }
 
 /**
+ * Helper para obtener la colección de historial de Canopy
+ */
+export async function getCanopyHistoryCollection() {
+    const database = await connectDB();
+    return database.collection("canopy_history");
+}
+
+/**
  * Helper para obtener la colección de protocolos de seguridad (Manejo de Grúa)
  */
 export async function getSafetyProtocolCollection() {
