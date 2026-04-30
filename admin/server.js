@@ -693,7 +693,7 @@ router.delete("/canopy/:id", protect, authorize('ADMIN', 'SUPERVISOR'), async (r
 });
 
 // 4.2. Obtener Historial de Análisis de Canopy
-router.get("/canopy-history", protect, async (req, res) => {
+router.get("/canopy-history", protect, authorize('ADMIN', 'SUPERVISOR', 'CONSULTOR'), async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;

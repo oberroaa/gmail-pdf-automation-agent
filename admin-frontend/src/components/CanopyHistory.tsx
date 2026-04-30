@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../services/apiFetch";
+import { useAuth } from "../context/AuthContext";
 
 interface HistoryRecord {
     _id: string;
@@ -20,6 +21,9 @@ interface HistoryRecord {
 }
 
 export default function CanopyHistory() {
+    const { user } = useAuth();
+    const canDelete = user?.role !== 'CONSULTOR';
+    
     const [history, setHistory] = useState<HistoryRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -128,7 +132,7 @@ export default function CanopyHistory() {
 
                 <div className="flex items-center gap-3">
                     <AnimatePresence>
-                        {selectedIds.length > 0 && (
+                        {canDelete && selectedIds.length > 0 && (
                             <motion.button
                                 initial={{ opacity: 0, scale: 0.8, x: 20 }}
                                 animate={{ opacity: 1, scale: 1, x: 0 }}
@@ -185,11 +189,13 @@ export default function CanopyHistory() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-white/5">
-                                <th className="px-6 py-4 w-10">
-                                    <button onClick={toggleSelectAll} className="text-slate-500 hover:text-indigo-400 transition-colors">
-                                        {selectedIds.length === history.length && history.length > 0 ? <CheckSquare className="w-5 h-5 text-indigo-500" /> : <Square className="w-5 h-5" />}
-                                    </button>
-                                </th>
+                                {canDelete && (
+                                    <th className="px-6 py-4 w-10">
+                                        <button onClick={toggleSelectAll} className="text-slate-500 hover:text-indigo-400 transition-colors">
+                                            {selectedIds.length === history.length && history.length > 0 ? <CheckSquare className="w-5 h-5 text-indigo-500" /> : <Square className="w-5 h-5" />}
+                                        </button>
+                                    </th>
+                                )}
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Job ID</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Item / Perfil</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Telas</th>
@@ -227,11 +233,13 @@ export default function CanopyHistory() {
                                             animate={{ opacity: 1 }}
                                             className={`hover:bg-white/[0.02] transition-colors group ${selectedIds.includes(record._id) ? 'bg-indigo-500/5' : ''}`}
                                         >
-                                            <td className="px-6 py-5">
-                                                <button onClick={() => toggleSelect(record._id)} className="transition-colors">
-                                                    {selectedIds.includes(record._id) ? <CheckSquare className="w-5 h-5 text-indigo-500" /> : <Square className="w-5 h-5 text-slate-700 hover:text-slate-500" />}
-                                                </button>
-                                            </td>
+                                            {canDelete && (
+                                                <td className="px-6 py-5">
+                                                    <button onClick={() => toggleSelect(record._id)} className="transition-colors">
+                                                        {selectedIds.includes(record._id) ? <CheckSquare className="w-5 h-5 text-indigo-500" /> : <Square className="w-5 h-5 text-slate-700 hover:text-slate-500" />}
+                                                    </button>
+                                                </td>
+                                            )}
                                             <td className="px-6 py-5">
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-black text-white group-hover:text-indigo-400 transition-colors">{record.jobId}</span>
@@ -274,12 +282,14 @@ export default function CanopyHistory() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5 text-right">
-                                                <button 
-                                                    onClick={() => handleSingleDelete(record._id)}
-                                                    className="p-2 text-slate-600 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                {canDelete && (
+                                                    <button 
+                                                        onClick={() => handleSingleDelete(record._id)}
+                                                        className="p-2 text-slate-600 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </td>
                                         </motion.tr>
                                     ))
