@@ -203,23 +203,29 @@ export default async function analyzeCanopyPdf(pdfPath) {
         const timestamp = new Date();
         
         for (const job of jobsFound) {
-            // Buscamos si ya existe este Job ID para no duplicar
-            const existing = await historyColl.findOne({ jobId: job.jobId });
-            if (!existing) {
-                // Buscamos el estatus correspondiente en los resultados procesados
-                const result = results.find(r => 
-                    r.item === job.item && 
-                    r.profile === job.profile && 
-                    JSON.stringify(r.telas) === JSON.stringify(job.telas)
-                );
+            // Buscamos el estatus correspondiente
+            const result = results.find(r => 
+                r.item === job.item && 
+                r.profile === job.profile && 
+                (r.scissor || "") === (job.scissor || "") &&
+                JSON.stringify(r.telas) === JSON.stringify(job.telas)
+            );
 
+            const status = result ? result.status : "DESCONOCIDO";
+            
+            // Si el usuario no quiere guardar los que no están inventariados
+            if (status === "NO INVENTARIADO") continue;
+
+            const existingJob = await historyColl.findOne({ jobId: job.jobId });
+            if (!existingJob) {
                 await historyColl.insertOne({
                     jobId: job.jobId,
                     item: job.item,
                     profile: job.profile,
+                    scissor: job.scissor,
                     telas: job.telas,
                     qty: job.qtyToBuild,
-                    status: result ? result.status : "DESCONOCIDO",
+                    status: status,
                     analyzedAt: timestamp,
                     pdfSource: pdfPath.split(/[\\/]/).pop()
                 });

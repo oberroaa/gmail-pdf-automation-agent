@@ -712,7 +712,15 @@ router.get("/canopy-history", protect, async (req, res) => {
         } : {};
 
         const total = await collection.countDocuments(query);
-        const totalAvailable = await collection.countDocuments({ ...query, status: { $regex: /^DISPONIBLE$/i } });
+        
+        // Sumar las cantidades (qty) de los que están DISPONIBLE
+        const availableStats = await collection.aggregate([
+            { $match: { ...query, status: { $regex: /^DISPONIBLE$/i } } },
+            { $group: { _id: null, totalQty: { $sum: "$qty" } } }
+        ]).toArray();
+        
+        const totalAvailable = availableStats.length > 0 ? availableStats[0].totalQty : 0;
+
         const history = await collection.find(query)
             .sort({ status: 1, analyzedAt: -1 })
             .skip(skip)
