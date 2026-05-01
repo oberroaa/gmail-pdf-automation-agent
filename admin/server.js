@@ -590,8 +590,7 @@ router.get("/canopy", protect, async (req, res) => {
                     { alias: { $regex: search, $options: "i" } },
                     { profile: { $regex: search, $options: "i" } },
                     { telas: { $regex: search, $options: "i" } },
-                    { telas2: { $regex: search, $options: "i" } },
-                    { scissor: { $regex: search, $options: "i" } }
+                    { telas2: { $regex: search, $options: "i" } }
                 ]
             }
             : {};
@@ -620,7 +619,8 @@ router.post("/canopy", protect, authorize('ADMIN', 'SUPERVISOR'), async (req, re
             profile: String(profile),
             telas: Array.isArray(telas) ? telas : [], // Es un arreglo de strings
             telas2: Array.isArray(telas2) ? telas2 : [], // Segundo arreglo de telas
-            scissor: String(req.body.scissor || ""),
+            scissor: Boolean(req.body.scissor || false),
+            tilt: Boolean(req.body.tilt || false),
             total: Math.round(Number(total) || 0),
             createdAt: new Date()
         };
@@ -647,7 +647,8 @@ router.put("/canopy/:id", protect, authorize('ADMIN', 'SUPERVISOR'), async (req,
         if (profile !== undefined) updateData.profile = String(profile);
         if (telas !== undefined) updateData.telas = Array.isArray(telas) ? telas : [];
         if (telas2 !== undefined) updateData.telas2 = Array.isArray(telas2) ? telas2 : [];
-        if (req.body.scissor !== undefined) updateData.scissor = String(req.body.scissor);
+        if (req.body.scissor !== undefined) updateData.scissor = Boolean(req.body.scissor);
+        if (req.body.tilt !== undefined) updateData.tilt = Boolean(req.body.tilt);
         if (total !== undefined) updateData.total = Math.round(Number(total) || 0);
 
         const collection = await getCanopyCollection();

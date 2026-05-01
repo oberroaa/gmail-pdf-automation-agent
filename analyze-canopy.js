@@ -126,7 +126,8 @@ export default async function analyzeCanopyPdf(pdfPath) {
         };
 
         profile = extractValue("Canopy Profile");
-        const scissor = extractValue("Scissor Assembly") || "";
+        const scissor = (extractValue("Scissor Assembly:") || "").includes("Double Scissor Assembly");
+        const tilt = (extractValue("Tilt:") || "").includes("Includes Tilt");
 
         if (jobId && item && profile) {
             jobsFound.push({
@@ -134,6 +135,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 item,
                 profile,
                 scissor,
+                tilt,
                 telas: [...new Set(telas)].sort(),
                 qtyToBuild
             });
@@ -143,13 +145,14 @@ export default async function analyzeCanopyPdf(pdfPath) {
     // --- AGRUPACIÓN Y CRUCE CON DB ---
     const consolidated = {};
     for (const job of jobsFound) {
-        const configKey = `${job.item}|${job.profile}|${job.scissor}|${job.telas.join(",")}`;
+        const configKey = `${job.item}|${job.profile}|${job.scissor}|${job.tilt}|${job.telas.join(",")}`;
         
         if (!consolidated[configKey]) {
             consolidated[configKey] = { 
                 item: job.item, 
                 profile: job.profile, 
                 scissor: job.scissor,
+                tilt: job.tilt,
                 telas: job.telas, 
                 required: 0, 
                 jobs: []
@@ -169,7 +172,8 @@ export default async function analyzeCanopyPdf(pdfPath) {
             const existing = allDbCanopies.find(db => {
                 const aliasMatch = db.alias && config.item.includes(db.alias);
                 const profileMatch = config.profile === db.profile;
-                const scissorMatch = !db.scissor || (config.scissor || "") === db.scissor;
+                const scissorMatch = !!config.scissor === !!db.scissor;
+                const tiltMatch = !!config.tilt === !!db.tilt;
                 const pdfTelas = config.telas;
                 
                 const matchTelas = (dbTelasArray) => {
@@ -179,7 +183,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 };
 
                 const telasMatch = matchTelas(db.telas) || matchTelas(db.telas2);
-                return aliasMatch && profileMatch && scissorMatch && telasMatch;
+                return aliasMatch && profileMatch && scissorMatch && tiltMatch && telasMatch;
             });
 
             if (existing) {
@@ -207,7 +211,8 @@ export default async function analyzeCanopyPdf(pdfPath) {
             const result = results.find(r => 
                 r.item === job.item && 
                 r.profile === job.profile && 
-                (r.scissor || "") === (job.scissor || "") &&
+                !!r.scissor === !!job.scissor &&
+                !!r.tilt === !!job.tilt &&
                 JSON.stringify(r.telas) === JSON.stringify(job.telas)
             );
 
@@ -223,6 +228,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                     item: job.item,
                     profile: job.profile,
                     scissor: job.scissor,
+                    tilt: job.tilt,
                     telas: job.telas,
                     qty: job.qtyToBuild,
                     status: status,

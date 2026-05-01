@@ -24,7 +24,7 @@ export default function CanopyManager() {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Canopy>>({ 
-        item: "", alias: "", profile: "", scissor: "", telas: [], telas2: [], total: 0 
+        item: "", alias: "", profile: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 
     });
 
     // Selección masiva
@@ -55,7 +55,7 @@ export default function CanopyManager() {
 
     const openCreateModal = () => {
         setEditingId(null);
-        setFormData({ item: "", alias: "", profile: "", scissor: "", telas: [], telas2: [], total: 0 });
+        setFormData({ item: "", alias: "", profile: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 });
         setShowModal(true);
     };
 
@@ -201,12 +201,20 @@ export default function CanopyManager() {
                                     </td>
                                     <td className="px-6 py-6">
                                         <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-2">
                                             {c.scissor && (
-                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-500/80 uppercase">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-500/80 uppercase bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
                                                     <Settings className="w-3 h-3" />
-                                                    {c.scissor}
+                                                    DOUBLE SCISSOR
                                                 </div>
                                             )}
+                                            {c.tilt && (
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-sky-400/80 uppercase bg-sky-400/5 px-2 py-0.5 rounded border border-sky-400/10">
+                                                    <Wind className="w-3 h-3" />
+                                                    INCLUDES TILT
+                                                </div>
+                                            )}
+                                        </div>
                                             <div className="flex flex-wrap gap-1">
                                                 {c.telas.map((t, idx) => (
                                                     <span key={idx} className="bg-white/5 text-[9px] font-bold px-2 py-0.5 rounded border border-white/5 text-slate-400 flex items-center gap-1">
@@ -299,9 +307,20 @@ export default function CanopyManager() {
                                         <label className="text-[10px] font-black text-amber-500/60 uppercase tracking-[0.2em] flex items-center gap-2">
                                             <Settings className="w-3 h-3" /> Configuración Técnica
                                         </label>
-                                        <div className="space-y-1.5">
-                                            <span className="text-[10px] font-bold text-slate-500 ml-1">SCISSOR ASSEMBLY (Opcional)</span>
-                                            <input type="text" placeholder="Ej: Double Scissor" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:ring-2 focus:ring-amber-500/30 transition-all outline-none" value={formData.scissor} onChange={e => setFormData({ ...formData, scissor: e.target.value })} />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <span className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Opciones Especiales</span>
+                                                <div className="flex items-center gap-4">
+                                                    <label className="flex-1 flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-4 py-3 cursor-pointer hover:bg-white/10 transition-all">
+                                                        <span className="text-sm text-slate-300">Double Scissor Assembly</span>
+                                                        <input type="checkbox" className="w-5 h-5 rounded-lg border-2 border-slate-700 bg-transparent checked:bg-amber-500 checked:border-amber-500 transition-all" checked={!!formData.scissor} onChange={e => setFormData({ ...formData, scissor: e.target.checked })} />
+                                                    </label>
+                                                    <label className="flex-1 flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-4 py-3 cursor-pointer hover:bg-white/10 transition-all">
+                                                        <span className="text-sm text-slate-300">Includes Tilt</span>
+                                                        <input type="checkbox" className="w-5 h-5 rounded-lg border-2 border-slate-700 bg-transparent checked:bg-sky-500 checked:border-sky-500 transition-all" checked={!!formData.tilt} onChange={e => setFormData({ ...formData, tilt: e.target.checked })} />
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-1.5">
