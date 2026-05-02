@@ -24,8 +24,13 @@ export default function CanopyManager() {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Canopy>>({ 
-        item: "", alias: "", profile: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 
+        item: "", alias: "", profile: "", frameFinish: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 
     });
+    
+    // Estados temporales para el texto de las telas
+    const [telasText, setTelasText] = useState("");
+    const [telas2Text, setTelas2Text] = useState("");
+    const [ignoredText, setIgnoredText] = useState("");
 
     // Selección masiva
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -55,23 +60,37 @@ export default function CanopyManager() {
 
     const openCreateModal = () => {
         setEditingId(null);
-        setFormData({ item: "", alias: "", profile: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 });
+        setFormData({ item: "", alias: "", profile: "", frameFinish: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 });
+        setTelasText("");
+        setTelas2Text("");
+        setIgnoredText("");
         setShowModal(true);
     };
 
     const openEditModal = (canopy: Canopy) => {
         setEditingId(canopy._id!);
         setFormData({ ...canopy });
+        setTelasText(canopy.telas.join(", "));
+        setTelas2Text(canopy.telas2?.join(", ") || "");
+        setIgnoredText(canopy.ignored?.join(", ") || "");
         setShowModal(true);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            // Sincronizar textos a arrays antes de enviar
+            const finalData = {
+                ...formData,
+                telas: telasText.split(",").map(t => t.trim()).filter(t => t !== ""),
+                telas2: telas2Text.split(",").map(t => t.trim()).filter(t => t !== ""),
+                ignored: ignoredText.split(",").map(t => t.trim()).filter(t => t !== "")
+            };
+
             if (editingId) {
-                await updateCanopy(editingId, formData);
+                await updateCanopy(editingId, finalData);
             } else {
-                await saveCanopy(formData as any);
+                await saveCanopy(finalData as any);
             }
             setShowModal(false);
             await loadData();
@@ -214,6 +233,18 @@ export default function CanopyManager() {
                                                     INCLUDES TILT
                                                 </div>
                                             )}
+                                            {c.frameFinish && (
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-400/80 uppercase bg-red-400/5 px-2 py-0.5 rounded border border-red-400/10">
+                                                    <X className="w-3 h-3" />
+                                                    EXCLUDE: {c.frameFinish}
+                                                </div>
+                                            )}
+                                            {c.ignored && c.ignored.length > 0 && (
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-400/80 uppercase bg-rose-400/5 px-2 py-0.5 rounded border border-rose-400/10">
+                                                    <X className="w-3 h-3" />
+                                                    IGNORE: {c.ignored.join(", ")}
+                                                </div>
+                                            )}
                                         </div>
                                             <div className="flex flex-wrap gap-1">
                                                 {c.telas.map((t, idx) => (
@@ -321,15 +352,35 @@ export default function CanopyManager() {
                                                     </label>
                                                 </div>
                                             </div>
+                                            <div className="space-y-1.5">
+                                                <span className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Exclusión por Frame Finish</span>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Ej: Vineyard DuraTeak (Si coincide, NO machea)" 
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-red-400 font-bold focus:ring-2 focus:ring-red-500/30 transition-all outline-none" 
+                                                    value={formData.frameFinish || ""} 
+                                                    onChange={e => setFormData({ ...formData, frameFinish: e.target.value })} 
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <span className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Prefijos a Ignorar (Separa por coma)</span>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Ej: OM, VNC (Evita match si aparece Prefijo+Alias)" 
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-amber-400 font-bold focus:ring-2 focus:ring-amber-500/30 transition-all outline-none" 
+                                                    value={ignoredText} 
+                                                    onChange={e => setIgnoredText(e.target.value)} 
+                                                />
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-1.5">
                                                 <span className="text-[10px] font-bold text-slate-500 ml-1">TELAS PRINCIPALES (Separa por coma)</span>
-                                                <textarea rows={2} placeholder="Ej: 1009003, 1009004" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none resize-none" value={Array.isArray(formData.telas) ? formData.telas.join(", ") : ""} onChange={e => setFormData({ ...formData, telas: e.target.value.split(",").map(t => t.trim()).filter(t => t !== "") })} />
+                                                <textarea rows={2} placeholder="Ej: 1009003, 1009004" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none resize-none" value={telasText} onChange={e => setTelasText(e.target.value)} />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <span className="text-[10px] font-bold text-slate-500 ml-1">TELAS ALTERNATIVAS</span>
-                                                <textarea rows={2} placeholder="Ej: SB6042-D" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none resize-none" value={Array.isArray(formData.telas2) ? formData.telas2.join(", ") : ""} onChange={e => setFormData({ ...formData, telas2: e.target.value.split(",").map(t => t.trim()).filter(t => t !== "") })} />
+                                                <textarea rows={2} placeholder="Ej: SB6042-D" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none resize-none" value={telas2Text} onChange={e => setTelas2Text(e.target.value)} />
                                             </div>
                                         </div>
                                     </div>

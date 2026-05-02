@@ -9,6 +9,8 @@ export interface Canopy {
     telas2: string[]; // Arreglo secundario de telas
     scissor?: boolean;
     tilt?: boolean;
+    frameFinish?: string;
+    ignored?: string[];
     total: number;
     createdAt?: string;
     updatedAt?: string;

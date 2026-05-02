@@ -126,6 +126,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
         };
 
         profile = extractValue("Canopy Profile");
+        const frameFinish = extractValue("Frame Finish:");
         const scissor = (extractValue("Scissor Assembly:") || "").includes("Double Scissor Assembly");
         const tilt = (extractValue("Tilt:") || "").includes("Includes Tilt");
 
@@ -134,6 +135,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 jobId,
                 item,
                 profile,
+                frameFinish,
                 scissor,
                 tilt,
                 telas: [...new Set(telas)].sort(),
@@ -145,12 +147,13 @@ export default async function analyzeCanopyPdf(pdfPath) {
     // --- AGRUPACIÓN Y CRUCE CON DB ---
     const consolidated = {};
     for (const job of jobsFound) {
-        const configKey = `${job.item}|${job.profile}|${job.scissor}|${job.tilt}|${job.telas.join(",")}`;
+        const configKey = `${job.item}|${job.profile}|${job.frameFinish}|${job.scissor}|${job.tilt}|${job.telas.join(",")}`;
         
         if (!consolidated[configKey]) {
             consolidated[configKey] = { 
                 item: job.item, 
                 profile: job.profile, 
+                frameFinish: job.frameFinish,
                 scissor: job.scissor,
                 tilt: job.tilt,
                 telas: job.telas, 
@@ -183,6 +186,17 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 };
 
                 const telasMatch = matchTelas(db.telas) || matchTelas(db.telas2);
+                
+                // REGLA DE EXCLUSIÓN 1: Frame Finish
+                const frameFinishExclusion = db.frameFinish && config.frameFinish === db.frameFinish;
+                if (frameFinishExclusion) return false;
+
+                // REGLA DE EXCLUSIÓN 2: Prefijos Ignorados (Ej: OM + Alias)
+                if (db.ignored && Array.isArray(db.ignored)) {
+                    const hasIgnoredPrefix = db.ignored.some(pref => config.item.includes(pref + db.alias));
+                    if (hasIgnoredPrefix) return false;
+                }
+
                 return aliasMatch && profileMatch && scissorMatch && tiltMatch && telasMatch;
             });
 
@@ -213,6 +227,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 r.profile === job.profile && 
                 !!r.scissor === !!job.scissor &&
                 !!r.tilt === !!job.tilt &&
+                r.frameFinish === job.frameFinish &&
                 JSON.stringify(r.telas) === JSON.stringify(job.telas)
             );
 
@@ -227,6 +242,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                     jobId: job.jobId,
                     item: job.item,
                     profile: job.profile,
+                    frameFinish: job.frameFinish,
                     scissor: job.scissor,
                     tilt: job.tilt,
                     telas: job.telas,

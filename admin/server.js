@@ -621,6 +621,8 @@ router.post("/canopy", protect, authorize('ADMIN', 'SUPERVISOR'), async (req, re
             telas2: Array.isArray(telas2) ? telas2 : [], // Segundo arreglo de telas
             scissor: Boolean(req.body.scissor || false),
             tilt: Boolean(req.body.tilt || false),
+            frameFinish: String(req.body.frameFinish || "").trim(),
+            ignored: Array.isArray(req.body.ignored) ? req.body.ignored : [],
             total: Math.round(Number(total) || 0),
             createdAt: new Date()
         };
@@ -649,6 +651,8 @@ router.put("/canopy/:id", protect, authorize('ADMIN', 'SUPERVISOR'), async (req,
         if (telas2 !== undefined) updateData.telas2 = Array.isArray(telas2) ? telas2 : [];
         if (req.body.scissor !== undefined) updateData.scissor = Boolean(req.body.scissor);
         if (req.body.tilt !== undefined) updateData.tilt = Boolean(req.body.tilt);
+        if (req.body.frameFinish !== undefined) updateData.frameFinish = String(req.body.frameFinish).trim();
+        if (req.body.ignored !== undefined) updateData.ignored = Array.isArray(req.body.ignored) ? req.body.ignored : [];
         if (total !== undefined) updateData.total = Math.round(Number(total) || 0);
 
         const collection = await getCanopyCollection();
