@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { 
     UploadCloud, FileText, CheckCircle2, AlertTriangle, 
-    Loader2, X, Wind, Layers, ArrowRight, Languages 
+    Loader2, X, Wind, Layers, ArrowRight
 } from "lucide-react";
+import { useLang } from "../context/LangContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../services/apiFetch";
 
@@ -64,7 +65,7 @@ const translations = {
 };
 
 export default function CanopyAnalyzer() {
-    const [lang, setLang] = useState<"es" | "en">("es");
+    const { lang } = useLang();
     const [pdfFile, setPdfFile] = useState<File | null>(null);
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<any | null>(null);
@@ -113,23 +114,7 @@ export default function CanopyAnalyzer() {
                     <p className="text-slate-400 mt-1">{t.subtitle}</p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white/5 p-1 rounded-2xl border border-white/10">
-                    <div className="pl-3 pr-1">
-                        <Languages className="w-4 h-4 text-indigo-400/50" />
-                    </div>
-                    <button 
-                        onClick={() => setLang("es")}
-                        className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${lang === 'es' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-white'}`}
-                    >
-                        ES
-                    </button>
-                    <button 
-                        onClick={() => setLang("en")}
-                        className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${lang === 'en' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-white'}`}
-                    >
-                        EN
-                    </button>
-                </div>
+
             </div>
 
             {/* Zona de Carga */}

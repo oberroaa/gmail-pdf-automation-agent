@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { LangProvider, useLang } from "./context/LangContext";
 import RulesList from "./components/RulesList";
 import EditRuleModal from "./components/EditRuleModal";
 import NewRuleModal from "./components/NewRuleModal";
-import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search, LogOut, Shield, ChevronDown, History } from "lucide-react";
+import { Plus, LayoutDashboard, Brain, ScrollText, AlertTriangle, Loader2, Box, Menu, X, ClipboardList, HardHat, Wind, Search, LogOut, Shield, ChevronDown, History, Languages } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmailSettings from "./components/EmailSettings";
 import ItemsManager from "./components/ItemsManager";
@@ -26,8 +27,9 @@ import { useAuth } from "./context/AuthContext";
 import ProjectOverview from "./components/ProjectOverview";
 import Login from "./components/Login";
 
-export default function App() {
+function AppInner() {
   const { user, login: _login, logout, loading: authLoading } = useAuth();
+  const { lang, toggleLang } = useLang();
 
   // --- HOOKS (Siempre al principio) ---
   const [rules, setRules] = useState<Rule[]>([]);
@@ -164,6 +166,14 @@ export default function App() {
 
         <nav className="flex flex-col gap-2">
           <button
+            onClick={toggleLang}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-indigo-500/10 text-slate-400 hover:text-indigo-400 transition-all font-bold text-xs border border-white/5 mb-1"
+          >
+            <Languages className="w-4 h-4" />
+            {lang === 'es' ? 'English' : 'Español'}
+          </button>
+
+          <button
             onClick={() => navigateTo("overview")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm mb-2 ${activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
           >
@@ -171,7 +181,7 @@ export default function App() {
             Vista General
           </button>
 
-          <button 
+          <button
             onClick={() => setIsMaterialHandlerOpen(!isMaterialHandlerOpen)}
             className="flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-all group"
           >
@@ -181,7 +191,7 @@ export default function App() {
 
           <AnimatePresence>
             {isMaterialHandlerOpen && (
-              <motion.div 
+              <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -238,7 +248,7 @@ export default function App() {
 
           <div className="h-px bg-white/5 my-2" />
 
-          <button 
+          <button
             onClick={() => setIsCanopyOpen(!isCanopyOpen)}
             className="flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-all group"
           >
@@ -248,7 +258,7 @@ export default function App() {
 
           <AnimatePresence>
             {isCanopyOpen && (
-              <motion.div 
+              <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -469,6 +479,14 @@ export default function App() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LangProvider>
+      <AppInner />
+    </LangProvider>
   );
 }
 

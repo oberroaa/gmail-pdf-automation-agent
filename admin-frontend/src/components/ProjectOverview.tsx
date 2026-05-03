@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useLang } from "../context/LangContext";
 import {
     Brain, Box, Wind, HardHat, ShieldCheck,
     Zap, Database, BarChart3,
     Search, LayoutDashboard, ClipboardList, Settings2,
-    Cpu, Code2, Globe, Server, Terminal, Languages,
+    Cpu, Code2, Globe, Server, Terminal,
     Mail, ExternalLink
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -108,7 +108,7 @@ const OVERVIEW_CONTENT = {
 } as const;
 
 export default function ProjectOverview() {
-    const [lang, setLang] = useState<'es' | 'en'>('en');
+    const { lang } = useLang();
     const t = OVERVIEW_CONTENT[lang];
 
     const techStack = [
@@ -173,15 +173,7 @@ export default function ProjectOverview() {
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/25 via-slate-950 to-[#0a0c10] -z-10" />
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] -z-10" />
 
-                <div className="absolute top-8 right-10 z-20">
-                    <button
-                        onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
-                        className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl font-bold text-xs transition-all border border-white/5 shadow-lg backdrop-blur-md"
-                    >
-                        <Languages className="w-4 h-4 text-indigo-400" />
-                        {lang === 'es' ? 'English' : 'Español'}
-                    </button>
-                </div>
+
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -352,7 +344,7 @@ export default function ProjectOverview() {
                         </div>
 
                         <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-                            <a 
+                            <a
                                 href={`mailto:${t.developer.email}`}
                                 className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors group"
                             >
@@ -361,7 +353,7 @@ export default function ProjectOverview() {
                                 </div>
                                 <span className="text-sm font-medium">{t.developer.email}</span>
                             </a>
-                            <a 
+                            <a
                                 href={t.developer.portfolio}
                                 target="_blank"
                                 rel="noopener noreferrer"
