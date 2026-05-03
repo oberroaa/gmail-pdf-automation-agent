@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import * as XLSX from "xlsx";
 import { getCanopies, saveCanopy, updateCanopy, deleteCanopy, deleteCanopies, type Canopy } from "../services/canopyApi";
 import {
     Wind, Plus, Trash2, Loader2, Search,
     ChevronLeft, ChevronRight, Pencil, Save, X, Layers,
-    Info, Settings, Package
+    Info, Settings, Package, FileSpreadsheet, CheckCircle2, AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -34,6 +35,63 @@ export default function CanopyManager() {
 
     // Selección masiva
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+    // Excel import
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [importing, setImporting] = useState(false);
+    const [importResult, setImportResult] = useState<{ updated: string[]; notFound: string[] } | null>(null);
+
+    const handleExcelImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!fileInputRef.current) return;
+        fileInputRef.current.value = "";
+        if (!file) return;
+
+        setImporting(true);
+        try {
+            // 1. Leer el Excel
+            const buffer = await file.arrayBuffer();
+            const wb = XLSX.read(buffer, { type: "array" });
+            const sheet = wb.Sheets[wb.SheetNames[0]];
+            const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+            // 2. Extraer pares [item, cantidad] saltando encabezado
+            const excelItems: { item: string; total: number }[] = [];
+            for (let r = 1; r < rows.length; r++) {
+                const name = String(rows[r][0] ?? "").trim();
+                const qty  = Number(rows[r][1] ?? 0);
+                if (name) excelItems.push({ item: name, total: qty });
+            }
+
+            // 3. Obtener TODO el inventario (sin paginación)
+            const allData = await getCanopies(1, 9999, "");
+            const allCanopies = allData.canopies;
+
+            // 4. Matchear y actualizar
+            const updated: string[] = [];
+            const notFound: string[] = [];
+
+            for (const excelRow of excelItems) {
+                const match = allCanopies.find(
+                    c => c.item.trim().toLowerCase() === excelRow.item.toLowerCase()
+                );
+                if (match && match._id) {
+                    await updateCanopy(match._id, { total: excelRow.total });
+                    updated.push(excelRow.item);
+                } else {
+                    notFound.push(excelRow.item);
+                }
+            }
+
+            setImportResult({ updated, notFound });
+            await loadData();
+        } catch (err) {
+            console.error(err);
+            alert("Error procesando el Excel. Verifica el formato.");
+        } finally {
+            setImporting(false);
+        }
+    };
 
     const loadData = async () => {
         try {
@@ -155,6 +213,25 @@ export default function CanopyManager() {
                             </motion.button>
                         )}
                     </AnimatePresence>
+
+                    {/* Botón importar Excel */}
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".xlsx,.xls"
+                        className="hidden"
+                        onChange={handleExcelImport}
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={importing}
+                        className="flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white px-5 py-3 rounded-2xl font-black text-xs border border-emerald-500/20 shadow-xl shadow-emerald-600/10 transition-all active:scale-95 disabled:opacity-50"
+                    >
+                        {importing
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <FileSpreadsheet className="w-4 h-4" />}
+                        {importing ? "IMPORTANDO..." : "IMPORTAR EXCEL"}
+                    </button>
 
                     <button
                         onClick={openCreateModal}
@@ -407,6 +484,75 @@ export default function CanopyManager() {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* MODAL RESULTADO IMPORTACIÓN EXCEL */}
+            <AnimatePresence>
+                {importResult && (
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setImportResult(null)}
+                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative w-full max-w-lg bg-slate-900 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden"
+                        >
+                            {/* Header */}
+                            <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                                <h3 className="text-xl font-black text-white flex items-center gap-3">
+                                    <FileSpreadsheet className="text-emerald-400" />
+                                    Resultado de Importación
+                                </h3>
+                                <button onClick={() => setImportResult(null)} className="p-2 text-slate-500 hover:text-white transition-colors"><X /></button>
+                            </div>
+
+                            <div className="p-8 space-y-6">
+                                {/* Actualizados */}
+                                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-3xl p-5">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                                        <span className="font-black text-emerald-400 text-sm">{importResult.updated.length} ITEMS ACTUALIZADOS</span>
+                                    </div>
+                                    {importResult.updated.length > 0 && (
+                                        <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-1">
+                                            {importResult.updated.map((name, i) => (
+                                                <p key={i} className="text-xs text-emerald-300/70 font-mono">{name}</p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* No encontrados */}
+                                {importResult.notFound.length > 0 && (
+                                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-3xl p-5">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <AlertTriangle className="w-5 h-5 text-amber-400" />
+                                            <span className="font-black text-amber-400 text-sm">{importResult.notFound.length} NO ENCONTRADOS</span>
+                                        </div>
+                                        <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-1">
+                                            {importResult.notFound.map((name, i) => (
+                                                <p key={i} className="text-xs text-amber-300/70 font-mono">{name}</p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="px-8 py-5 bg-white/[0.02] border-t border-white/5 flex justify-end">
+                                <button
+                                    onClick={() => setImportResult(null)}
+                                    className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-3 rounded-2xl font-black text-xs shadow-xl shadow-sky-600/20 transition-all"
+                                >
+                                    CERRAR
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}
