@@ -29,7 +29,7 @@ import Login from "./components/Login";
 
 function AppInner() {
   const { user, login: _login, logout, loading: authLoading } = useAuth();
-  const { lang, toggleLang } = useLang();
+  const { toggleLang, t } = useLang();
 
   // --- HOOKS (Siempre al principio) ---
   const [rules, setRules] = useState<Rule[]>([]);
@@ -170,7 +170,7 @@ function AppInner() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-indigo-500/10 text-slate-400 hover:text-indigo-400 transition-all font-bold text-xs border border-white/5 mb-1"
           >
             <Languages className="w-4 h-4" />
-            {lang === 'es' ? 'English' : 'Español'}
+            {t.sidebar.toggle}
           </button>
 
           <button
@@ -178,14 +178,14 @@ function AppInner() {
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm mb-2 ${activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
           >
             <LayoutDashboard className="w-5 h-5" />
-            Vista General
+            {t.sidebar.overview}
           </button>
 
           <button
             onClick={() => setIsMaterialHandlerOpen(!isMaterialHandlerOpen)}
             className="flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-all group"
           >
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-300 transition-colors">Material Handler</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-300 transition-colors">{t.sidebar.materialHandler}</span>
             <ChevronDown className={`w-3 h-3 text-slate-500 group-hover:text-slate-300 transition-transform duration-300 ${isMaterialHandlerOpen ? '' : '-rotate-90'}`} />
           </button>
 
@@ -202,7 +202,7 @@ function AppInner() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'crane-safety' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
                 >
                   <HardHat className="w-5 h-5" />
-                  Manejo de Grúa
+                  {t.sidebar.safety}
                 </button>
 
                 {user?.role !== 'CONSULTOR' && user?.role !== 'SUPERVISOR' && (
@@ -212,7 +212,7 @@ function AppInner() {
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'rules' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
                     >
                       <LayoutDashboard className="w-5 h-5" />
-                      Reglas & IA
+                      {t.sidebar.rulesIA}
                     </button>
 
                     <button
@@ -220,7 +220,7 @@ function AppInner() {
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'items' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
                     >
                       <Box className="w-5 h-5" />
-                      Materiales
+                      {t.sidebar.materials}
                     </button>
                   </>
                 )}
@@ -230,7 +230,7 @@ function AppInner() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'reports' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'hover:bg-white/5 text-slate-400'}`}
                 >
                   <ClipboardList className="w-5 h-5" />
-                  Historial
+                  {t.sidebar.history}
                 </button>
 
                 <button
@@ -240,7 +240,7 @@ function AppInner() {
                   <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  Procesar PDF
+                  {t.sidebar.processPDF}
                 </button>
               </motion.div>
             )}
@@ -252,7 +252,7 @@ function AppInner() {
             onClick={() => setIsCanopyOpen(!isCanopyOpen)}
             className="flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-all group"
           >
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-300 transition-colors">Canopy</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-slate-300 transition-colors">{t.sidebar.canopy}</span>
             <ChevronDown className={`w-3 h-3 text-slate-500 group-hover:text-slate-300 transition-transform duration-300 ${isCanopyOpen ? '' : '-rotate-90'}`} />
           </button>
 
@@ -271,7 +271,7 @@ function AppInner() {
                     translate="no"
                   >
                     <Wind className="w-5 h-5" />
-                    Stock Actual
+                    {t.sidebar.stockActual}
                   </button>
                 )}
                 <button
@@ -280,7 +280,7 @@ function AppInner() {
                   translate="no"
                 >
                   <Search className="w-5 h-5" />
-                  Analizar PDF
+                  {t.sidebar.analizarPDF}
                 </button>
                 <button
                   onClick={() => navigateTo("canopy-history")}
@@ -288,7 +288,7 @@ function AppInner() {
                   translate="no"
                 >
                   <History className="w-5 h-5" />
-                  Historial Jobs
+                  {t.sidebar.historialJobs}
                 </button>
               </motion.div>
             )}
@@ -302,7 +302,7 @@ function AppInner() {
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm ${activeTab === 'users' ? 'bg-purple-600 text-white shadow-xl shadow-purple-600/30' : 'hover:bg-white/5 text-slate-400'}`}
               >
                 <Shield className="w-5 h-5" />
-                Gestionar Usuarios
+                {t.sidebar.manageUsers}
               </button>
             </>
           )}
@@ -329,12 +329,12 @@ function AppInner() {
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-all font-semibold text-sm group"
           >
             <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-            Cerrar Sesión
+            {t.sidebar.logout}
           </button>
 
           <div className="flex items-center gap-2 text-emerald-500 px-2">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Servicio Online</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">{t.sidebar.status}</span>
           </div>
         </div>
       </aside>

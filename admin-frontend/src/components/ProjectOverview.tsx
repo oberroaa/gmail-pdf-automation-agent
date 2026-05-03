@@ -8,108 +8,9 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const OVERVIEW_CONTENT = {
-    es: {
-        badge: "Sistema Inteligente Tuuci v2.0",
-        title_top: "Ecosistema de",
-        title_span: "Automatización Industrial",
-        hero_desc: "Una solución integral que fusiona la versatilidad de la **Inteligencia Artificial** con la infalibilidad de **Motores de Precisión** para el control total de materiales y producción.",
-        tech_title: "Arquitectura del Sistema",
-        modules_title: "Módulos de Operación",
-        active_badge: "Módulo Activo",
-        sync_title: "Sincronización en Tiempo Real",
-        sync_desc: "El Agente monitoriza constantemente Gmail. Cualquier cambio en las reglas de IA o en el inventario de Canopy se refleja instantáneamente en la próxima ejecución automática.",
-        security_title: "Seguridad y Control de Acceso",
-        security_desc: "El sistema implementa una arquitectura de seguridad robusta para proteger la integridad de los datos industriales.",
-        security_items: [
-            { title: "Roles de Usuario (RBAC)", text: "Diferenciación de permisos entre ADMIN, SUPERVISOR y CONSULTOR para restringir acciones críticas." },
-            { title: "Encriptación de Datos", text: "Uso de algoritmos de hash irreversibles para proteger las credenciales de acceso (Zero-Knowledge)." },
-            { title: "Auditoría", text: "Seguimiento de cambios en reglas y movimientos de inventario vinculados a cada usuario." }
-        ],
-        tech_items: [
-            { label: "Frontend", value: "React + Vite", detail: "UI reactiva con Tailwind CSS y Framer Motion." },
-            { label: "Backend", value: "Node.js (ESM)", detail: "API REST sobre Express con arquitectura Cloud." },
-            { label: "AI Engine", value: "Gemini 2.5 Flash", detail: "Generación de reglas mediante NLP avanzado." },
-            { label: "Base de Datos", value: "MongoDB Atlas", detail: "Persistencia NoSQL escalable y redundante." },
-            { label: "Infraestructura", value: "Vercel / GitHub", detail: "CI/CD automatizado y tareas CRON (Agente)." },
-            { label: "Comunicaciones", value: "Meta / Gmail API", detail: "Integración oficial de WhatsApp y correo." }
-        ],
-        modules_items: [
-            {
-                title: "Material Handler",
-                description: "Gestión inteligente de materiales y pedidos generales.",
-                details: "Este módulo utiliza Inteligencia Artificial para flexibilizar la lectura de pedidos. Permite al usuario definir reglas en lenguaje humano que Gemini traduce a lógica de filtrado, logrando una automatización proactiva que notifica vía WhatsApp y Email sobre requerimientos de stock.",
-                features: ["Extracción asistida por IA", "Reglas dinámicas", "Historial de reportes", "Manejo de Grúa"]
-            },
-            {
-                title: "Canopy",
-                description: "Motor de precisión para el control de stock de telas.",
-                details: "Módulo determinista de alta fidelidad. A diferencia de la IA, este motor 'mide' el PDF píxel a píxel para extraer datos de producción críticos con un 0% de error de interpretación. Es la herramienta vital para el cruce de yardas de tela requeridas vs. disponibles en el inventario real.",
-                features: ["Precisión Píxel-a-Píxel", "Inventario en tiempo real", "Analizador de producción", "Cruce de requerimientos"]
-            }
-        ],
-        developer: {
-            title: "Desarrollador del Proyecto",
-            name: "Otoniel Berroa",
-            roles: ["Ingeniero Informático", "Desarrollo de Software", "Administrador de Sistemas"],
-            email: "oberroaa@gmail.com",
-            portfolio: "https://otoniel-portfolio.vercel.app/",
-            desc: "Arquitecto y desarrollador principal de este ecosistema de automatización, enfocado en optimizar procesos industriales mediante tecnología de vanguardia."
-        }
-    },
-    en: {
-        badge: "Tuuci Intelligent System v2.0",
-        title_top: "Industrial",
-        title_span: "Automation Ecosystem",
-        hero_desc: "An integral solution that merges the versatility of **Artificial Intelligence** with the infallibility of **Precision Engines** for total control of materials and production.",
-        tech_title: "System Architecture",
-        modules_title: "Operational Modules",
-        active_badge: "Active Module",
-        sync_title: "Real-Time Synchronization",
-        sync_desc: "The Agent constantly monitors Gmail. Any changes in AI rules or Canopy inventory are instantly reflected in the next automatic execution.",
-        security_title: "Security and Access Control",
-        security_desc: "The system implements a robust security architecture to protect the integrity of industrial data.",
-        security_items: [
-            { title: "User Roles (RBAC)", text: "Permission differentiation between ADMIN, SUPERVISOR, and CONSULTOR to restrict critical actions." },
-            { title: "Data Encryption", text: "Use of irreversible hashing algorithms to protect access credentials (Zero-Knowledge)." },
-            { title: "Auditing", text: "Tracking of changes in rules and inventory movements linked to each user." }
-        ],
-        tech_items: [
-            { label: "Frontend", value: "React + Vite", detail: "Reactive UI with Tailwind CSS and Framer Motion." },
-            { label: "Backend", value: "Node.js (ESM)", detail: "REST API on Express with Cloud architecture." },
-            { label: "AI Engine", value: "Gemini 2.5 Flash", detail: "Rule generation through advanced NLP." },
-            { label: "Database", value: "MongoDB Atlas", detail: "Scalable and redundant NoSQL persistence." },
-            { label: "Infrastructure", value: "Vercel / GitHub", detail: "Automated CI/CD and CRON tasks (Agent)." },
-            { label: "Communications", value: "Meta / Gmail API", detail: "Official WhatsApp and Email integration." }
-        ],
-        modules_items: [
-            {
-                title: "Material Handler",
-                description: "Intelligent management of materials and general orders.",
-                details: "This module uses Artificial Intelligence to make order reading flexible. It allows the user to define rules in human language that Gemini translates into filtering logic, achieving proactive automation that notifies via WhatsApp and Email about stock requirements.",
-                features: ["AI-assisted extraction", "Dynamic rules", "Report history", "Crane Handling"]
-            },
-            {
-                title: "Canopy",
-                description: "Precision engine for fabric stock control.",
-                details: "High-fidelity deterministic module. Unlike AI, this engine 'measures' the PDF pixel by pixel to extract critical production data with 0% interpretation error. It's the vital tool for cross-referencing required vs. available fabric yardage in real inventory.",
-                features: ["Pixel-by-Pixel Precision", "Real-time inventory", "Production analyzer", "Requirement cross-check"]
-            }
-        ],
-        developer: {
-            title: "Project Developer",
-            name: "Otoniel Berroa",
-            roles: ["Computer Engineer", "Software Development", "Systems Administrator"],
-            email: "oberroaa@gmail.com",
-            portfolio: "https://otoniel-portfolio.vercel.app/",
-            desc: "Architect and lead developer of this automation ecosystem, focused on optimizing industrial processes through cutting-edge technology."
-        }
-    }
-} as const;
-
 export default function ProjectOverview() {
-    const { lang } = useLang();
-    const t = OVERVIEW_CONTENT[lang];
+    const { t: globalT } = useLang();
+    const t = globalT.overview;
 
     const techStack = [
         { icon: <Globe className="w-5 h-5" />, label: t.tech_items[0].label, value: t.tech_items[0].value, detail: t.tech_items[0].detail },
@@ -295,7 +196,7 @@ export default function ProjectOverview() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {t.security_items.map((sec, i) => (
+                    {t.security_items.map((sec: any, i: number) => (
                         <div key={i} className="glass p-8 rounded-[2rem] border border-emerald-500/10 space-y-4 hover:border-emerald-500/30 transition-all duration-500 bg-gradient-to-br from-emerald-500/[0.02] to-transparent">
                             <h4 className="text-lg font-bold text-emerald-400">{sec.title}</h4>
                             <p className="text-sm text-slate-400 leading-relaxed">{sec.text}</p>
@@ -335,7 +236,7 @@ export default function ProjectOverview() {
                         </div>
 
                         <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                            {t.developer.roles.map((role, i) => (
+                            {t.developer.roles.map((role: string, i: number) => (
                                 <div key={i} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
                                     {i === 0 ? <Code2 className="w-4 h-4 text-sky-400" /> : i === 1 ? <Terminal className="w-4 h-4 text-indigo-400" /> : <Server className="w-4 h-4 text-emerald-400" />}
                                     <span className="text-sm font-bold text-slate-300">{role}</span>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLang } from "../context/LangContext";
+import { useLang, type Lang } from "../context/LangContext";
 import { motion } from "framer-motion";
 import {
   ClipboardCheck,
@@ -21,89 +21,13 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { getSafetyProtocol, updateSafetyProtocol } from "../services/safetyApi";
 
-const DEFAULT_CONTENT = {
-  es: {
-    title: "📘 Manejo de Grúa con Doble Gancho",
-    subtitle: "Protocolo de seguridad para Bundles de Aluminio",
-    printBtn: "Imprimir Protocolo",
-    langBtn: "English",
-    personal_title: "1. Personal",
-    personal: "• Se **requieren 2 operadores**: Operador de grúa o Ayudante / señalero\n• Comunicación constante en todo momento",
-    inspection_title: "2. Inspección previa",
-    inspection: "• Grúa funcionando correctamente\n• Ganchos en buen estado\n• Eslingas sin daño\n• Cable de acero sin hilos rotos\n• Área libre de personas y obstáculos",
-    prep_title: "3. Preparación del bundle",
-    prep: "• Identificar longitud del bundle y marcar puntos de sujeción.\n• **Si mide más de 20 ft**: Retirar maderas o materiales que sobresalgan por debajo.",
-    sling_title: "Selección de eslingas",
-    slings: "• No va al rack alto → Usar **10 ft**\n• Sí va al rack alto → Usar **8 ft o 6 ft** (evita choques)\n**Regla especial rack alto**: Eliminar maderas intermedias antes de insertar para mejor control.",
-    hook_pos_title: "4. Posición de ganchos (CLAVE)",
-    hooks_gt20_title: "Bundles Mayor a 20 ft",
-    hooks_gt20: "Un gancho a **13 ft** (centro) + Otro a **1 ft** del extremo.",
-    hooks_le20_title: "Bundles Menor o igual a 20 ft",
-    hooks_le20: "Un gancho a **11 ft** (centro) + Otro a **1 ft** del extremo.",
-    move_title: "5 y 6. Levante y Movimiento",
-    move: "• Levantar ganchos **parejos** y verificar nivelación.\n• Movimiento **lento y controlado**, sin brusquedad.\n• Mantener comunicación constante con el señalero.",
-    save_title: "7. Guardado del Bundle",
-    save: "1. Amarrar ambos ganchos de manera pareja al bundle, usando los FT correspondientes (**11 ft o 13 ft** y **1 ft** del extremo).\n2. Levantar el bundle recto, manteniéndolo nivelado.\n3. Alinear el bundle con el rack o carrito antes de introducirlo.\n4. Introducir lentamente el extremo donde **NO** se marcó el 1 ft.\n5. Avanzar despacio hasta que la soga central (**11 ft o 13 ft**) toque el rack.\n6. Cuando llegue al final, bajar el bundle hasta que ese extremo quede apoyado sobre el carrito.\n7. Con el extremo ya apoyado, soltar el gancho que está pegado al rack/carrito.\n8. Con el otro gancho, mover el bundle hacia adentro de forma controlada.\n9. Cuando el bundle toque el final, soltar el segundo gancho, verificando siempre que esté estable.\n10. Con el **forklift**, insertar el bundle dejando siempre un espacio suficiente para poder agarrarlo nuevamente al momento del retiro.",
-    remove_title: "8. Retiro del Bundle",
-    remove: "1. Sacar el bundle aproximadamente **2 ft** con el forklift.\n2. Amarrar el gancho que queda más afuera, para comenzar la extracción.\n3. Una vez asegurado el primer gancho, levantar ligeramente el bundle para poder retirarlo del rack.\n4. Retirar el bundle lentamente usando ese gancho, hasta que el carrito dentro del rack llegue al tope de salida.\n5. Cuando el carrito llegue al tope, amarrar el **segundo gancho**.\n6. Levantar el bundle hasta que se despegue completamente del carrito y quede parejo.\n7. Con ambos ganchos asegurados, mover el bundle hacia afuera de forma controlada.\n8. Una vez fuera del rack, continuar con movimientos lentos y proceder a bajarlo lentamente en posición segura.",
-    safety_title: "Seguridad y Prevención",
-    risks_title: "Riesgos",
-    risks: "• Caída de carga\n• Golpes / Atrapamientos",
-    prevention_title: "Prevención",
-    prevention: "• Mantener distancia\n• No estar bajo la carga\n• Inspección diaria",
-    gold_rules_title: "Reglas de Oro",
-    gold_rules: "• No operar solo\n• No cargas desbalanceadas\n• Comunicación constante",
-    checklist_title: "Checklist Diario",
-    critical: "CRÍTICO",
-    checks: "• Grúa\n• Ganchos\n• Eslingas\n• Cable de acero\n• Área\n• Comunicación",
-    failure_msg: "Si hay falla: **NO operar y reportar inmediatamente**.",
-    footer_text: "TUUCI AGENT - PROTOCOLO DE SEGURIDAD INDUSTRIAL",
-    footer_gen: "Generado el:"
-  },
-  en: {
-    title: "📘 Double Hook Crane Handling",
-    subtitle: "Safety protocol for Aluminum Bundles",
-    printBtn: "Print Protocol",
-    langBtn: "Español",
-    personal_title: "1. Personnel",
-    personal: "• Requires **2 operators**: Crane Operator and Helper / Signaler\n• Constant communication at all times",
-    inspection_title: "2. Pre-operation Inspection",
-    inspection: "• Crane functioning correctly\n• Hooks in good condition\n• Slings without damage\n• Steel cable without broken wires\n• Area free of people and obstacles",
-    prep_title: "3. Bundle Preparation",
-    prep: "• Identify bundle length and mark attachment points.\n• **If over 20 ft**: Remove wood or materials protruding underneath.",
-    sling_title: "Sling Selection",
-    slings: "• Not going to top rack → Use **10 ft**\n• Going to top rack → Use **8 ft or 6 ft** (prevents collisions)\n**Special rule for top rack**: Remove intermediate wood before insertion for better control.",
-    hook_pos_title: "4. Hook Position (KEY)",
-    hooks_gt20_title: "Bundles Over 20 ft",
-    hooks_gt20: "One hook at **13 ft** (center) + Another at **1 ft** from the end.",
-    hooks_le20_title: "Bundles 20 ft or less",
-    hooks_le20: "One hook at **11 ft** (center) + Another at **1 ft** from the end.",
-    move_title: "5 & 6. Lifting and Movement",
-    move: "• Lift hooks **evenly** and verify leveling.\n• Movement **slow and controlled**, without sudden moves.\n• Maintain constant communication with the signaler.",
-    save_title: "7. Storing the Bundle",
-    save: "1. Attach both hooks evenly to the bundle, using corresponding FT (**11 ft or 13 ft** and **1 ft** from the end).\n2. Lift the bundle straight, keeping it level.\n3. Align the bundle with the rack or cart before introducing it.\n4. Slowly introduce the end where **NOT** marked at 1 ft.\n5. Advance slowly until the center sling (**11 ft or 13 ft**) touches the rack.\n6. When reaching the end, lower the bundle until that end is supported on the cart.\n7. With the end already supported, release the hook attached to the rack/cart.\n8. With the other hook, move the bundle inward in a controlled manner.\n9. When the bundle touches the end, release the second hook, always verifying stability.\n10. With the **forklift**, insert the bundle always leaving enough space to be able to grab it again at the time of removal.",
-    remove_title: "8. Bundle Removal",
-    remove: "1. Pull the bundle out approximately **2 ft** using the forklift.\n2. Attach the hook furthest out to begin extraction.\n3. Once the first hook is secured, lift the bundle slightly to remove it from the rack.\n4. Withdraw the bundle slowly using that hook, until the cart inside the rack reaches the output limit.\n5. When the cart reaches the limit, attach the **second hook**.\n6. Lift the bundle until it completely detaches from the cart and is level.\n7. With both hooks secured, move the bundle outward in a controlled manner.\n8. Once outside the rack, continue with slow movements and proceed to lower it slowly into a safe position.",
-    safety_title: "Safety and Prevention",
-    risks_title: "Risks",
-    risks: "• Falling load\n• Impact / Entrapment",
-    prevention_title: "Prevention",
-    prevention: "• Keep distance\n• Do not stand under the load\n• Daily inspection",
-    gold_rules_title: "Golden Rules",
-    gold_rules: "• Do not operate alone\n• No unbalanced loads\n• Constant communication",
-    checklist_title: "Daily Checklist",
-    critical: "CRITICAL",
-    checks: "• Crane\n• Hooks\n• Slings\n• Steel Cable\n• Area\n• Communication",
-    failure_msg: "If there is a failure: **DO NOT operate and report immediately**.",
-    footer_text: "TUUCI AGENT - INDUSTRIAL SAFETY PROTOCOL",
-    footer_gen: "Generated on:"
-  }
-};
-
 export default function CraneSafety() {
   const { user } = useAuth();
-  const { lang } = useLang();
-  const [content, setContent] = useState(DEFAULT_CONTENT);
+  const { lang, t: globalT } = useLang();
+  const [content, setContent] = useState<Record<Lang, any>>({ 
+    es: globalT.safety, 
+    en: globalT.safety 
+  }); 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -119,8 +43,8 @@ export default function CraneSafety() {
       if (data) {
         // Deep merge to ensure all keys exist
         setContent({
-          es: { ...DEFAULT_CONTENT.es, ...data.es },
-          en: { ...DEFAULT_CONTENT.en, ...data.en }
+          es: { ...globalT.safety, ...data.es },
+          en: { ...globalT.safety, ...data.en }
         });
       }
     } catch (err) {

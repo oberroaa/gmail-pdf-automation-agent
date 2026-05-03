@@ -7,70 +7,12 @@ import { useLang } from "../context/LangContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../services/apiFetch";
 
-const translations = {
-    es: {
-        title: "Analizador de Canopy",
-        subtitle: "Procesa PDFs de producción para verificar stock y registrar modelos.",
-        uploadTitle: "Subir Documento",
-        uploadDesc: "Sube el PDF de producción para analizar los Jobs y verificar stock.",
-        selectPDF: "Seleccionar PDF",
-        changeFile: "Cambiar Archivo",
-        startAnalysis: "Comenzar Análisis",
-        processing: "Procesando...",
-        waiting: "Esperando análisis...",
-        results: "Resultados",
-        jobsDetected: "Jobs detectados",
-        clearResults: "Limpiar resultados",
-        item: "Item",
-        notInventoried: "No Inventariado",
-        profile: "Perfil",
-        assignedJobs: "Job(s) Asignado(s)",
-        fabrics: "Telas (Yardas)",
-        availableStock: "Stock Disponible",
-        units: "unidades",
-        requiredInPdf: "Requerido en PDF",
-        status: {
-            "DISPONIBLE": "DISPONIBLE",
-            "PARCIAL": "PARCIAL",
-            "AGOTADO": "AGOTADO"
-        }
-    },
-    en: {
-        title: "Canopy Analyzer",
-        subtitle: "Process production PDFs to verify stock and register models.",
-        uploadTitle: "Upload Document",
-        uploadDesc: "Upload the production PDF to analyze Jobs and verify stock.",
-        selectPDF: "Select PDF",
-        changeFile: "Change File",
-        startAnalysis: "Start Analysis",
-        processing: "Processing...",
-        waiting: "Waiting for analysis...",
-        results: "Results",
-        jobsDetected: "Jobs detected",
-        clearResults: "Clear results",
-        item: "Item",
-        notInventoried: "Not Inventoried",
-        profile: "Profile",
-        assignedJobs: "Assigned Job(s)",
-        fabrics: "Fabrics (Yards)",
-        availableStock: "Available Stock",
-        units: "units",
-        requiredInPdf: "Required in PDF",
-        status: {
-            "DISPONIBLE": "AVAILABLE",
-            "PARCIAL": "PARTIAL",
-            "AGOTADO": "OUT OF STOCK"
-        }
-    }
-};
-
 export default function CanopyAnalyzer() {
-    const { lang } = useLang();
+    const { t: globalT } = useLang();
+    const t = globalT.canopy;
     const [pdfFile, setPdfFile] = useState<File | null>(null);
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<any | null>(null);
-
-    const t = translations[lang];
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -93,7 +35,7 @@ export default function CanopyAnalyzer() {
                 body: formData
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || (lang === 'es' ? "Error analizando el PDF" : "Error analyzing PDF"));
+            if (!res.ok) throw new Error(data.error || t.errorAnalysis);
             setResult(data);
         } catch (err: any) {
             alert("Error: " + err.message);
