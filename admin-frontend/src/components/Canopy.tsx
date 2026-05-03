@@ -24,16 +24,16 @@ export default function CanopyManager() {
     // Modal
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState<Partial<Canopy>>({ 
-        item: "", alias: "", profile: "", frameFinish: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 
+    const [formData, setFormData] = useState<Partial<Canopy>>({
+        item: "", alias: "", profile: "", frameFinish: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0
     });
-    
+
     // Estados temporales para el texto de las telas
     const [telasText, setTelasText] = useState("");
     const [telas2Text, setTelas2Text] = useState("");
     const [ignoredText, setIgnoredText] = useState("");
 
-    // Selección masiva
+    // Selección masiva     
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     // Excel import
@@ -59,7 +59,7 @@ export default function CanopyManager() {
             const excelItems: { item: string; total: number }[] = [];
             for (let r = 1; r < rows.length; r++) {
                 const name = String(rows[r][0] ?? "").trim();
-                const qty  = Number(rows[r][1] ?? 0);
+                const qty = Number(rows[r][1] ?? 0);
                 if (name) excelItems.push({ item: name, total: qty });
             }
 
@@ -246,10 +246,10 @@ export default function CanopyManager() {
             <div className="relative">
                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
-                    type="text" 
+                    type="text"
                     placeholder="Buscar por Item, Alias, Perfil, Scissor o Tela..."
                     className="w-full bg-white/5 border border-white/10 rounded-[2rem] pl-16 pr-6 py-5 text-white focus:outline-none focus:ring-2 focus:ring-sky-500/50 transition-all text-sm"
-                    value={searchTerm} 
+                    value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
@@ -297,32 +297,32 @@ export default function CanopyManager() {
                                     </td>
                                     <td className="px-6 py-6">
                                         <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-2">
-                                            {c.scissor && (
-                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-500/80 uppercase bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
-                                                    <Settings className="w-3 h-3" />
-                                                    DOUBLE SCISSOR
-                                                </div>
-                                            )}
-                                            {c.tilt && (
-                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-sky-400/80 uppercase bg-sky-400/5 px-2 py-0.5 rounded border border-sky-400/10">
-                                                    <Wind className="w-3 h-3" />
-                                                    INCLUDES TILT
-                                                </div>
-                                            )}
-                                            {c.frameFinish && (
-                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-400/80 uppercase bg-red-400/5 px-2 py-0.5 rounded border border-red-400/10">
-                                                    <X className="w-3 h-3" />
-                                                    EXCLUDE: {c.frameFinish}
-                                                </div>
-                                            )}
-                                            {c.ignored && c.ignored.length > 0 && (
-                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-400/80 uppercase bg-rose-400/5 px-2 py-0.5 rounded border border-rose-400/10">
-                                                    <X className="w-3 h-3" />
-                                                    IGNORE: {c.ignored.join(", ")}
-                                                </div>
-                                            )}
-                                        </div>
+                                            <div className="flex items-center gap-2">
+                                                {c.scissor && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-500/80 uppercase bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
+                                                        <Settings className="w-3 h-3" />
+                                                        DOUBLE SCISSOR
+                                                    </div>
+                                                )}
+                                                {c.tilt && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-sky-400/80 uppercase bg-sky-400/5 px-2 py-0.5 rounded border border-sky-400/10">
+                                                        <Wind className="w-3 h-3" />
+                                                        INCLUDES TILT
+                                                    </div>
+                                                )}
+                                                {c.frameFinish && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-400/80 uppercase bg-red-400/5 px-2 py-0.5 rounded border border-red-400/10">
+                                                        <X className="w-3 h-3" />
+                                                        EXCLUDE: {c.frameFinish}
+                                                    </div>
+                                                )}
+                                                {c.ignored && c.ignored.length > 0 && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-400/80 uppercase bg-rose-400/5 px-2 py-0.5 rounded border border-rose-400/10">
+                                                        <X className="w-3 h-3" />
+                                                        IGNORE: {c.ignored.join(", ")}
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div className="flex flex-wrap gap-1">
                                                 {c.telas.map((t, idx) => (
                                                     <span key={idx} className="bg-white/5 text-[9px] font-bold px-2 py-0.5 rounded border border-white/5 text-slate-400 flex items-center gap-1">
@@ -370,12 +370,12 @@ export default function CanopyManager() {
             <AnimatePresence>
                 {showModal && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setShowModal(false)}
                             className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
                         />
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             className="relative w-full max-w-2xl bg-slate-900 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden"
                         >
@@ -431,22 +431,22 @@ export default function CanopyManager() {
                                             </div>
                                             <div className="space-y-1.5">
                                                 <span className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Exclusión por Frame Finish</span>
-                                                <input 
-                                                    type="text" 
-                                                    placeholder="Ej: Vineyard DuraTeak (Si coincide, NO machea)" 
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-red-400 font-bold focus:ring-2 focus:ring-red-500/30 transition-all outline-none" 
-                                                    value={formData.frameFinish || ""} 
-                                                    onChange={e => setFormData({ ...formData, frameFinish: e.target.value })} 
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ej: Vineyard DuraTeak (Si coincide, NO machea)"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-red-400 font-bold focus:ring-2 focus:ring-red-500/30 transition-all outline-none"
+                                                    value={formData.frameFinish || ""}
+                                                    onChange={e => setFormData({ ...formData, frameFinish: e.target.value })}
                                                 />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <span className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Prefijos a Ignorar (Separa por coma)</span>
-                                                <input 
-                                                    type="text" 
-                                                    placeholder="Ej: OM, VNC (Evita match si aparece Prefijo+Alias)" 
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-amber-400 font-bold focus:ring-2 focus:ring-amber-500/30 transition-all outline-none" 
-                                                    value={ignoredText} 
-                                                    onChange={e => setIgnoredText(e.target.value)} 
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ej: OM, VNC (Evita match si aparece Prefijo+Alias)"
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-amber-400 font-bold focus:ring-2 focus:ring-amber-500/30 transition-all outline-none"
+                                                    value={ignoredText}
+                                                    onChange={e => setIgnoredText(e.target.value)}
                                                 />
                                             </div>
                                         </div>
