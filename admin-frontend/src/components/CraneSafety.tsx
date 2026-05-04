@@ -21,6 +21,119 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { getSafetyProtocol, updateSafetyProtocol } from "../services/safetyApi";
 
+const parseMarkdown = (text: string) => {
+  if (!text) return null;
+
+  return text.split("\n").map((line, i) => {
+    const trimmed = line.trim();
+    if (!trimmed && i > 0) return <div key={i} className="h-2" />;
+
+    // Regex for bold **text**
+    const parts = trimmed.split(/(\*\*.*?\*\*)/g);
+    const formattedLine = parts.map((part, pi) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <span key={pi} className="font-bold text-white print:text-black print:font-extrabold">{part.slice(2, -2)}</span>;
+      }
+      return part;
+    });
+
+    // Bullets
+    if (trimmed.startsWith("•") || trimmed.startsWith("-")) {
+      return (
+        <div key={i} className="flex gap-2 items-start py-0.5">
+          <span className="text-indigo-500 font-bold">•</span>
+          <span className="flex-1">
+            {parts.map((p, pi) => {
+              const pTrim = p.trim();
+              let finalP = p;
+              if (pi === 0 && (pTrim.startsWith("•") || pTrim.startsWith("-"))) {
+                finalP = p.replace(/^[•-]\s*/, "");
+              }
+              if (finalP.startsWith("**") && finalP.endsWith("**")) {
+                return <span key={pi} className="font-bold text-white print:text-black print:font-extrabold">{finalP.slice(2, -2)}</span>;
+              }
+              return finalP;
+            })}
+          </span>
+        </div>
+      );
+    }
+
+    // Numbers
+    if (/^\d+\./.test(trimmed)) {
+      const numMatch = trimmed.match(/^(\d+\.)\s*(.*)/);
+      if (numMatch) {
+        const num = numMatch[1];
+        const rest = numMatch[2];
+        // Parse bold in rest
+        const restParts = rest.split(/(\*\*.*?\*\*)/g);
+        return (
+          <div key={i} className="flex gap-2 items-start py-0.5">
+            <span className="font-bold text-indigo-500 min-w-[20px]">{num}</span>
+            <span className="flex-1">
+              {restParts.map((p, pi) => {
+                if (p.startsWith("**") && p.endsWith("**")) {
+                  return <span key={pi} className="font-bold text-white print:text-black print:font-extrabold">{p.slice(2, -2)}</span>;
+                }
+                return p;
+              })}
+            </span>
+          </div>
+        );
+      }
+    }
+
+    return <p key={i}>{formattedLine}</p>;
+  });
+};
+
+const EditableModule = ({
+  langKey,
+  field,
+  titleField,
+  icon: Icon,
+  className = "",
+  content,
+  isEditing,
+  updateField
+}: any) => {
+  const title = (content as any)[langKey][titleField];
+  const value = (content as any)[langKey][field];
+
+  return (
+    <div className={`glass p-6 rounded-2xl space-y-4 border-l-4 ${className} print:border print:shadow-none print:mb-4`}>
+      <div className="flex items-center gap-3 opacity-90 print:text-black">
+        {Icon && <Icon className="w-5 h-5 text-current" />}
+        <h3 className="font-bold uppercase tracking-wider text-sm flex-1">
+          {isEditing ? (
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => updateField(langKey, titleField, e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-indigo-500"
+            />
+          ) : title}
+        </h3>
+      </div>
+
+      <div className="text-base text-slate-300 print:text-black">
+        {isEditing ? (
+          <textarea
+            value={value}
+            onChange={(e) => updateField(langKey, field, e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500 min-h-[120px] font-mono"
+            placeholder="Escribe aquí... Usa **negrita** para resaltar."
+          />
+        ) : (
+          <div className="space-y-1">
+            {parseMarkdown(value)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function CraneSafety() {
   const { user } = useAuth();
   const { lang, t: globalT } = useLang();
@@ -85,115 +198,7 @@ export default function CraneSafety() {
     }));
   };
 
-  const parseMarkdown = (text: string) => {
-    if (!text) return null;
 
-    return text.split("\n").map((line, i) => {
-      const trimmed = line.trim();
-      if (!trimmed && i > 0) return <div key={i} className="h-2" />;
-
-      // Regex for bold **text**
-      const parts = trimmed.split(/(\*\*.*?\*\*)/g);
-      const formattedLine = parts.map((part, pi) => {
-        if (part.startsWith("**") && part.endsWith("**")) {
-          return <span key={pi} className="font-bold text-white print:text-black print:font-extrabold">{part.slice(2, -2)}</span>;
-        }
-        return part;
-      });
-
-      // Bullets
-      if (trimmed.startsWith("•") || trimmed.startsWith("-")) {
-        return (
-          <div key={i} className="flex gap-2 items-start py-0.5">
-            <span className="text-indigo-500 font-bold">•</span>
-            <span className="flex-1">
-              {parts.map((p, pi) => {
-                const pTrim = p.trim();
-                let finalP = p;
-                if (pi === 0 && (pTrim.startsWith("•") || pTrim.startsWith("-"))) {
-                  finalP = p.replace(/^[•-]\s*/, "");
-                }
-                if (finalP.startsWith("**") && finalP.endsWith("**")) {
-                  return <span key={pi} className="font-bold text-white print:text-black print:font-extrabold">{finalP.slice(2, -2)}</span>;
-                }
-                return finalP;
-              })}
-            </span>
-          </div>
-        );
-      }
-
-      // Numbers
-      if (/^\d+\./.test(trimmed)) {
-        const numMatch = trimmed.match(/^(\d+\.)\s*(.*)/);
-        if (numMatch) {
-          const num = numMatch[1];
-          const rest = numMatch[2];
-          // Parse bold in rest
-          const restParts = rest.split(/(\*\*.*?\*\*)/g);
-          return (
-            <div key={i} className="flex gap-2 items-start py-0.5">
-              <span className="font-bold text-indigo-500 min-w-[20px]">{num}</span>
-              <span className="flex-1">
-                {restParts.map((p, pi) => {
-                  if (p.startsWith("**") && p.endsWith("**")) {
-                    return <span key={pi} className="font-bold text-white print:text-black print:font-extrabold">{p.slice(2, -2)}</span>;
-                  }
-                  return p;
-                })}
-              </span>
-            </div>
-          );
-        }
-      }
-
-      return <p key={i}>{formattedLine}</p>;
-    });
-  };
-
-  const EditableModule = ({
-    langKey,
-    field,
-    titleField,
-    icon: Icon,
-    className = ""
-  }: any) => {
-    const title = (content as any)[langKey][titleField];
-    const value = (content as any)[langKey][field];
-
-    return (
-      <div className={`glass p-6 rounded-2xl space-y-4 border-l-4 ${className} print:border print:shadow-none print:mb-4`}>
-        <div className="flex items-center gap-3 opacity-90 print:text-black">
-          {Icon && <Icon className="w-5 h-5 text-current" />}
-          <h3 className="font-bold uppercase tracking-wider text-sm flex-1">
-            {isEditing ? (
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => updateField(langKey, titleField, e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-indigo-500"
-              />
-            ) : title}
-          </h3>
-        </div>
-
-        <div className="text-base text-slate-300 print:text-black">
-          {isEditing ? (
-            <textarea
-              value={value}
-              onChange={(e) => updateField(langKey, field, e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-indigo-500 min-h-[120px] font-mono"
-              placeholder="Escribe aquí... Usa **negrita** para resaltar."
-            />
-          ) : (
-            <div className="space-y-1">
-              {parseMarkdown(value)}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
 
   if (loading) {
     return (
@@ -298,20 +303,24 @@ export default function CraneSafety() {
         <EditableModule
           langKey={lang} field="personal" titleField="personal_title"
           icon={Users} className="border-l-blue-500 text-blue-400"
+          content={content} isEditing={isEditing} updateField={updateField}
         />
         <EditableModule
           langKey={lang} field="inspection" titleField="inspection_title"
           icon={Search} className="border-l-amber-500 text-amber-400"
+          content={content} isEditing={isEditing} updateField={updateField}
         />
 
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 print:block">
           <EditableModule
             langKey={lang} field="prep" titleField="prep_title"
             icon={Ruler} className="border-l-indigo-500 text-indigo-400"
+            content={content} isEditing={isEditing} updateField={updateField}
           />
           <EditableModule
             langKey={lang} field="slings" titleField="sling_title"
             icon={ClipboardCheck} className="border-l-indigo-400 text-indigo-300"
+            content={content} isEditing={isEditing} updateField={updateField}
           />
         </div>
 
@@ -378,16 +387,19 @@ export default function CraneSafety() {
         <EditableModule
           langKey={lang} field="move" titleField="move_title"
           icon={ArrowUp} className="border-l-sky-500 text-sky-400"
+          content={content} isEditing={isEditing} updateField={updateField}
         />
 
         <EditableModule
           langKey={lang} field="save" titleField="save_title"
           icon={ArrowDown} className="border-l-purple-500 text-purple-400 md:col-span-2"
+          content={content} isEditing={isEditing} updateField={updateField}
         />
 
         <EditableModule
           langKey={lang} field="remove" titleField="remove_title"
           icon={History} className="border-l-pink-500 text-pink-400 md:col-span-2"
+          content={content} isEditing={isEditing} updateField={updateField}
         />
 
         <div className="glass p-6 rounded-2xl space-y-4 border-l-4 border-l-red-500 md:col-span-2 print:border print:shadow-none print:mb-4">
