@@ -126,9 +126,9 @@ export default async function analyzeCanopyPdf(pdfPath) {
         };
 
         profile = extractValue("Canopy Profile");
-        const frameFinish = extractValue("Frame Finish:");
-        const scissor = (extractValue("Scissor Assembly:") || "").includes("Double Scissor Assembly");
-        const tilt = (extractValue("Tilt:") || "").includes("Includes Tilt");
+        const frameFinish = extractValue("Frame Finish");
+        const scissor = /double scissor/i.test(extractValue("Scissor Assembly") || "");
+        const tilt = /tilt/i.test(extractValue("Tilt") || "");
 
         if (jobId && item && profile) {
             jobsFound.push({
@@ -187,9 +187,10 @@ export default async function analyzeCanopyPdf(pdfPath) {
 
                 const telasMatch = matchTelas(db.telas) || matchTelas(db.telas2);
                 
-                // REGLA DE EXCLUSIÓN 1: Frame Finish
-                const frameFinishExclusion = db.frameFinish && config.frameFinish === db.frameFinish;
-                if (frameFinishExclusion) return false;
+                // REGLA DE EXCLUSIÓN 1: Frame Finish (Solo excluye si el DB especifica uno y el PDF tiene uno DISTINTO)
+                if (db.frameFinish && config.frameFinish && db.frameFinish.toLowerCase() !== config.frameFinish.toLowerCase()) {
+                    return false;
+                }
 
                 // REGLA DE EXCLUSIÓN 2: Prefijos Ignorados (Ej: OM + Alias)
                 if (db.ignored && Array.isArray(db.ignored)) {
