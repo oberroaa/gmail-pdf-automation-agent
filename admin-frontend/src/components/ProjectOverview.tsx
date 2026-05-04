@@ -205,74 +205,93 @@ export default function ProjectOverview() {
                 </div>
             </motion.section>
 
-            {/* Developer Profile Section */}
-            <motion.section
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="glass p-8 md:p-12 rounded-[3rem] border border-indigo-500/10 bg-gradient-to-br from-indigo-500/[0.05] to-transparent relative overflow-hidden"
-            >
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 rounded-full blur-3xl -z-10" />
+            {/* Project Team Section */}
+            <div className="space-y-8">
+                <div className="flex items-center gap-4 px-4">
+                    <ShieldCheck className="w-6 h-6 text-indigo-400" />
+                    <h3 className="text-2xl font-black text-white tracking-tight">Equipo del Proyecto</h3>
+                    <div className="h-px bg-white/10 flex-1" />
+                </div>
 
-                <div className="flex flex-col md:flex-row items-center gap-10">
-                    <div className="relative shrink-0">
-                        <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500 to-sky-400 rounded-[2.5rem] opacity-20 blur-xl animate-pulse" />
-                        <img
-                            src="/profile.jpg"
-                            alt={t.developer.name}
-                            className="w-48 h-48 md:w-56 md:h-56 object-cover rounded-[2.5rem] border-2 border-white/10 relative z-10 shadow-2xl"
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = "https://ui-avatars.com/api/?name=Otoniel&background=6366f1&color=fff&size=256";
-                            }}
-                        />
-                    </div>
-
-                    <div className="flex-1 text-center md:text-left space-y-6">
-                        <div className="space-y-2">
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-400 px-4 py-1.5 bg-indigo-500/10 rounded-full border border-indigo-500/20">
-                                {t.developer.title}
-                            </span>
-                            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tight pt-2">{t.developer.name}</h3>
-                        </div>
-
-                        <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                            {t.developer.roles.map((role: string, i: number) => (
-                                <div key={i} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
-                                    {i === 0 ? <Code2 className="w-4 h-4 text-sky-400" /> : i === 1 ? <Terminal className="w-4 h-4 text-indigo-400" /> : <Server className="w-4 h-4 text-emerald-400" />}
-                                    <span className="text-sm font-bold text-slate-300">{role}</span>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Otoniel Card */}
+                    <motion.section
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        className="glass p-8 rounded-[3rem] border border-indigo-500/10 bg-gradient-to-br from-indigo-500/[0.05] to-transparent relative overflow-hidden flex flex-col gap-6"
+                    >
+                        <div className="flex items-start gap-6">
+                            <div className="relative shrink-0">
+                                <div className="absolute -inset-2 bg-gradient-to-tr from-indigo-500 to-sky-400 rounded-2xl opacity-20 blur-lg animate-pulse" />
+                                <img
+                                    src="/profile.jpg"
+                                    alt={t.developer.name}
+                                    className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-2xl border-2 border-white/10 relative z-10 shadow-xl"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${t.developer.name}&background=6366f1&color=fff&size=128`;
+                                    }}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400 px-3 py-1 bg-indigo-500/10 rounded-full border border-indigo-500/20">
+                                    {t.developer.title}
+                                </span>
+                                <h3 className="text-2xl font-black text-white tracking-tight">{t.developer.name}</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {t.developer.roles.map((role: string, i: number) => (
+                                        <span key={i} className="text-[10px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">{role}</span>
+                                    ))}
                                 </div>
-                            ))}
+                            </div>
                         </div>
-
-                        <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-                            <a
-                                href={`mailto:${t.developer.email}`}
-                                className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition-colors group"
-                            >
-                                <div className="p-2 bg-white/5 rounded-lg group-hover:bg-indigo-500/10 transition-colors">
-                                    <Mail className="w-4 h-4" />
-                                </div>
-                                <span className="text-sm font-medium">{t.developer.email}</span>
-                            </a>
-                            <a
-                                href={t.developer.portfolio}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors group"
-                            >
-                                <div className="p-2 bg-white/5 rounded-lg group-hover:bg-sky-500/10 transition-colors">
-                                    <ExternalLink className="w-4 h-4" />
-                                </div>
-                                <span className="text-sm font-medium">Portfolio / GitHub</span>
-                            </a>
-                        </div>
-
-                        <p className="text-slate-400 text-lg leading-relaxed font-medium max-w-2xl">
+                        <p className="text-slate-400 text-sm leading-relaxed font-medium">
                             {t.developer.desc}
                         </p>
-                    </div>
+                        <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                            <a href={`mailto:${t.developer.email}`} className="p-2 bg-white/5 rounded-xl hover:bg-indigo-500/10 text-slate-400 hover:text-indigo-400 transition-all"><Mail className="w-4 h-4" /></a>
+                            <a href={t.developer.portfolio} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-xl hover:bg-sky-500/10 text-slate-400 hover:text-sky-400 transition-all"><ExternalLink className="w-4 h-4" /></a>
+                        </div>
+                    </motion.section>
+
+                    {/* Angel Card */}
+                    <motion.section
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        className="glass p-8 rounded-[3rem] border border-sky-500/10 bg-gradient-to-br from-sky-500/[0.05] to-transparent relative overflow-hidden flex flex-col gap-6"
+                    >
+                        <div className="flex items-start gap-6">
+                            <div className="relative shrink-0">
+                                <div className="absolute -inset-2 bg-gradient-to-tr from-sky-500 to-emerald-400 rounded-2xl opacity-10 blur-lg" />
+                                <div className="w-24 h-24 md:w-28 md:h-28 bg-white rounded-2xl border-2 border-white/10 relative z-10 shadow-xl flex items-center justify-center">
+                                    <ShieldCheck className="w-10 h-10 text-slate-200" />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-400 px-3 py-1 bg-sky-500/10 rounded-full border border-sky-500/20">
+                                    {t.tester.title}
+                                </span>
+                                <h3 className="text-2xl font-black text-white tracking-tight">{t.tester.name}</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {t.tester.roles.map((role: string, i: number) => (
+                                        <span key={i} className="text-[10px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">{role}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                            {t.tester.desc}
+                        </p>
+                        <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                            <a href={`mailto:${t.tester.email}`} className="p-2 bg-white/5 rounded-xl hover:bg-sky-500/10 text-slate-400 hover:text-sky-400 transition-all"><Mail className="w-4 h-4" /></a>
+                            <div className="px-3 py-1 bg-white/5 rounded-lg border border-white/5">
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Client Success</span>
+                            </div>
+                        </div>
+                    </motion.section>
                 </div>
-            </motion.section>
+            </div>
 
             {/* Info Cards */}
             <motion.div

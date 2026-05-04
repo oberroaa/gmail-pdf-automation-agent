@@ -63,6 +63,14 @@
       "email": "oberroaa@gmail.com",
       "portfolio": "https://otoniel-portfolio.vercel.app/",
       "desc": "Architect and lead developer of this automation ecosystem, focused on optimizing industrial processes through cutting-edge technology."
+    },
+    "tester": {
+      "title": "QA & Product Specialist",
+      "name": "Angel Borges",
+      "roles": ["System Analysis", "QA Testing", "Client Liaison"],
+      "email": "angel@example.com",
+      "portfolio": "#",
+      "desc": "Responsible for quality validation and direct client liaison. His focus ensures that technical solutions align perfectly with actual operational needs."
     }
   },
   "canopy": {
