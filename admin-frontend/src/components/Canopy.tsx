@@ -259,26 +259,26 @@ export default function CanopyManager() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-white/5">
-                                <th className="px-8 py-5 w-10">
+                            <tr className="bg-gradient-to-r from-white/5 to-transparent border-b border-white/5">
+                                <th className="px-8 py-6 w-10">
                                     <button onClick={toggleSelectAll} className="text-slate-500 hover:text-sky-400 transition-colors">
                                         <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${selectedIds.length === canopies.length && canopies.length > 0 ? 'bg-sky-500 border-sky-500' : 'border-slate-700'}`}>
                                             {selectedIds.length === canopies.length && canopies.length > 0 && <Plus className="w-3 h-3 text-white rotate-45" />}
                                         </div>
                                     </button>
                                 </th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">Item / Alias</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">Perfil</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">Configuración</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Stock</th>
-                                <th className="px-6 py-5 text-right"></th>
+                                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Item / Alias</th>
+                                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Perfil</th>
+                                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Configuración y Reglas</th>
+                                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Stock</th>
+                                <th className="px-6 py-6 text-right"></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-white/[0.03]">
                             {loading ? (
                                 <tr><td colSpan={6} className="text-center py-24"><Loader2 className="animate-spin mx-auto text-sky-500 w-10 h-10" /></td></tr>
                             ) : canopies.map(c => (
-                                <tr key={c._id} className={`hover:bg-white/[0.02] transition-colors group ${selectedIds.includes(c._id!) ? 'bg-sky-500/5' : ''}`}>
+                                <tr key={c._id} className={`hover:bg-white/[0.03] transition-all group ${selectedIds.includes(c._id!) ? 'bg-sky-500/5' : ''}`}>
                                     <td className="px-8 py-6">
                                         <button onClick={() => toggleSelect(c._id!)} className="transition-colors">
                                             <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${selectedIds.includes(c._id!) ? 'bg-sky-500 border-sky-500' : 'border-slate-800'}`}>
@@ -287,59 +287,69 @@ export default function CanopyManager() {
                                         </button>
                                     </td>
                                     <td className="px-6 py-6">
-                                        <div className="flex flex-col">
+                                        <div className="flex flex-col gap-1">
                                             <span className="text-sm font-black text-white group-hover:text-sky-400 transition-colors leading-tight">{c.item}</span>
-                                            {c.alias && <span className="text-[10px] text-sky-500/60 font-bold uppercase tracking-wider mt-0.5">{c.alias}</span>}
+                                            {c.alias && (
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="w-1 h-1 rounded-full bg-sky-500/40" />
+                                                    <span className="text-[10px] text-sky-500/60 font-black uppercase tracking-wider">{c.alias}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="px-6 py-6">
-                                        <span className="text-xs font-bold text-slate-400">{c.profile}</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+                                            <span className="text-xs font-bold text-slate-400">{c.profile}</span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-6">
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex items-center gap-2">
+                                        <div className="flex flex-col gap-3">
+                                            {/* Hardware & Rules Group */}
+                                            <div className="flex flex-wrap items-center gap-2">
                                                 {c.scissor && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-500/80 uppercase bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
-                                                        <Settings className="w-3 h-3" />
-                                                        DOUBLE SCISSOR
+                                                    <div className="flex items-center gap-1.5 text-[9px] font-black text-amber-500 uppercase bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 shadow-sm shadow-amber-500/5">
+                                                        <Settings className="w-3 h-3" /> DOUBLE SCISSOR
                                                     </div>
                                                 )}
                                                 {c.tilt && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-sky-400/80 uppercase bg-sky-400/5 px-2 py-0.5 rounded border border-sky-400/10">
-                                                        <Wind className="w-3 h-3" />
-                                                        INCLUDES TILT
+                                                    <div className="flex items-center gap-1.5 text-[9px] font-black text-sky-400 uppercase bg-sky-400/10 px-2.5 py-1 rounded-lg border border-sky-400/20 shadow-sm shadow-sky-400/5">
+                                                        <Wind className="w-3 h-3" /> INCLUDES TILT
                                                     </div>
                                                 )}
                                                 {c.frameFinish && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-400/80 uppercase bg-red-400/5 px-2 py-0.5 rounded border border-red-400/10">
-                                                        <X className="w-3 h-3" />
-                                                        EXCLUDE: {c.frameFinish}
+                                                    <div className="flex items-center gap-1.5 text-[9px] font-black text-rose-400 uppercase bg-rose-400/10 px-2.5 py-1 rounded-lg border border-rose-400/20 shadow-sm shadow-rose-500/5">
+                                                        <X className="w-3 h-3" /> EXCLUDE: {c.frameFinish}
                                                     </div>
                                                 )}
                                                 {c.ignored && c.ignored.length > 0 && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-rose-400/80 uppercase bg-rose-400/5 px-2 py-0.5 rounded border border-rose-400/10">
-                                                        <X className="w-3 h-3" />
-                                                        IGNORE: {c.ignored.join(", ")}
+                                                    <div className="flex items-center gap-1.5 text-[9px] font-black text-orange-400 uppercase bg-orange-400/10 px-2.5 py-1 rounded-lg border border-orange-400/20 shadow-sm shadow-orange-500/5">
+                                                        <X className="w-3 h-3" /> IGNORE: {c.ignored.join(", ")}
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="flex flex-wrap gap-1">
+                                            
+                                            {/* Fabrics Group */}
+                                            <div className="flex flex-wrap items-center gap-1.5">
                                                 {c.telas.map((t, idx) => (
-                                                    <span key={idx} className="bg-white/5 text-[9px] font-bold px-2 py-0.5 rounded border border-white/5 text-slate-400 flex items-center gap-1">
-                                                        <Layers className="w-2.5 h-2.5 opacity-50" /> {t}
+                                                    <span key={idx} className="bg-white/5 text-[9px] font-bold px-2 py-0.5 rounded-md border border-white/5 text-slate-400 flex items-center gap-1.5 hover:bg-white/10 transition-colors">
+                                                        <Layers className="w-2.5 h-2.5 text-slate-600" /> {t}
                                                     </span>
                                                 ))}
                                                 {c.telas2?.map((t, idx) => (
-                                                    <span key={idx} className="bg-sky-500/5 text-[9px] font-bold px-2 py-0.5 rounded border border-sky-500/10 text-sky-400/70 flex items-center gap-1">
-                                                        <Layers className="w-2.5 h-2.5 opacity-50" /> {t}
+                                                    <span key={idx} className="bg-sky-500/5 text-[9px] font-bold px-2 py-0.5 rounded-md border border-sky-500/10 text-sky-400/70 flex items-center gap-1.5 hover:bg-sky-500/10 transition-colors">
+                                                        <Layers className="w-2.5 h-2.5 text-sky-500/40" /> {t}
                                                     </span>
                                                 ))}
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-6 text-center">
-                                        <div className="inline-block px-3 py-1 bg-white/5 rounded-full border border-white/10">
-                                            <span className="text-sm font-black text-sky-400">{c.total}</span>
+                                        <div className="relative inline-flex items-center justify-center p-0.5 group/stock">
+                                            <div className="absolute inset-0 bg-sky-500/20 rounded-full blur-md opacity-0 group-hover/stock:opacity-100 transition-opacity" />
+                                            <div className="relative flex items-center justify-center w-10 h-10 bg-slate-900 border border-white/10 rounded-full shadow-xl group-hover/stock:border-sky-500/50 transition-all">
+                                                <span className="text-sm font-black text-sky-400">{c.total}</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6 text-right">
@@ -388,98 +398,145 @@ export default function CanopyManager() {
                                     <button type="button" onClick={() => setShowModal(false)} className="p-2 text-slate-500 hover:text-white transition-colors"><X /></button>
                                 </div>
 
-                                <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                                    {/* Sección 1: Identificación */}
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-sky-500/60 uppercase tracking-[0.2em] flex items-center gap-2">
-                                            <Info className="w-3 h-3" /> Información General
-                                        </label>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-8 space-y-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                                    {/* Sección 1: Identificación Principal */}
+                                    <section className="space-y-4">
+                                        <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                                            <div className="p-1.5 bg-sky-500/10 rounded-lg text-sky-400">
+                                                <Info className="w-4 h-4" />
+                                            </div>
+                                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Identificación del Ítem</h4>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div className="space-y-1.5">
-                                                <span className="text-[10px] font-bold text-slate-500 ml-1">ITEM ID</span>
-                                                <input type="text" placeholder="Ej: VNC-OM8.5SQ" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none" value={formData.item} onChange={e => setFormData({ ...formData, item: e.target.value })} required />
+                                                <label className="text-[10px] font-bold text-slate-500 ml-1">ITEM ID (Código Real)</label>
+                                                <input type="text" placeholder="Ej: VNC-OM8.5SQ" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-sm text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none" value={formData.item} onChange={e => setFormData({ ...formData, item: e.target.value })} required />
                                             </div>
                                             <div className="space-y-1.5">
-                                                <span className="text-[10px] font-bold text-slate-500 ml-1">ALIAS (PDF MATCH)</span>
-                                                <input type="text" placeholder="Ej: OM8.5SQ" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-sky-400 font-bold focus:ring-2 focus:ring-sky-500/30 transition-all outline-none" value={formData.alias} onChange={e => setFormData({ ...formData, alias: e.target.value })} />
+                                                <label className="text-[10px] font-bold text-slate-500 ml-1">ALIAS (Como aparece en PDF)</label>
+                                                <input type="text" placeholder="Ej: OM8.5SQ" className="w-full bg-sky-500/5 border border-sky-500/20 rounded-2xl px-4 py-3.5 text-sm text-sky-400 font-black focus:ring-2 focus:ring-sky-500/30 transition-all outline-none" value={formData.alias} onChange={e => setFormData({ ...formData, alias: e.target.value })} />
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <span className="text-[10px] font-bold text-slate-500 ml-1">CANOPY PROFILE</span>
-                                            <input type="text" placeholder="Ej: Market Cut Folded" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none" value={formData.profile} onChange={e => setFormData({ ...formData, profile: e.target.value })} required />
+                                            <label className="text-[10px] font-bold text-slate-500 ml-1">PERFIL DEL CANOPY</label>
+                                            <input type="text" placeholder="Ej: Market Cut Folded" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-sm text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none" value={formData.profile} onChange={e => setFormData({ ...formData, profile: e.target.value })} required />
                                         </div>
-                                    </div>
+                                    </section>
 
-                                    {/* Sección 2: Configuración */}
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-amber-500/60 uppercase tracking-[0.2em] flex items-center gap-2">
-                                            <Settings className="w-3 h-3" /> Configuración Técnica
-                                        </label>
+                                    {/* Sección 2: Configuración de Hardware */}
+                                    <section className="space-y-4">
+                                        <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                                            <div className="p-1.5 bg-amber-500/10 rounded-lg text-amber-400">
+                                                <Settings className="w-4 h-4" />
+                                            </div>
+                                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Especificaciones Técnicas</h4>
+                                        </div>
+
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <button 
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, scissor: !formData.scissor })}
+                                                className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.scissor ? 'bg-amber-500/10 border-amber-500/50 text-amber-500' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-2 rounded-xl ${formData.scissor ? 'bg-amber-500 text-white' : 'bg-slate-800'}`}>
+                                                        <Layers className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-sm font-bold">Double Scissor</span>
+                                                </div>
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${formData.scissor ? 'border-amber-500 bg-amber-500' : 'border-slate-700'}`}>
+                                                    {formData.scissor && <Plus className="w-3 h-3 text-white rotate-45" />}
+                                                </div>
+                                            </button>
+
+                                            <button 
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, tilt: !formData.tilt })}
+                                                className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.tilt ? 'bg-sky-500/10 border-sky-500/50 text-sky-500' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-2 rounded-xl ${formData.tilt ? 'bg-sky-500 text-white' : 'bg-slate-800'}`}>
+                                                        <Wind className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-sm font-bold">Includes Tilt</span>
+                                                </div>
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${formData.tilt ? 'border-sky-500 bg-sky-500' : 'border-slate-700'}`}>
+                                                    {formData.tilt && <Plus className="w-3 h-3 text-white rotate-45" />}
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </section>
+
+                                    {/* Sección 3: Reglas de Exclusión */}
+                                    <section className="space-y-4">
+                                        <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                                            <div className="p-1.5 bg-rose-500/10 rounded-lg text-rose-400">
+                                                <AlertTriangle className="w-4 h-4" />
+                                            </div>
+                                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Reglas de Match (Exclusiones)</h4>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                             <div className="space-y-1.5">
-                                                <span className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Opciones Especiales</span>
-                                                <div className="flex items-center gap-4">
-                                                    <label className="flex-1 flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-4 py-3 cursor-pointer hover:bg-white/10 transition-all">
-                                                        <span className="text-sm text-slate-300">Double Scissor Assembly</span>
-                                                        <input type="checkbox" className="w-5 h-5 rounded-lg border-2 border-slate-700 bg-transparent checked:bg-amber-500 checked:border-amber-500 transition-all" checked={!!formData.scissor} onChange={e => setFormData({ ...formData, scissor: e.target.checked })} />
-                                                    </label>
-                                                    <label className="flex-1 flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl px-4 py-3 cursor-pointer hover:bg-white/10 transition-all">
-                                                        <span className="text-sm text-slate-300">Includes Tilt</span>
-                                                        <input type="checkbox" className="w-5 h-5 rounded-lg border-2 border-slate-700 bg-transparent checked:bg-sky-500 checked:border-sky-500 transition-all" checked={!!formData.tilt} onChange={e => setFormData({ ...formData, tilt: e.target.checked })} />
-                                                    </label>
+                                                <label className="text-[10px] font-bold text-rose-500/70 ml-1">EXCLUIR POR ACABADO (FRAME FINISH)</label>
+                                                <div className="relative">
+                                                    <X className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-500" />
+                                                    <input type="text" placeholder="Ej: Vineyard DuraTeak" className="w-full bg-rose-500/5 border border-rose-500/20 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-rose-400 font-bold focus:ring-2 focus:ring-rose-500/30 transition-all outline-none placeholder:text-rose-500/30" value={formData.frameFinish || ""} onChange={e => setFormData({ ...formData, frameFinish: e.target.value })} />
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
-                                                <span className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Exclusión por Frame Finish</span>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Ej: Vineyard DuraTeak (Si coincide, NO machea)"
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-red-400 font-bold focus:ring-2 focus:ring-red-500/30 transition-all outline-none"
-                                                    value={formData.frameFinish || ""}
-                                                    onChange={e => setFormData({ ...formData, frameFinish: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <span className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Prefijos a Ignorar (Separa por coma)</span>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Ej: OM, VNC (Evita match si aparece Prefijo+Alias)"
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-amber-400 font-bold focus:ring-2 focus:ring-amber-500/30 transition-all outline-none"
-                                                    value={ignoredText}
-                                                    onChange={e => setIgnoredText(e.target.value)}
-                                                />
+                                                <label className="text-[10px] font-bold text-amber-500/70 ml-1">PREFIJOS A IGNORAR (ALIAS)</label>
+                                                <div className="relative">
+                                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+                                                    <input type="text" placeholder="Ej: OM, VNC" className="w-full bg-amber-500/5 border border-amber-500/20 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-amber-400 font-black focus:ring-2 focus:ring-amber-500/30 transition-all outline-none placeholder:text-amber-500/30" value={ignoredText} onChange={e => setIgnoredText(e.target.value)} />
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-1.5">
-                                                <span className="text-[10px] font-bold text-slate-500 ml-1">TELAS PRINCIPALES (Separa por coma)</span>
-                                                <textarea rows={2} placeholder="Ej: 1009003, 1009004" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none resize-none" value={telasText} onChange={e => setTelasText(e.target.value)} />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <span className="text-[10px] font-bold text-slate-500 ml-1">TELAS ALTERNATIVAS</span>
-                                                <textarea rows={2} placeholder="Ej: SB6042-D" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none resize-none" value={telas2Text} onChange={e => setTelas2Text(e.target.value)} />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </section>
 
-                                    {/* Sección 3: Stock */}
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-emerald-500/60 uppercase tracking-[0.2em] flex items-center gap-2">
-                                            <Package className="w-3 h-3" /> Control de Inventario
-                                        </label>
-                                        <div className="flex items-center gap-6 bg-white/5 p-6 rounded-3xl border border-white/5">
-                                            <div className="flex-1 space-y-1">
-                                                <span className="text-sm font-bold text-white block">Stock Disponible</span>
-                                                <span className="text-xs text-slate-500">Cantidad total de unidades listas para producción.</span>
+                                    {/* Sección 4: Telas */}
+                                    <section className="space-y-4">
+                                        <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                                            <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-400">
+                                                <Layers className="w-4 h-4" />
                                             </div>
-                                            <input type="number" className="w-24 bg-slate-800 border-2 border-sky-500/30 rounded-2xl px-4 py-4 text-center text-xl font-black text-white outline-none focus:border-sky-500 transition-all" value={formData.total} onChange={e => setFormData({ ...formData, total: Number(e.target.value) })} required />
+                                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Materiales (Telas)</h4>
                                         </div>
-                                    </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Telas Principales</label>
+                                                <textarea rows={3} placeholder="Separa códigos por comas..." className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xs text-white focus:ring-2 focus:ring-indigo-500/30 transition-all outline-none resize-none" value={telasText} onChange={e => setTelasText(e.target.value)} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-slate-500 ml-1 uppercase">Telas Alternativas (Backups)</label>
+                                                <textarea rows={3} placeholder="Separa códigos por comas..." className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xs text-white focus:ring-2 focus:ring-indigo-500/30 transition-all outline-none resize-none" value={telas2Text} onChange={e => setTelas2Text(e.target.value)} />
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Sección 5: Stock (Destacada) */}
+                                    <section className="pt-4">
+                                        <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/10 p-6 rounded-[2rem] border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                                            <div className="flex items-center justify-between gap-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="p-3 bg-emerald-500 rounded-2xl text-white shadow-lg shadow-emerald-500/30">
+                                                        <Package className="w-6 h-6" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-black text-white uppercase tracking-wider">Stock en Inventario</h4>
+                                                        <p className="text-[10px] text-emerald-400/80 font-bold uppercase">Unidades disponibles para match</p>
+                                                    </div>
+                                                </div>
+                                                <input type="number" className="w-28 bg-slate-950 border-2 border-emerald-500/50 rounded-2xl px-4 py-4 text-center text-2xl font-black text-white outline-none focus:border-emerald-400 transition-all shadow-inner" value={formData.total} onChange={e => setFormData({ ...formData, total: Number(e.target.value) })} required />
+                                            </div>
+                                        </div>
+                                    </section>
                                 </div>
 
                                 <div className="px-8 py-6 bg-white/[0.02] border-t border-white/5 flex items-center justify-end gap-3">
-                                    <button type="button" onClick={() => setShowModal(false)} className="px-6 py-3 text-xs font-black text-slate-500 hover:text-white transition-colors uppercase tracking-widest">Cancelar</button>
-                                    <button type="submit" className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-3 rounded-2xl font-black text-xs shadow-xl shadow-sky-600/20 transition-all flex items-center gap-2">
+                                    <button type="button" onClick={() => setShowModal(false)} className="px-6 py-3 text-[10px] font-black text-slate-500 hover:text-white transition-colors uppercase tracking-[0.2em]">Cancelar</button>
+                                    <button type="submit" className="bg-sky-600 hover:bg-sky-500 text-white px-10 py-4 rounded-2xl font-black text-xs shadow-2xl shadow-sky-600/30 transition-all flex items-center gap-3 hover:-translate-y-0.5 active:translate-y-0">
                                         <Save className="w-4 h-4" /> {editingId ? 'GUARDAR CAMBIOS' : 'CREAR CANOPY'}
                                     </button>
                                 </div>

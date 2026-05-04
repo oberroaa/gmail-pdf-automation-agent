@@ -54,7 +54,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const { items, lines } = await getPageData(page);
-        
+
         let jobId = null;
         let item = null;
         let profile = null;
@@ -96,32 +96,32 @@ export default async function analyzeCanopyPdf(pdfPath) {
 
             const labelX = label.x;
             const labelY = label.y;
-            
+
             // Si la etiqueta está en la columna izquierda (< 250), el límite derecho es el inicio de la columna derecha (~330)
             // Si está en la columna derecha, el límite es el final del área de la tabla (~580)
             const rightLimit = (labelX < 250) ? 320 : 580;
 
             // Límites de sección y otras etiquetas para saber dónde termina la "celda"
-            const boundaries = items.filter(it => 
+            const boundaries = items.filter(it =>
                 (
-                    ((it.x >= 80 && it.x <= 150) || (it.x >= 330 && it.x <= 390)) || 
-                    it.str.includes("Pack Notes") || 
-                    it.str.includes("Job Material Listing") || 
+                    ((it.x >= 80 && it.x <= 150) || (it.x >= 330 && it.x <= 390)) ||
+                    it.str.includes("Pack Notes") ||
+                    it.str.includes("Job Material Listing") ||
                     it.str.includes("Job Paperwork Designator")
-                ) && 
+                ) &&
                 it.y < labelY - 2
             );
-            
+
             const bottomBoundaryY = boundaries.length > 0 ? Math.max(...boundaries.map(it => it.y)) : labelY - 35;
 
-            const valueItems = items.filter(it => 
-                it.x > labelX + 40 && 
+            const valueItems = items.filter(it =>
+                it.x > labelX + 40 &&
                 it.x < rightLimit &&
-                it.y <= labelY + 2 && 
+                it.y <= labelY + 2 &&
                 it.y > bottomBoundaryY
             );
 
-            const sortedItems = valueItems.sort((a,b) => (b.y === a.y) ? a.x - b.x : b.y - a.y);
+            const sortedItems = valueItems.sort((a, b) => (b.y === a.y) ? a.x - b.x : b.y - a.y);
             return sortedItems.map(i => i.str).join(" ").replace(/\s+/g, " ").trim();
         };
 
@@ -148,16 +148,16 @@ export default async function analyzeCanopyPdf(pdfPath) {
     const consolidated = {};
     for (const job of jobsFound) {
         const configKey = `${job.item}|${job.profile}|${job.frameFinish}|${job.scissor}|${job.tilt}|${job.telas.join(",")}`;
-        
+
         if (!consolidated[configKey]) {
-            consolidated[configKey] = { 
-                item: job.item, 
-                profile: job.profile, 
+            consolidated[configKey] = {
+                item: job.item,
+                profile: job.profile,
                 frameFinish: job.frameFinish,
                 scissor: job.scissor,
                 tilt: job.tilt,
-                telas: job.telas, 
-                required: 0, 
+                telas: job.telas,
+                required: 0,
                 jobs: []
             };
         }
@@ -178,7 +178,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 const scissorMatch = !!config.scissor === !!db.scissor;
                 const tiltMatch = !!config.tilt === !!db.tilt;
                 const pdfTelas = config.telas;
-                
+
                 const matchTelas = (dbTelasArray) => {
                     if (!dbTelasArray || pdfTelas.length !== dbTelasArray.length) return false;
                     const sortedDb = [...dbTelasArray].sort();
@@ -186,7 +186,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 };
 
                 const telasMatch = matchTelas(db.telas) || matchTelas(db.telas2);
-                
+
                 // REGLA DE EXCLUSIÓN 1: Frame Finish (Solo excluye si el DB especifica uno y el PDF tiene uno DISTINTO)
                 if (db.frameFinish && config.frameFinish && db.frameFinish.toLowerCase() !== config.frameFinish.toLowerCase()) {
                     return false;
@@ -220,12 +220,12 @@ export default async function analyzeCanopyPdf(pdfPath) {
     try {
         const historyColl = await getCanopyHistoryCollection();
         const timestamp = new Date();
-        
+
         for (const job of jobsFound) {
             // Buscamos el estatus correspondiente
-            const result = results.find(r => 
-                r.item === job.item && 
-                r.profile === job.profile && 
+            const result = results.find(r =>
+                r.item === job.item &&
+                r.profile === job.profile &&
                 !!r.scissor === !!job.scissor &&
                 !!r.tilt === !!job.tilt &&
                 r.frameFinish === job.frameFinish &&
@@ -233,7 +233,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
             );
 
             const status = result ? result.status : "DESCONOCIDO";
-            
+
             // Si el usuario no quiere guardar los que no están inventariados
             if (status === "NO INVENTARIADO") continue;
 
