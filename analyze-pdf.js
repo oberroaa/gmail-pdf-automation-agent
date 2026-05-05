@@ -93,90 +93,76 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
     }
 
     // ================================
-    // GUARDADO AUTOMÁTICO / ACTUALIZACIÓN EN DB
+    // VALIDACIÓN DE DUPLICADOS
     // ================================
-    try {
-        const itemsColl = await getItemsCollection();
+    const reportsColl = await getReportsCollection();
+    const fileName = displayName || pdfPath.split(/[\\/]/).pop();
+    const alreadyProcessed = await reportsColl.findOne({ fileName });
 
-        for (const key of Object.keys(grouped)) {
-            const r = grouped[key];
-
-            // Buscamos si el Part Number ya existe
-            const existing = await itemsColl.findOne({ partNumber: r.partNumber });
-
-            if (!existing) {
-                // ESCENARIO 1: El material es nuevo, extraemos el balance (FT) de la descripción
-                let extractedFt = 0;
-                const ftMatch = (r.description || "").match(/(\d+)\s*FT/i);
-                if (ftMatch) {
-                    extractedFt = parseInt(ftMatch[1]);
-                    console.log(`🆕 Registrando nuevo material: ${r.partNumber} con balance extraído: ${extractedFt} FT`);
-                } else {
-                    console.log(`🆕 Registrando nuevo material: ${r.partNumber} sin FT detectado (Balance: 0)`);
-                }
-
-                await itemsColl.insertOne({
-                    partNumber: r.partNumber,
-                    description: r.description || "Sin descripción",
-                    qtyReq: extractedFt,
-                    uom: r.uom,
-                    active: true,
-                    createdAt: new Date()
-                });
-                r.active = true;
-            } else {
-                // ESCENARIO 2: Ya existe
-                console.log(`ℹ️ El material ${r.partNumber} ya existe. No se modifica el inventario.`);
-
-                // Mantenemos el estado activo del registro existente para el reporte
-                r.active = existing.active !== false;
-
-                // Solo actualizamos la fecha de "última vez visto" o descripción si quieres,
-                // pero NO actualizamos qtyReq (el inventario)
-                await itemsColl.updateOne(
-                    { partNumber: r.partNumber },
-                    { $set: { updatedAt: new Date() } }
-                );
-            }
-
-        }
-    } catch (dbError) {
-        console.error("❌ Error actualizando la base de datos de items:", dbError);
+    if (alreadyProcessed) {
+        console.log(`⚠️ El PDF "${fileName}" ya fue procesado anteriormente. Mostrando resultados sin modificar la base de datos.`);
     }
 
     // ================================
-    // GUARDADO DE REPORTE (Historial)
+    // GUARDADO AUTOMÁTICO (Solo si no ha sido procesado)
     // ================================
-    try {
-        const reportsColl = await getReportsCollection();
+    if (!alreadyProcessed) {
+        try {
+            const itemsColl = await getItemsCollection();
+            for (const key of Object.keys(grouped)) {
+                const r = grouped[key];
+                const existing = await itemsColl.findOne({ partNumber: r.partNumber });
 
-        // Filtramos solo los items que están ACTIVOS y ordenamos por cantidad DESC
-        const activeItems = Object.values(grouped)
-            .filter(item => item.active !== false)
-            .sort((a, b) => b.total - a.total);
-
-        if (activeItems.length > 0) {
-            // Creamos el objeto del reporte
-            const newReport = {
-                fileName: displayName || pdfPath.split(/[\\/]/).pop(),
-                date: new Date(),
-                itemsFound: activeItems.map(item => ({
-                    partNumber: item.partNumber,
-                    description: item.description,
-                    qty: item.total,
-                    uom: item.uom
-                })),
-                totalItems: activeItems.length,
-                status: "Procesado"
-            };
-
-            await reportsColl.insertOne(newReport);
-            console.log(`📊 Reporte guardado (solo items activos) para: ${newReport.fileName}`);
-        } else {
-            console.log(`ℹ️ No se generó reporte para ${pdfPath.split(/[\\/]/).pop()} porque todos los items encontrados están inactivos.`);
+                if (!existing) {
+                    let extractedFt = 0;
+                    const ftMatch = (r.description || "").match(/(\d+)\s*FT/i);
+                    if (ftMatch) extractedFt = parseInt(ftMatch[1]);
+                    
+                    await itemsColl.insertOne({
+                        partNumber: r.partNumber,
+                        description: r.description || "Sin descripción",
+                        qtyReq: extractedFt,
+                        uom: r.uom,
+                        active: true,
+                        createdAt: new Date()
+                    });
+                    r.active = true;
+                } else {
+                    r.active = existing.active !== false;
+                    await itemsColl.updateOne(
+                        { partNumber: r.partNumber },
+                        { $set: { updatedAt: new Date() } }
+                    );
+                }
+            }
+        } catch (dbError) {
+            console.error("❌ Error actualizando items:", dbError);
         }
-    } catch (reportError) {
-        console.error("❌ Error guardando el reporte:", reportError);
+
+        try {
+            const activeItems = Object.values(grouped)
+                .filter(item => item.active !== false)
+                .sort((a, b) => b.total - a.total);
+
+            if (activeItems.length > 0) {
+                const newReport = {
+                    fileName,
+                    date: new Date(),
+                    itemsFound: activeItems.map(item => ({
+                        partNumber: item.partNumber,
+                        description: item.description,
+                        qty: item.total,
+                        uom: item.uom
+                    })),
+                    totalItems: activeItems.length,
+                    status: "Procesado"
+                };
+                await reportsColl.insertOne(newReport);
+                console.log(`📊 Reporte guardado para: ${fileName}`);
+            }
+        } catch (reportError) {
+            console.error("❌ Error guardando reporte:", reportError);
+        }
     }
 
 
