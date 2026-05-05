@@ -173,7 +173,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
         for (const key in consolidated) {
             const config = consolidated[key];
             const existing = allDbCanopies.find(db => {
-                const aliasMatch = db.alias && config.item.includes(db.alias);
+                const aliasMatch = db.alias && config.item.endsWith(db.alias);
                 const profileMatch = config.profile === db.profile;
                 const scissorMatch = !!config.scissor === !!db.scissor;
                 const tiltMatch = !!config.tilt === !!db.tilt;
@@ -194,7 +194,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
 
                 // REGLA DE EXCLUSIÓN 2: Prefijos Ignorados (Ej: OM + Alias)
                 if (db.ignored && Array.isArray(db.ignored)) {
-                    const hasIgnoredPrefix = db.ignored.some(pref => config.item.includes(pref + db.alias));
+                    const hasIgnoredPrefix = db.ignored.some(pref => config.item.endsWith(pref + db.alias));
                     if (hasIgnoredPrefix) return false;
                 }
 
