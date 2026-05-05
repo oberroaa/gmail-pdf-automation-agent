@@ -435,10 +435,6 @@ function AppInner() {
 
             ) : activeTab === "reports" ? (
               <motion.div key="reports" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-                <div className="mb-10">
-                  <h2 className="text-2xl md:text-3xl font-black text-white">Historial de Reportes</h2>
-                  <p className="text-slate-500 text-xs md:text-sm mt-1">Consulta los resultados de los análisis diarios.</p>
-                </div>
                 {/* LÓGICA DE NAVEGACIÓN ENTRE HISTORIAL Y CONSOLA */}
                 {selectedReportForMove ? (
                   <MovementsConsole
@@ -446,7 +442,13 @@ function AppInner() {
                     onBack={() => setSelectedReportForMove(null)}
                   />
                 ) : (
-                  <ReportsHistory onMove={(report) => setSelectedReportForMove(report)} />
+                  <>
+                    <div className="mb-10 print:hidden">
+                      <h2 className="text-2xl md:text-3xl font-black text-white">Historial de Reportes</h2>
+                      <p className="text-slate-500 text-xs md:text-sm mt-1">Consulta los resultados de los análisis diarios.</p>
+                    </div>
+                    <ReportsHistory onMove={(report) => setSelectedReportForMove(report)} />
+                  </>
                 )}
               </motion.div>
 

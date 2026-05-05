@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { type Report, type ReportItem } from "../services/reportsApi";
 import { type Item, getItems } from "../services/itemsApi";
-import { ArrowLeft, Save, Trash2, CheckSquare, Square, RefreshCw, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, CheckSquare, Square, RefreshCw, Loader2, Printer } from "lucide-react";
 import { apiFetch } from "../services/apiFetch";
 
 interface MovementItem extends ReportItem {
@@ -98,6 +98,14 @@ export default function MovementsConsole({ report, onBack }: Props) {
     };
 
 
+    const handlePrint = () => {
+        const originalTitle = document.title;
+        document.title = `Reporte: ${report.fileName}`;
+        window.print();
+        document.title = originalTitle;
+    };
+
+
     const toggleCheck = (idx: number, field: 'p' | 'e' | 't') => {
         const newItems = [...items];
         const isCurrentlyChecked = newItems[idx][field];
@@ -164,7 +172,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-20">
             {/* BARRA SUPERIOR */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800/40 p-6 rounded-3xl border border-white/5">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800/40 p-6 rounded-3xl border border-white/5 print:hidden">
                 <div className="flex items-center gap-4">
                     <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-white"><ArrowLeft /></button>
                     <div>
@@ -172,25 +180,34 @@ export default function MovementsConsole({ report, onBack }: Props) {
                         <p className="text-slate-500 text-xs">Reporte: {report.fileName}</p>
                     </div>
                 </div>
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-900/20 transition-all disabled:opacity-50"
-                >
-                    {saving ? <RefreshCw className="animate-spin w-4 h-4" /> : <Save className="w-4 h-4" />}
-                    Guardar Cambios
-                </button>
+                <div className="flex items-center gap-3 print:hidden">
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 transition-all"
+                    >
+                        <Printer className="w-4 h-4" />
+                        Imprimir
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-900/20 transition-all disabled:opacity-50"
+                    >
+                        {saving ? <RefreshCw className="animate-spin w-4 h-4" /> : <Save className="w-4 h-4" />}
+                        Guardar Cambios
+                    </button>
+                </div>
             </div>
 
             {/* ENCABEZADO INTERACTIVO - MÁS COMPACTO */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 print:grid-cols-3 gap-2">
                 <div className="glass p-2 px-3 rounded-xl flex flex-col border border-white/5">
                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Área de Trabajo</span>
-                    <input type="text" value={header.area} onChange={e => setHeader({ ...header, area: e.target.value })} className="bg-transparent border-b border-white/5 outline-none text-white font-bold p-0.5 text-xs focus:border-indigo-500 transition-colors" placeholder="ALMACÉN..." />
+                    <input type="text" value={header.area} onChange={e => setHeader({ ...header, area: e.target.value })} className="bg-transparent border-b border-white/5 outline-none text-white font-bold p-0.5 text-xs focus:border-indigo-500 transition-colors" placeholder="" />
                 </div>
                 <div className="glass p-2 px-3 rounded-xl flex flex-col border border-white/5">
                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Team / Escuadrón</span>
-                    <input type="text" value={header.team} onChange={e => setHeader({ ...header, team: e.target.value })} className="bg-transparent border-b border-white/5 outline-none text-white font-bold p-0.5 text-xs focus:border-indigo-500 transition-colors" placeholder="EQUIPO..." />
+                    <input type="text" value={header.team} onChange={e => setHeader({ ...header, team: e.target.value })} className="bg-transparent border-b border-white/5 outline-none text-white font-bold p-0.5 text-xs focus:border-indigo-500 transition-colors" placeholder="" />
                 </div>
                 <div className="glass p-2 px-3 rounded-xl flex flex-col border border-white/5">
                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Fecha</span>
@@ -198,7 +215,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                 </div>
             </div>
             {/* AGREGAR ITEM MANUAL */}
-            <div className="flex gap-2 items-center bg-indigo-500/10 p-3 rounded-2xl border border-indigo-500/20 mb-4 animate-in slide-in-from-top duration-700">
+            <div className="flex gap-2 items-center bg-indigo-500/10 p-3 rounded-2xl border border-indigo-500/20 mb-4 animate-in slide-in-from-top duration-700 print:hidden">
                 <div className="flex flex-col flex-1">
                     <span className="text-[10px] text-indigo-400 font-bold uppercase ml-1">Nuevo Part Number</span>
                     <input
@@ -231,15 +248,25 @@ export default function MovementsConsole({ report, onBack }: Props) {
             <div className="glass rounded-3xl overflow-hidden overflow-x-auto border border-white/5">
                 <table className="w-full text-left border-collapse">
                     <thead>
+                        {/* Fila 1: Títulos principales */}
                         <tr className="bg-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                            <th className="p-2 px-3 w-20">Item</th>
-                            <th className="p-2 text-center w-16">Qty</th>
-                            <th className="p-2 text-center w-14">Ft</th>
-                            <th className="p-2 text-center w-14">Total</th>
-                            <th className="p-2 text-center border-x border-white/5 w-20">P | E | T</th>
-                            <th className="p-2 w-20 text-center">Location</th>
-                            <th className="p-2 text-center bg-indigo-500/5 border-x border-white/10 w-20">Substitution</th>
-                            <th className="p-2 text-center w-8 text-[8px]">X</th>
+                            <th rowSpan={2} className="p-2 px-3 w-20 border-r border-white/5">Item</th>
+                            <th rowSpan={2} className="p-2 text-center w-16 border-r border-white/5">Qty</th>
+                            <th rowSpan={2} className="p-2 text-center w-14 border-r border-white/5">Ft</th>
+                            <th rowSpan={2} className="p-2 text-center w-14 border-r border-white/5">Total</th>
+                            <th colSpan={3} className="p-1 text-center border-r border-white/5">Estado</th>
+                            <th rowSpan={2} className="p-2 w-20 text-center border-r border-white/5">Location</th>
+                            <th colSpan={3} className="p-1 text-center bg-indigo-500/5 border-r border-white/10">Substitution</th>
+                            <th rowSpan={2} className="p-2 text-center w-8 text-[8px] print:hidden">X</th>
+                        </tr>
+                        {/* Fila 2: Sub-títulos */}
+                        <tr className="bg-white/5 text-[8px] font-black text-slate-500 uppercase tracking-widest border-t border-white/5">
+                            <th className="p-1 text-center border-r border-white/5 w-8">P</th>
+                            <th className="p-1 text-center border-r border-white/5 w-8">E</th>
+                            <th className="p-1 text-center border-r border-white/5 w-8">T</th>
+                            <th className="p-1 text-center border-r border-white/5 bg-indigo-500/5 w-16">Qty</th>
+                            <th className="p-1 text-center border-r border-white/5 bg-indigo-500/5 w-12">Ft</th>
+                            <th className="p-1 text-center border-r border-white/10 bg-indigo-500/5 w-16">Total</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -249,10 +276,10 @@ export default function MovementsConsole({ report, onBack }: Props) {
                             const total = Math.ceil(item.qty / lengthFt);
 
                             return (
-                                <tr key={idx} className="hover:bg-white/5 transition-colors group">
-                                    <td className="p-1.5 px-3">
+                                <tr key={idx} className="hover:bg-white/5 transition-colors group text-[13px]">
+                                    <td className="p-1.5 px-3 border-r border-white/5">
                                         <div className="flex items-center gap-2">
-                                            <div className="font-bold text-indigo-300 text-[13px]">{item.partNumber}</div>
+                                            <div className="font-bold text-indigo-300">{item.partNumber}</div>
                                             {item.isManual && (
                                                 <span className="bg-amber-500/20 text-amber-500 text-[8px] px-1.5 py-0.5 rounded-md uppercase font-black border border-amber-500/30">
                                                     Manual
@@ -261,71 +288,66 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                         </div>
                                     </td>
 
+                                    <td className="p-1.5 text-center font-mono text-white border-r border-white/5">{item.qty}</td>
+                                    <td className="p-1.5 text-center text-slate-500 text-[10px] italic border-r border-white/5">{lengthFt}</td>
+                                    <td className="p-1.5 text-center font-black text-indigo-400 border-r border-white/5">{total}</td>
 
-                                    <td className="p-1.5 text-center font-mono text-white text-[13px]">{item.qty}</td>
-                                    <td className="p-1.5 text-center text-slate-500 text-[10px] italic">{lengthFt}</td>
-                                    <td className="p-1.5 text-center font-black text-indigo-400 text-[13px]">
-                                        <div className="flex items-center justify-center gap-1">
-                                            {total}
-                                        </div>
+                                    {/* ESTADOS P E T (Celdas individuales) */}
+                                    <td className="p-1 text-center border-r border-white/5">
+                                        <button onClick={() => toggleCheck(idx, 'p')} className={`transition-all ${item.p ? 'text-indigo-400' : 'text-slate-700 hover:text-slate-500'}`}>
+                                            {item.p ? <CheckSquare size={16} /> : <Square size={16} />}
+                                        </button>
                                     </td>
-
-                                    {/* CHECKS P E T */}
-                                    <td className="p-1 px-1 border-x border-white/5" translate="no">
-                                        <div className="flex justify-center gap-2">
-                                            {(['p', 'e', 't'] as const).map((f) => (
-                                                <button
-                                                    key={f}
-                                                    onClick={() => toggleCheck(idx, f)}
-                                                    className={`transition-all ${item[f] ? 'text-indigo-400' : 'text-slate-700 hover:text-slate-500'}`}
-                                                    title={f.toUpperCase()}
-                                                >
-                                                    {item[f] ? <CheckSquare size={18} /> : <Square size={18} />}
-                                                </button>
-                                            ))}
-                                        </div>
+                                    <td className="p-1 text-center border-r border-white/5">
+                                        <button onClick={() => toggleCheck(idx, 'e')} className={`transition-all ${item.e ? 'text-indigo-400' : 'text-slate-700 hover:text-slate-500'}`}>
+                                            {item.e ? <CheckSquare size={16} /> : <Square size={16} />}
+                                        </button>
+                                    </td>
+                                    <td className="p-1 text-center border-r border-white/5">
+                                        <button onClick={() => toggleCheck(idx, 't')} className={`transition-all ${item.t ? 'text-indigo-400' : 'text-slate-700 hover:text-slate-500'}`}>
+                                            {item.t ? <CheckSquare size={16} /> : <Square size={16} />}
+                                        </button>
                                     </td>
 
                                     {/* LOCATION */}
-                                    <td className="p-1 px-1">
+                                    <td className="p-1 px-1 border-r border-white/5">
                                         <input
                                             type="text"
                                             value={item.location}
                                             onChange={e => updateItemField(idx, 'location', e.target.value)}
-                                            className="bg-transparent border-b border-white/10 outline-none text-xs text-slate-300 w-20 px-1 py-1 focus:border-indigo-500 transition-all font-mono"
-                                            placeholder="T1-..."
+                                            className="bg-transparent outline-none text-xs text-slate-300 w-full px-1 py-1 focus:bg-white/5 transition-all font-mono text-center"
+                                            placeholder=""
                                         />
                                     </td>
 
-                                    {/* SUSTITUCIÓN */}
-                                    <td className="p-1 px-2 bg-indigo-500/5 border-x border-white/10" translate="no">
-                                        <div className="flex gap-2 justify-center">
-                                            <input
-                                                placeholder="QTY"
-                                                autoComplete="off"
-                                                value={item.subQty}
-                                                onChange={e => updateItemField(idx, 'subQty', e.target.value)}
-                                                className="w-20 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500"
-                                            />
-                                            <input
-                                                placeholder="FT"
-                                                autoComplete="off"
-                                                value={item.subLength}
-                                                onChange={e => updateItemField(idx, 'subLength', e.target.value)}
-                                                className="w-12 bg-slate-900/80 border border-white/10 rounded px-2 py-2 text-sm text-center text-white outline-none focus:border-indigo-500 font-mono"
-                                                maxLength={2}
-                                            />
-                                            <input
-                                                placeholder="Total"
-                                                autoComplete="off"
-                                                value={item.subTotal}
-                                                onChange={e => updateItemField(idx, 'subTotal', e.target.value)}
-                                                className="w-24 bg-slate-900/80 border border-indigo-500/30 rounded px-2 py-2 text-sm text-center text-indigo-300 font-bold outline-none"
-                                            />
-                                        </div>
+                                    {/* SUSTITUCIÓN (Celdas individuales) */}
+                                    <td className="p-0 border-r border-white/5 bg-indigo-500/5">
+                                        <input
+                                            value={item.subQty}
+                                            onChange={e => updateItemField(idx, 'subQty', e.target.value)}
+                                            className="w-full bg-transparent p-2 text-xs text-center text-white outline-none focus:bg-white/5"
+                                            placeholder=""
+                                        />
+                                    </td>
+                                    <td className="p-0 border-r border-white/5 bg-indigo-500/5">
+                                        <input
+                                            value={item.subLength}
+                                            onChange={e => updateItemField(idx, 'subLength', e.target.value)}
+                                            className="w-full bg-transparent p-2 text-xs text-center text-white outline-none focus:bg-white/5 font-mono"
+                                            maxLength={2}
+                                            placeholder=""
+                                        />
+                                    </td>
+                                    <td className="p-0 border-r border-white/10 bg-indigo-500/5">
+                                        <input
+                                            value={item.subTotal}
+                                            onChange={e => updateItemField(idx, 'subTotal', e.target.value)}
+                                            className="w-full bg-transparent p-2 text-xs text-center text-indigo-300 font-bold outline-none focus:bg-white/5"
+                                            placeholder=""
+                                        />
                                     </td>
 
-                                    <td className="p-0 text-center w-8">
+                                    <td className="p-0 text-center w-8 print:hidden">
                                         <button onClick={() => removeItem(idx)} className="p-1 text-slate-700 hover:text-red-500 transition-colors" title="Eliminar">
                                             <Trash2 size={16} />
                                         </button>
@@ -343,8 +365,24 @@ export default function MovementsConsole({ report, onBack }: Props) {
                 )}
             </div>
 
+            {/* LEYENDA DE ESTADOS */}
+            <div className="flex gap-6 px-4 py-2 bg-white/5 rounded-2xl border border-white/5 w-fit">
+                <div className="flex items-center gap-2">
+                    <span className="font-black text-indigo-400 text-xs">P:</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Producción</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="font-black text-indigo-400 text-xs">E:</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Entregado</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="font-black text-indigo-400 text-xs">T:</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Transferido</span>
+                </div>
+            </div>
+
             {/* BOTÓN GUARDAR FLOTANTE (Móvil) */}
-            <div className="md:hidden fixed bottom-6 right-6 z-50">
+            <div className="md:hidden fixed bottom-6 right-6 z-50 print:hidden">
                 <button
                     onClick={handleSave}
                     className="p-4 bg-indigo-600 rounded-full shadow-2xl text-white active:scale-95 transition-transform"
@@ -352,6 +390,68 @@ export default function MovementsConsole({ report, onBack }: Props) {
                     <Save size={24} />
                 </button>
             </div>
+
+            <style>{`
+                @media print {
+                    body {
+                        background: white !important;
+                        color: black !important;
+                    }
+                    .glass, .bg-slate-800\\/40, .bg-white\\/5, .bg-indigo-500\\/10 {
+                        background: transparent !important;
+                        border-color: #eee !important;
+                        color: black !important;
+                        box-shadow: none !important;
+                    }
+                    table {
+                        width: 100% !important;
+                        border-collapse: collapse !important;
+                        color: black !important;
+                    }
+                    th, td {
+                        border: 1px solid #ddd !important;
+                        color: black !important;
+                        padding: 8px !important;
+                    }
+                    input {
+                        border: none !important;
+                        color: black !important;
+                        font-weight: bold !important;
+                    }
+                    .text-white, .text-slate-200, .text-indigo-300, .text-indigo-400, .text-slate-400, .text-slate-500 {
+                        color: black !important;
+                    }
+                    /* Estilos para el encabezado horizontal y pequeño */
+                    .grid.print\\:grid-cols-3 {
+                        display: grid !important;
+                        grid-template-columns: repeat(3, 1fr) !important;
+                        gap: 10px !important;
+                        margin-bottom: 10px !important;
+                    }
+                    .glass.p-2.px-3 {
+                        padding: 4px 8px !important;
+                        border-radius: 8px !important;
+                    }
+                    .glass span {
+                        font-size: 7px !important;
+                    }
+                    .glass input {
+                        font-size: 10px !important;
+                        height: auto !important;
+                        padding: 0 !important;
+                    }
+                    /* Ocultar elementos marcados */
+                    .print\\:hidden {
+                        display: none !important;
+                    }
+                    /* Asegurar que el contenedor principal no tenga márgenes raros */
+                    main, .max-w-6xl {
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        max-width: 100% !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }
