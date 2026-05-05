@@ -3,7 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { Brain, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const Login: React.FC = () => {
+interface LoginProps {
+    onShowPublic?: () => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onShowPublic }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -96,6 +100,16 @@ const Login: React.FC = () => {
                         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'INICIAR SESIÓN'}
                     </button>
                 </form>
+
+                <div className="mt-8 pt-8 border-t border-white/5 flex flex-col items-center gap-4">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">¿Quieres conocer el proyecto?</p>
+                    <button 
+                        onClick={onShowPublic}
+                        className="text-xs font-black text-indigo-400 hover:text-white transition-colors tracking-widest uppercase py-2"
+                    >
+                        Ver Overview del Proyecto
+                    </button>
+                </div>
             </motion.div>
         </div>
     );

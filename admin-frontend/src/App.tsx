@@ -43,6 +43,8 @@ function AppInner() {
   const [selectedReportForMove, setSelectedReportForMove] = useState<Report | null>(null);
   const [isMaterialHandlerOpen, setIsMaterialHandlerOpen] = useState(true);
   const [isCanopyOpen, setIsCanopyOpen] = useState(true);
+  const [showPublicOverview, setShowPublicOverview] = useState(false);
+
 
   // --- FUNCIONES ---
   const fetchRules = async () => {
@@ -122,7 +124,29 @@ function AppInner() {
 
   // --- RENDERING GATES (Después de los hooks) ---
   if (authLoading) return <div className="min-h-screen bg-[#0a0c10] flex items-center justify-center font-black text-white tracking-widest">CARGANDO...</div>;
-  if (!user) return <Login />;
+  
+  // Si no hay usuario y no estamos en modo público, mostramos Login
+  if (!user && !showPublicOverview) {
+    return <Login onShowPublic={() => setShowPublicOverview(true)} />;
+  }
+
+  // Si estamos en modo público (sin loguear), mostramos solo el Overview a pantalla completa
+  if (showPublicOverview && !user) {
+    return (
+      <div className="min-h-screen bg-[#0a0c10] text-slate-200 overflow-y-auto relative">
+        <button 
+          onClick={() => setShowPublicOverview(false)}
+          className="fixed top-6 right-6 z-[100] px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-[10px] tracking-widest uppercase transition-all shadow-2xl shadow-indigo-600/40 flex items-center gap-2 group"
+        >
+          <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          Volver al Login
+        </button>
+        <div className="pt-20">
+          <ProjectOverview />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-[#0a0c10] text-slate-200 overflow-hidden font-sans relative">
