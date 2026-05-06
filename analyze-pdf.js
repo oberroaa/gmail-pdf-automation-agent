@@ -46,10 +46,20 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
     // ================================
     // CONFIG DE REGLAS
     // ================================
+
     const allowedUoms = ruleset.filters?.uom_include || [];
     const allowedPrefixes = ruleset.filters?.material_prefix || [];
 
-    const itemRegex = /\b([A-Z0-9.\-]{5,})\b\s+([\s\S]+?)\s+(\d+(?:\.\d+)?)\s*(FT|EA|MT)\s+[A-Z]\b/gi;
+    // Construir Regex dinámico basado en prefijos si existen
+    let pnPattern = "[A-Z0-9.\\-]{5,}";
+    if (allowedPrefixes.length) {
+        const escapedPrefixes = allowedPrefixes.map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        // Exigimos que tenga el prefijo Y que el total de caracteres sea al menos 5
+        pnPattern = `(?=[A-Z0-9.\\-]{5,}\\b)(?:${escapedPrefixes.join("|")})[A-Z0-9.\\-]*`;
+    }
+
+    // Usamos el anclaje de "Source" (Source o un código de letra sola) para saber que viene un nuevo Part Number
+    const itemRegex = new RegExp(`(?:Source|[A-Z])\\s+\\b(${pnPattern})\\b\\s+([\\s\\S]+?)\\s+(\\d+(?:\\.\\d+)?)\\s*(FT|EA|MT)\\s+[A-Z]\\b`, "g");
 
     const rows = [];
     let match;

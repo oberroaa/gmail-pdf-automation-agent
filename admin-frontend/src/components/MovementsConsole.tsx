@@ -50,7 +50,12 @@ export default function MovementsConsole({ report, onBack }: Props) {
                 const moveData = await res.json();
 
                 if (moveData.found) {
-                    setItems(moveData.data.items);
+                    // Redondear QTY hacia arriba al cargar
+                    const roundedItems = moveData.data.items.map((it: MovementItem) => ({
+                        ...it,
+                        qty: Math.ceil(it.qty)
+                    }));
+                    setItems(roundedItems);
                     setHeader(moveData.data.header);
                 } else {
                     // Si no hay guardados, creamos la lista inicial con Qty > 5
@@ -58,6 +63,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                         .filter(item => item.qty > 5)
                         .map(item => ({
                             ...item,
+                            qty: Math.ceil(item.qty), // Redondear QTY hacia arriba
                             p: false, e: false, t: false,
                             location: "",
                             subQty: "", subLength: "", subTotal: ""
@@ -165,7 +171,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
         const newItem: MovementItem = {
             partNumber: newItemPN.toUpperCase(),
             description: mat?.description || "Añadido manualmente",
-            qty: Number(newItemQty),
+            qty: Math.ceil(Number(newItemQty)),
             uom: mat?.uom || "EA",
             p: false, e: false, t: false,
             location: "",
@@ -355,7 +361,7 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                             value={item.subTotal}
                                             readOnly
                                             className="w-full bg-transparent p-2 text-xs text-center text-indigo-300 font-black outline-none cursor-default"
-                                            placeholder="--"
+                                            placeholder=""
                                         />
                                     </td>
 
