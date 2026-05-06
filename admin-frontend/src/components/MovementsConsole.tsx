@@ -129,9 +129,21 @@ export default function MovementsConsole({ report, onBack }: Props) {
         setItems(newItems);
     };
 
-    const updateItemField = (idx: number, field: keyof MovementItem, value: string) => {
+    const updateItemField = (idx: number, field: string, value: any) => {
         const newItems = [...items];
         (newItems[idx] as any)[field] = value;
+
+        // Cálculo automático del Total de Sustitución (Multiplicación: Cantidad * Largo)
+        if (field === 'subQty' || field === 'subLength') {
+            const qty = parseFloat(newItems[idx].subQty || "0");
+            const length = parseFloat(newItems[idx].subLength || "0");
+            if (qty > 0 && length > 0) {
+                newItems[idx].subTotal = (qty * length).toString();
+            } else {
+                newItems[idx].subTotal = "";
+            }
+        }
+
         setItems(newItems);
     };
 
@@ -341,9 +353,9 @@ export default function MovementsConsole({ report, onBack }: Props) {
                                     <td className="p-0 border-r border-white/10 bg-indigo-500/5">
                                         <input
                                             value={item.subTotal}
-                                            onChange={e => updateItemField(idx, 'subTotal', e.target.value)}
-                                            className="w-full bg-transparent p-2 text-xs text-center text-indigo-300 font-bold outline-none focus:bg-white/5"
-                                            placeholder=""
+                                            readOnly
+                                            className="w-full bg-transparent p-2 text-xs text-center text-indigo-300 font-black outline-none cursor-default"
+                                            placeholder="--"
                                         />
                                     </td>
 
