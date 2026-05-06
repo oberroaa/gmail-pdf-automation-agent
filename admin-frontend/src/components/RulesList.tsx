@@ -47,7 +47,7 @@ export default function RulesList({
                                 <div className="p-2 bg-slate-800/80 rounded-xl group-hover:scale-110 transition-transform duration-300">
                                     <Settings className={`w-5 h-5 ${isDefault ? "text-indigo-400" : "text-slate-400"}`} />
                                 </div>
-                                
+
                                 {isDefault && (
                                     <div className="flex items-center gap-1.5 bg-indigo-500/20 text-indigo-300 text-[10px] font-bold px-3 py-1 rounded-full border border-indigo-500/30">
                                         <Star className="w-3 h-3 fill-current" />
