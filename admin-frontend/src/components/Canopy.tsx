@@ -25,7 +25,7 @@ export default function CanopyManager() {
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Canopy>>({
-        item: "", alias: "", profile: "", frameFinish: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0
+        item: "", alias: "", job_ref: "", profile: "", frameFinish: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0
     });
 
     // Estados temporales para el texto de las telas
@@ -118,7 +118,7 @@ export default function CanopyManager() {
 
     const openCreateModal = () => {
         setEditingId(null);
-        setFormData({ item: "", alias: "", profile: "", frameFinish: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 });
+        setFormData({ item: "", alias: "", job_ref: "", profile: "", frameFinish: "", scissor: false, tilt: false, telas: [], telas2: [], total: 0 });
         setTelasText("");
         setTelas2Text("");
         setIgnoredText("");
@@ -267,7 +267,7 @@ export default function CanopyManager() {
                                         </div>
                                     </button>
                                 </th>
-                                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Item / Alias</th>
+                                <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Item / Alias / Ref</th>
                                 <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Perfil</th>
                                 <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Configuración y Reglas</th>
                                 <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Stock</th>
@@ -289,12 +289,20 @@ export default function CanopyManager() {
                                     <td className="px-6 py-6">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-sm font-black text-white group-hover:text-sky-400 transition-colors leading-tight">{c.item}</span>
-                                            {c.alias && (
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="w-1 h-1 rounded-full bg-sky-500/40" />
-                                                    <span className="text-[10px] text-sky-500/60 font-black uppercase tracking-wider">{c.alias}</span>
-                                                </div>
-                                            )}
+                                            <div className="flex flex-wrap items-center gap-3 mt-1">
+                                                {c.alias && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="w-1 h-1 rounded-full bg-sky-500/40" />
+                                                        <span className="text-[10px] text-sky-500/60 font-black uppercase tracking-wider">{c.alias}</span>
+                                                    </div>
+                                                )}
+                                                {c.job_ref && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="w-1 h-1 rounded-full bg-emerald-500/40" />
+                                                        <span className="text-[10px] text-emerald-500/60 font-black uppercase tracking-wider">Ref: {c.job_ref}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-6">
@@ -408,14 +416,18 @@ export default function CanopyManager() {
                                             <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Identificación del Ítem</h4>
                                         </div>
                                         
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                             <div className="space-y-1.5">
                                                 <label className="text-[10px] font-bold text-slate-500 ml-1">ITEM ID (Código Real)</label>
                                                 <input type="text" placeholder="Ej: VNC-OM8.5SQ" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-sm text-white focus:ring-2 focus:ring-sky-500/30 transition-all outline-none" value={formData.item} onChange={e => setFormData({ ...formData, item: e.target.value })} required />
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] font-bold text-slate-500 ml-1">ALIAS (Como aparece en PDF)</label>
+                                                <label className="text-[10px] font-bold text-slate-500 ml-1">ALIAS (En PDF)</label>
                                                 <input type="text" placeholder="Ej: OM8.5SQ" className="w-full bg-sky-500/5 border border-sky-500/20 rounded-2xl px-4 py-3.5 text-sm text-sky-400 font-black focus:ring-2 focus:ring-sky-500/30 transition-all outline-none" value={formData.alias} onChange={e => setFormData({ ...formData, alias: e.target.value })} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-slate-500 ml-1">JOB REF (Ticket Almacén)</label>
+                                                <input type="text" placeholder="Ej: JOB-123" className="w-full bg-emerald-500/5 border border-emerald-500/20 rounded-2xl px-4 py-3.5 text-sm text-emerald-400 font-black focus:ring-2 focus:ring-emerald-500/30 transition-all outline-none" value={formData.job_ref} onChange={e => setFormData({ ...formData, job_ref: e.target.value })} />
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">

@@ -5,6 +5,7 @@ export interface ReportItem {
     description: string;
     qty: number;
     uom: string;
+    job_ref?: string;
 }
 
 export interface Report {

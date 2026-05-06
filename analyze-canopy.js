@@ -206,7 +206,7 @@ export default async function analyzeCanopyPdf(pdfPath) {
                 if (existing.total === 0) status = "SIN STOCK";
                 else if (existing.total < config.required) status = "PARCIAL";
 
-                results.push({ ...config, dbId: existing._id, available: existing.total || 0, status, isNew: false });
+                results.push({ ...config, dbId: existing._id, available: existing.total || 0, status, isNew: false, job_ref: existing.job_ref });
             } else {
                 results.push({ ...config, dbId: null, available: 0, status: "NO INVENTARIADO", isNew: true });
             }
@@ -256,6 +256,34 @@ export default async function analyzeCanopyPdf(pdfPath) {
         }
     } catch (e) {
         console.error("Error guardando historial Canopy:", e);
+    }
+
+    // --- GUARDADO EN REPORTE GENERAL (Para Consola de Movimientos) ---
+    try {
+        const reportsColl = await (await import("./db.js")).getReportsCollection();
+        const fileName = pdfPath.split(/[\\/]/).pop();
+        
+        const itemsFound = results.map(r => ({
+            partNumber: r.item,
+            description: r.profile,
+            qty: r.required,
+            uom: "EA",
+            job_ref: r.job_ref || ""
+        }));
+
+        if (itemsFound.length > 0) {
+            const newReport = {
+                fileName,
+                date: new Date(),
+                itemsFound,
+                totalItems: itemsFound.length,
+                status: "Procesado"
+            };
+            await reportsColl.insertOne(newReport);
+            console.log(`📊 Reporte de Canopy guardado para: ${fileName}`);
+        }
+    } catch (e) {
+        console.error("Error guardando reporte de Canopy:", e);
     }
 
     return { timestamp: new Date(), totalJobs: jobsFound.length, summary: results };

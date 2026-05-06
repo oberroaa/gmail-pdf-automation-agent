@@ -588,6 +588,7 @@ router.get("/canopy", protect, async (req, res) => {
                 $or: [
                     { item: { $regex: search, $options: "i" } },
                     { alias: { $regex: search, $options: "i" } },
+                    { job_ref: { $regex: search, $options: "i" } },
                     { profile: { $regex: search, $options: "i" } },
                     { telas: { $regex: search, $options: "i" } },
                     { telas2: { $regex: search, $options: "i" } }
@@ -623,6 +624,7 @@ router.post("/canopy", protect, authorize('ADMIN', 'SUPERVISOR'), async (req, re
             tilt: Boolean(req.body.tilt || false),
             frameFinish: String(req.body.frameFinish || "").trim(),
             ignored: Array.isArray(req.body.ignored) ? req.body.ignored : [],
+            job_ref: String(req.body.job_ref || "").trim(),
             total: Math.round(Number(total) || 0),
             createdAt: new Date()
         };
@@ -653,6 +655,7 @@ router.put("/canopy/:id", protect, authorize('ADMIN', 'SUPERVISOR'), async (req,
         if (req.body.tilt !== undefined) updateData.tilt = Boolean(req.body.tilt);
         if (req.body.frameFinish !== undefined) updateData.frameFinish = String(req.body.frameFinish).trim();
         if (req.body.ignored !== undefined) updateData.ignored = Array.isArray(req.body.ignored) ? req.body.ignored : [];
+        if (req.body.job_ref !== undefined) updateData.job_ref = String(req.body.job_ref).trim();
         if (total !== undefined) updateData.total = Math.round(Number(total) || 0);
 
         const collection = await getCanopyCollection();

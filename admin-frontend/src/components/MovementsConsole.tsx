@@ -296,12 +296,17 @@ export default function MovementsConsole({ report, onBack }: Props) {
                             return (
                                 <tr key={idx} className="hover:bg-white/5 transition-colors group text-[13px]">
                                     <td className="p-1.5 px-3 border-r border-white/5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="font-bold text-indigo-300">{item.partNumber}</div>
-                                            {item.isManual && (
-                                                <span className="bg-amber-500/20 text-amber-500 text-[8px] px-1.5 py-0.5 rounded-md uppercase font-black border border-amber-500/30">
-                                                    Manual
-                                                </span>
+                                        <div className="flex flex-col gap-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <div className="font-bold text-indigo-300">{item.partNumber}</div>
+                                                {item.isManual && (
+                                                    <span className="bg-amber-500/20 text-amber-500 text-[8px] px-1.5 py-0.5 rounded-md uppercase font-black border border-amber-500/30">
+                                                        Manual
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {item.job_ref && (
+                                                <span className="text-[10px] text-emerald-500 font-black uppercase leading-none">Ref: {item.job_ref}</span>
                                             )}
                                         </div>
                                     </td>

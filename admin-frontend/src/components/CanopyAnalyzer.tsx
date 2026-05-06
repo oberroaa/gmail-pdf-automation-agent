@@ -163,8 +163,13 @@ export default function CanopyAnalyzer() {
                                             </div>
 
                                             <div className="mb-4">
-                                                <span className="text-[10px] uppercase font-black text-slate-500 tracking-tighter block mb-1">{t.profile}</span>
                                                 <span className="text-sm text-slate-300 font-medium">{res.profile}</span>
+                                                {res.job_ref && (
+                                                    <div className="mt-1 flex items-center gap-1.5">
+                                                        <div className="w-1 h-1 rounded-full bg-emerald-500/40" />
+                                                        <span className="text-[10px] text-emerald-500/60 font-black uppercase tracking-wider">Ref: {res.job_ref}</span>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {res.jobs && res.jobs.length > 0 && (

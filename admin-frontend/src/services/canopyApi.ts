@@ -11,6 +11,7 @@ export interface Canopy {
     tilt?: boolean;
     frameFinish?: string;
     ignored?: string[];
+    job_ref?: string;
     total: number;
     createdAt?: string;
     updatedAt?: string;
