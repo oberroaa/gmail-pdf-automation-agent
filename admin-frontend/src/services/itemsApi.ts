@@ -7,7 +7,7 @@ export interface Item {
     qtyReq: number;
     uom: string;
     active: boolean;
-    pool?: boolean;
+    pole?: boolean;
     createdAt?: string;
     updatedAt?: string;
 }
