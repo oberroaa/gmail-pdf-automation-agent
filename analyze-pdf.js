@@ -59,14 +59,16 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
     }
 
     // Usamos el anclaje de "Source" (Source o un código de letra sola) para saber que viene un nuevo Part Number
-    const itemRegex = new RegExp(`(?:Source|[A-Z])\\s+\\b(${pnPattern})\\b\\s+([\\s\\S]+?)\\s+(\\d+(?:\\.\\d+)?)\\s*(FT|EA|MT)\\s+[A-Z]\\b`, "g");
+    // Usamos lookahead (?=\s+[A-Z]\b) para el final para no consumir el inicio del siguiente item
+    // Soportamos comas en los números (ej: 1,107.200)
+    const itemRegex = new RegExp(`(?:Source|[A-Z])\\s+\\b(${pnPattern})\\b\\s+([\\s\\S]+?)\\s+([\\d,]+(?:\\.\\d+)?)\\s*(FT|EA|MT)(?=\\s+[A-Z]\\b)`, "g");
 
     const rows = [];
     let match;
     while ((match = itemRegex.exec(pdfText)) !== null) {
         const partNumber = match[1];
         const description = match[2].replace(/\n/g, " ").replace(/\s+/g, " ").trim();
-        const qty = parseFloat(match[3]);
+        const qty = parseFloat(match[3].replace(/,/g, ""));
         const uom = match[4];
 
         // 🔹 Filtros
@@ -133,6 +135,7 @@ export default async function analyzePdfWithRules(pdfPath, ruleset, displayName 
                         description: r.description || "Sin descripción",
                         qtyReq: extractedFt,
                         uom: r.uom,
+                        pole: false,
                         active: true,
                         createdAt: new Date()
                     });
